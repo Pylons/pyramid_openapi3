@@ -1,2 +1,2 @@
-# pyramid_openapi
+# pyramid_openapi3
 TODO
