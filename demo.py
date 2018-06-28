@@ -8,7 +8,10 @@ from wsgiref.simple_server import make_server
 
 @view_config(route_name="pets", renderer="json", request_method="GET", openapi=True)
 def pets_get(request):
-    return {}
+    return [{
+        "id": random.random(),
+        "name": "foodog",
+    }]
 
 @view_config(route_name="pets", renderer="json", request_method="POST", openapi=True)
 def pets_post(request):
@@ -17,8 +20,8 @@ def pets_post(request):
 @view_config(route_name="a_pet", request_method="GET", renderer="json", openapi=True)
 def apet(request):
     return {
-        "a_field": random.random(),
-        "b_field": random.randint(1, 999999),
+        "id": random.random(),
+        "name": "foodog",
     }
 
 if __name__ == "__main__":

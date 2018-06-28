@@ -22,13 +22,16 @@ class PyramidOpenAPIRequest(BaseOpenAPIRequest):
 
     @property
     def path_pattern(self):
-        return self.path
+        if self.request.matched_route:
+            return self.request.matched_route.pattern
+        else:
+            return self.path
 
     @property
     def parameters(self):
         return {
             'path': self.request.params,
-            'query': self.request.query_string,
+            'query': self.request.GET,
             'headers': self.request.headers,
             'cookies': self.request.cookies,
         }
@@ -53,7 +56,7 @@ class PyramidOpenAPIResponse(BaseOpenAPIResponse):
 
     @property
     def status_code(self):
-        return self.response._status_code
+        return self.response.status_code
 
     @property
     def mimetype(self):

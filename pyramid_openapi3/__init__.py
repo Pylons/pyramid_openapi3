@@ -30,7 +30,7 @@ def openapi_view(view, info):
 
             # Validate response and raise if an error is found
             open_response = PyramidOpenAPIResponse(response)
-            result = settings['response_validator'].validate(open_response)
+            result = settings['response_validator'].validate(request=open_request, response=open_response)
             result.raise_for_errors()
 
             return response

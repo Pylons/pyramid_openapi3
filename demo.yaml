@@ -5,7 +5,7 @@ info:
   license:
     name: MIT
 servers:
-  - url: http://petstore.swagger.io/v1
+  - url: http://0.0.0.0:6543/
 paths:
   /pets:
     get:
@@ -72,7 +72,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Pets"
+                $ref: "#/components/schemas/Pet"
         default:
           description: unexpected error
           content:
