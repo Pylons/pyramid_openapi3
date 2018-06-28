@@ -1,0 +1,17 @@
+language: python
+sudo: false
+dist: trusty
+
+matrix:
+  include:
+    - python: 3.6
+      env: TOXENV=py36
+    - python: 3.5
+      env: TOXENV=py35
+    - python: 3.4
+      env: TOXENV=py34
+install:
+    - travis_retry pip install tox
+    - tox --version
+script:
+    - travis_retry tox

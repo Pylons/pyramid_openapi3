@@ -1,7 +1,7 @@
 from string import Template
 
 from openapi_core import create_spec
-from openapi_core.validators import RequestValidator, ResponseValidator
+from openapi_core.shortcuts import RequestValidator, ResponseValidator
 from openapi_spec_validator import validate_spec
 from openapi_spec_validator.schemas import read_yaml_file
 from pyramid.exceptions import ConfigurationError
