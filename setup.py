@@ -46,7 +46,11 @@ setup(
         'pyramid_openapi3': ['static/*.*'],
         '': ['LICENSE'],
     },
-    install_requires=['openapi-core', 'pyramid', 'pyyaml'],
+    install_requires=[
+      'openapi-core',
+      'openapi-spec-validator',
+      'pyramid',
+     ],
     setup_requires=["pytest-runner"],
     extras_require={
         'dev': ['coverage', 'pytest', 'tox'],
