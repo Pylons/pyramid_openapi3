@@ -18,6 +18,13 @@ def includeme(config):
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
 
 def openapi_view(view, info):
+    """ View deriver that takes care of request/response validation.
+
+    If `openapi=True` is passed to `@view_config`, this decorator will:
+
+    - validate request and submit results into request.openali_validated
+    - validate response and raise an Exception if errors are found
+    """
     if info.options.get('openapi'):
         def wrapper_view(context, request):
             # Validate request and attach all findings for view to introspect
@@ -46,7 +53,14 @@ def add_explorer_view(
     template='static/index.html',
     ui_version='3.17.1',
     ):
-    """"""
+    """ Serves Swagger UI at `route` url path.
+
+        :param route: URL path where to serve
+        :param route_name: Route name that's being added
+        :param template: Dotted path to the html template that renders Swagger UI response
+        :param ui_version: Swagger UI version string
+
+    """
     def register():
         resolved_template = AssetResolver().resolve(template)
         def explorer_view(request):
@@ -70,7 +84,13 @@ def add_spec_view(
     route='/openapi.yaml',
     route_name='pyramid_openapi3.spec',
     ):
-    """"""
+    """ Serves and registers OpenApi 3.0 specification file.
+
+        :param filepath: absolute/relative path to the specification file
+        :param route: URL path where to serve specification file
+        :param route_name: Route name under which specification file will be served
+
+    """
     def register():
         spec_dict = read_yaml_file(filepath)
 
