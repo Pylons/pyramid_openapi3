@@ -1,0 +1,2 @@
+include *.md LICENSE
+graft pyramid_openapi3
