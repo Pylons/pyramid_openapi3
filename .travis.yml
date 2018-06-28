@@ -1,0 +1,11 @@
+language: generic
+sudo: required
+env:
+    - TOXENV=py34
+    - TOXENV=py35
+    - TOXENV=py36
+install:
+    - sudo pip install tox
+    - tox --version
+script:
+    - travis_retry tox
