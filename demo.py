@@ -6,15 +6,15 @@ from pyramid.view import view_config, exception_view_config
 from wsgiref.simple_server import make_server
 
 
-@view_config(route_name="pets", renderer="json", request_method="GET")
+@view_config(route_name="pets", renderer="json", request_method="GET", openapi=True)
 def pets_get(request):
     return {}
 
-@view_config(route_name="pets", renderer="json", request_method="POST")
+@view_config(route_name="pets", renderer="json", request_method="POST", openapi=True)
 def pets_post(request):
     return {}
 
-@view_config(route_name="a_pet", request_method="GET", renderer="json")
+@view_config(route_name="a_pet", request_method="GET", renderer="json", openapi=True)
 def apet(request):
     return {
         "a_field": random.random(),

@@ -18,7 +18,7 @@ def includeme(config):
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
 
 def openapi_view(view, info):
-    if info.options.get('requires_openapi'):
+    if info.options.get('openapi'):
         def wrapper_view(context, request):
             # Validate request and attach all findings for view to introspect
             settings = request.registry.settings['pyramid_openapi3']
@@ -37,7 +37,7 @@ def openapi_view(view, info):
         return wrapper_view
     return view
 
-openapi_view.options = ('requires_openapi',)
+openapi_view.options = ('openapi',)
 
 def add_explorer_view(
     config,

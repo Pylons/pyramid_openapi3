@@ -27,7 +27,7 @@ config.pyramid_openapi3_add_explorer(route='/api/v1/')
 3. In order to enable request/response validation:
 
 ```python
-@view_config(route_name="foobar", requires_openapi=True, renderer='json')
+@view_config(route_name="foobar", openapi=True, renderer='json')
 def myview(request):
     return request.openapi_validated.parameters
 ```
