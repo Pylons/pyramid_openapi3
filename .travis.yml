@@ -1,11 +1,20 @@
-language: generic
-sudo: required
-env:
-    - TOXENV=py34
-    - TOXENV=py35
-    - TOXENV=py36
-install:
-    - sudo pip install tox
-    - tox --version
+language: python
+sudo: false
+matrix:
+  fast_finish: true
+  include:
+    - python: 3.4
+    - python: 3.5
+    - python: 3.6
+    - python: 3.7-dev
+
+cache:
+  pip: true
+  directories:
+    - .venv
+    - $HOME/.cache/pypoetry
+before_install:
+  - pip install poetry --pre
+  - poetry develop -v
 script:
-    - travis_retry tox
+  - poetry run pytest tests/

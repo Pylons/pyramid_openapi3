@@ -1,6 +1,6 @@
 """openapi-core wrappers module for pyramid"""
 
-from openapi_core.wrappers.base import BaseOpenAPIRequest, BaseOpenAPIResponse
+from openapi_core.wrappers import BaseOpenAPIRequest, BaseOpenAPIResponse
 
 
 class PyramidOpenAPIRequest(BaseOpenAPIRequest):

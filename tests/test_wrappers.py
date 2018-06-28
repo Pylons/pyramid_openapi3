@@ -10,4 +10,4 @@ def dummy_openapi_request():
     return PyramidOpenAPIRequest(dummy_request)
 
 def test_host_url(dummy_openapi_request):
-    assert dummy_openapi_request.request.host_url == ""
+    assert dummy_openapi_request.request.host_url == "http://example.com"
