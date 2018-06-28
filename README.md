@@ -61,3 +61,10 @@ c) If it chose generation, there's a drawback how to support knobs for features 
 ## Running tests
 
     $ tox
+
+## Related projects
+
+- [pyramid_swagger](https://github.com/striglia/pyramid_swagger) does a similar
+  thing, but for Swagger 2.0 specification
+- [pyramid_apispec](https://github.com/ergo/pyramid_apispec) uses generation with
+  help of apispec and marshmallow validation library
