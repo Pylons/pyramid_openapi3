@@ -4,7 +4,7 @@
 [![PyPi](https://img.shields.io/pypi/v/pyramid_openapi3.svg)](https://pypi.org/project/pyramid_openapi3/)
 
 Validate [OpenAPI 3.0](https://swagger.io/specification/) specification against
-[pyramid framework](trypyramid.com) configuration and views.
+[pyramid framework](https://trypyramid.com) configuration and views.
 
 ## Features
 
