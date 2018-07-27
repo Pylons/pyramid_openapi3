@@ -30,7 +30,7 @@ class PyramidOpenAPIRequest(BaseOpenAPIRequest):
     @property
     def parameters(self):
         return {
-            'path': self.request.params,
+            'path': self.request.matchdict,
             'query': self.request.GET,
             'headers': self.request.headers,
             'cookies': self.request.cookies,
