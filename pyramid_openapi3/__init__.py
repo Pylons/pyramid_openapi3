@@ -8,6 +8,7 @@ from pyramid.exceptions import ConfigurationError
 from pyramid.config import PHASE0_CONFIG
 from pyramid.path import AssetResolver
 from pyramid.response import Response, FileResponse
+from pyramid.view import render_view_to_response
 
 from .wrappers import PyramidOpenAPIRequest, PyramidOpenAPIResponse
 
@@ -16,6 +17,7 @@ def includeme(config):
     config.add_view_deriver(openapi_view)
     config.add_directive("pyramid_openapi3_add_explorer", add_explorer_view)
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
+    config.add_directive("pyramid_openapi3_validation_error_view", add_validation_error_view)
 
 def openapi_view(view, info):
     """ View deriver that takes care of request/response validation.
@@ -32,13 +34,18 @@ def openapi_view(view, info):
             open_request = PyramidOpenAPIRequest(request)
             request.openapi_validated = settings['request_validator'].validate(open_request)
 
-            # Do the view
-            response = view(context, request)
+            if request.openapi_validated.errors and getattr(request.registry, "_pyramid_openapi3_validation_view_name", None):
+                # handle request errors
+                view_name = request.registry._pyramid_openapi3_validation_view_name
+                response = render_view_to_response(context, request, name=view_name, secure=False)
+            else:
+                # Do the view
+                response = view(context, request)
 
-            # Validate response and raise if an error is found
-            open_response = PyramidOpenAPIResponse(response)
-            result = settings['response_validator'].validate(request=open_request, response=open_response)
-            result.raise_for_errors()
+                # Validate response and raise if an error is found
+                open_response = PyramidOpenAPIResponse(response)
+                result = settings['response_validator'].validate(request=open_request, response=open_response)
+                result.raise_for_errors()
 
             return response
         return wrapper_view
@@ -114,3 +121,15 @@ def add_spec_view(
            "response_validator": ResponseValidator(spec),
         }
     config.action(('pyramid_openapi3_spec',), register, order=PHASE0_CONFIG)
+
+
+def add_validation_error_view(
+    config,
+    view_name
+):
+    """ If openapi validation fails on request, invoke this view to render response
+    handling errors.
+    """
+    def register():
+        config.registry._pyramid_openapi3_validation_view_name = view_name
+    config.action(('pyramid_openapi3_validation_error_view',), register, order=PHASE0_CONFIG)
