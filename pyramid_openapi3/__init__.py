@@ -15,6 +15,7 @@ from .wrappers import PyramidOpenAPIRequest, PyramidOpenAPIResponse
 
 def includeme(config):
     config.add_view_deriver(openapi_view)
+    config.add_directive("pyramid_openapi3_add_formatter", add_formatter)
     config.add_directive("pyramid_openapi3_add_explorer", add_explorer_view)
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
     config.add_directive("pyramid_openapi3_validation_error_view", add_validation_error_view)
@@ -85,6 +86,13 @@ def add_explorer_view(
         config.add_route(route_name, route)
     config.action(('pyramid_openapi3_add_explorer',), register, order=PHASE0_CONFIG)
 
+def add_formatter(config, name, func):
+    """"""
+    config.registry.settings.setdefault('pyramid_openapi3_formatters', {})
+    reg = config.registry.settings['pyramid_openapi3_formatters']
+    reg[name] = func
+
+
 def add_spec_view(
     config,
     filepath,
@@ -113,12 +121,14 @@ def add_spec_view(
         config.add_view(route_name=route_name, view=spec_view)
         config.add_route(route_name, route)
 
+        custom_formatters = config.registry.settings.get('pyramid_openapi3_formatters')
+
         config.registry.settings['pyramid_openapi3'] = {
            "filepath": filepath,
            "spec_route_name": route_name,
            "spec": spec,
-           "request_validator": RequestValidator(spec),
-           "response_validator": ResponseValidator(spec),
+           "request_validator": RequestValidator(spec, custom_formatters),
+           "response_validator": ResponseValidator(spec, custom_formatters),
         }
     config.action(('pyramid_openapi3_spec',), register, order=PHASE0_CONFIG)
 
