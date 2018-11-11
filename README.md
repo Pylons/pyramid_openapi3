@@ -40,6 +40,8 @@ For responses, if api specification is not valid, an exception will be raised.
     $ pip install -e .[dev]
     $ python demo.py
 
+There's also a self-contained [TODO app example](https://github.com/zupo/minimal_openapi).
+
 ## Why? - Design defense
 
 pyramid_openapi3 uses validation of the spec instead of generation:
