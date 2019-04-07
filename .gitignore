@@ -8,12 +8,14 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+bin/
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
+include/
 lib/
 lib64/
 parts/
@@ -34,6 +36,7 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+pip-selfcheck.json
 
 # Unit test / coverage reports
 htmlcov/
@@ -102,3 +105,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Sublime Markdown preview
+Readme.html
