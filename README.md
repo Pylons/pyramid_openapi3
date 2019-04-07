@@ -44,7 +44,7 @@ The reason this package exists is to give you peace of mind when providing a RES
 
 - Your **API documentation is never out-of-date**, since it is generated out of the API document that you write.
 - The documentation comes with **_try-it-out_ examples** for every endpoint in your API. You don't have to provide (and maintain) `curl` commands to showcase how your API works. Users can try it themselves, right in their browsers.
-- Your **API document is always valid**, since your Pyramid app won't event start if the document is not according to OpenAPI 3.0 specification.
+- Your **API document is always valid**, since your Pyramid app won't even start if the document is not according to OpenAPI 3.0 specification.
 - Automatic request **payload validation and sanitization**. Your views do not require any code for validation and input sanitation. Your view code only deals with business logic. Tons of tests never need to be written since every request, and its payload, is validated against your API document before it reaches your view code.
 - Your API **responses always match your API document**. Every response from your view is validated against your document and a `500 Internal Server Error` is returned if the response does not exactly match what your document says the output of a certain API endpoint should be.
 - **A single source of truth**. Because of the checks outlined above you can be sure that whatever your API document says is in fact what is going on in reality. You have a single source of truth to consult when asking an API related question, such as "Remind me again, which fields does the endpoint /user/info return?".
