@@ -88,9 +88,9 @@ There's also a self-contained [TODO app example](https://github.com/zupo/minimal
 
 ## Design defense
 
-The authors of pyramid_openapi3 believe that the approach of validating a manually-written API specification is superior to the approach of generating API specification from Python code. Here are the reasons:
+The authors of pyramid_openapi3 believe that the approach of validating a manually-written API document is superior to the approach of generating the API document from Python code. Here are the reasons:
 
-a) Both generation and validation against a specification are lossy processes. The underlying libraries running the generation/validation will always have something missing. Either a feature from the latest OpenAPI specification, or an implementation bug. Having to fork the underlying library in order to generate the part of your API document that might only be needed for the frontend is unfortunate.
+a) Both generation and validation against a document are lossy processes. The underlying libraries running the generation/validation will always have something missing. Either a feature from the latest OpenAPI specification, or an implementation bug. Having to fork the underlying library in order to generate the part of your API document that might only be needed for the frontend is unfortunate.
 
    Validation on the other hand allows one to skip parts of validation that are not supported yet, and not block a team from shipping the document.
 
@@ -107,7 +107,7 @@ c) Generation approach has the drawback of having to write Python code even for 
 These packages tackle the same problem-space:
 
 - [pyramid_swagger](https://github.com/striglia/pyramid_swagger) does a similar
-  thing, but for Swagger 2.0 specification
+  thing, but for Swagger 2.0 documents
 - [pyramid_apispec](https://github.com/ergo/pyramid_apispec) uses generation with
   help of apispec and marshmallow validation library. See above [why we prefer validation insted of generation](#why---design-defense).
 
@@ -120,10 +120,16 @@ A couple of projects that use pyramid_openapi3 in production:
 ## TODO
 
 - [ ] Makefile.
+- [ ] Flake8.
+- [ ] Black.
+- [ ] mypy.
+- [ ] codespell.
+- [ ] pre-commit.
 - [ ] Testing framework.
 - [ ] CircleCI integration.
 - [ ] Codecov integration.
 - [ ] Beta PyPI release.
+- [ ] Go through all docstrings.
 - [ ] Automatic PyPI releases for tags, via CircleCI.
 - [ ] 100% test coverage.
 - [ ] Document that `pyramid_openapi3_validation_error_view()` is [registered without permissions](https://github.com/niteoweb/pyramid_openapi3/pull/6#discussion_r272651906).
