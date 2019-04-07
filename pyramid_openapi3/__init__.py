@@ -35,18 +35,25 @@ def openapi_view(view, info):
             open_request = PyramidOpenAPIRequest(request)
             request.openapi_validated = settings['request_validator'].validate(open_request)
 
-            if request.openapi_validated.errors and getattr(request.registry, "_pyramid_openapi3_validation_view_name", None):
-                # handle request errors
-                view_name = request.registry._pyramid_openapi3_validation_view_name
-                response = render_view_to_response(context, request, name=view_name, secure=False)
-            else:
-                # Do the view
-                response = view(context, request)
+            try:
+                if request.openapi_validated.errors and getattr(request.registry, "_pyramid_openapi3_validation_view_name", None):
+                    # handle request errors
+                    view_name = request.registry._pyramid_openapi3_validation_view_name
+                    response = render_view_to_response(context, request, name=view_name, secure=False)
+                else:
+                    # Do the view
+                    response = view(context, request)
 
-                # Validate response and raise if an error is found
-                open_response = PyramidOpenAPIResponse(response)
-                result = settings['response_validator'].validate(request=open_request, response=open_response)
-                result.raise_for_errors()
+            except HTTPException as exc:
+                # If view raises one of the HTTPExceptions, catch it
+                # so that we can validate the response and hence make sure
+                # all possible responses are documented in openapi spec.
+                response = exc
+
+            # Validate response and raise if an error is found
+            open_response = PyramidOpenAPIResponse(response)
+            result = settings['response_validator'].validate(request=open_request, response=open_response)
+            result.raise_for_errors()
 
             return response
         return wrapper_view
