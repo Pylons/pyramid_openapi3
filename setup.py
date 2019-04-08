@@ -20,7 +20,7 @@ with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 
 class VerifyVersionCommand(install):
