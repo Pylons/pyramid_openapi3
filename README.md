@@ -11,31 +11,30 @@
     <img alt="CircleCI for pyramid_openapi3 (master branch)"
          src="https://circleci.com/gh/niteoweb/pyramid_openapi3.svg?style=shield">
   </a>
-  <a href="https://github.com/niteoweb/pyramid_openapi3/blob/master/LICENSE">
-    <img alt="License: MIT"
-         src="https://img.shields.io/badge/License-MIT-yellow.svg">
+  <a href="https://github.com/niteoweb/pyramid_openapi3/blob/master/Makefile#L56">
+    <img alt="Test coverage (master branch)"
+         src="https://img.shields.io/badge/coverage-34%25-orange.svg">
   </a>
   <a href="https://pypi.org/project/pyramid_openapi3/">
     <img alt="latest version of pyramid_openapi3 on PyPI"
          src="https://img.shields.io/pypi/v/pyramid_openapi3.svg">
   </a>
-  <a href="https://webchat.freenode.net/?channels=pyramid">
-    <img alt="Talk to us in #pyramid on Freenode IRC"
-         src="https://img.shields.io/badge/irc-freenode-blue.svg">
-  </a>
   <a href="https://pypi.org/project/pyramid_openapi3/">
     <img alt="Supported Python versions"
          src="https://img.shields.io/pypi/pyversions/pyramid_openapi3.svg">
   </a>
-  <a href="https://codecov.io/github/niteoweb/pyramid_openapi3">
-    <img alt="Test coverage (master branch)"
-         src="https://codecov.io/github/niteoweb/pyramid_openapi3/coverage.svg?branch=master">
+  <a href="https://github.com/niteoweb/pyramid_openapi3/blob/master/LICENSE">
+    <img alt="License: MIT"
+         src="https://img.shields.io/badge/License-MIT-yellow.svg">
   </a>
   <a href="https://github.com/niteoweb/pyramid_openapi3/graphs/contributors">
     <img alt="Built by these great folks!"
          src="https://img.shields.io/github/contributors/niteoweb/pyramid_openapi3.svg">
   </a>
-
+  <a href="https://webchat.freenode.net/?channels=pyramid">
+    <img alt="Talk to us in #pyramid on Freenode IRC"
+         src="https://img.shields.io/badge/irc-freenode-blue.svg">
+  </a>
 </p>
 
 ## Peace of Mind
@@ -119,15 +118,14 @@ A couple of projects that use pyramid_openapi3 in production:
 
 ## TODO
 
-- [ ] Makefile.
-- [ ] Flake8.
-- [ ] Black.
-- [ ] mypy.
-- [ ] codespell.
-- [ ] pre-commit.
+- [x] Makefile.
+- [x] Flake8.
+- [x] Black.
+- [x] mypy.
+- [x] codespell.
+- [x] pre-commit.
 - [ ] Testing framework.
-- [ ] CircleCI integration.
-- [ ] Codecov integration.
+- [x] CircleCI integration.
 - [ ] Beta PyPI release.
 - [ ] Go through all docstrings.
 - [ ] Automatic PyPI releases for tags, via CircleCI.
