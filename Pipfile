@@ -31,7 +31,7 @@ pre-commit-hooks = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-randomly = "*"
+twine = "*"
 
 [packages]
-"e1839a8" = {path = ".", editable = true}
 "pyramid-openapi3" = {editable = true, path = "."}

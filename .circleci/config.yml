@@ -5,15 +5,24 @@
 version: 2
 workflows:
   version: 2
-  test:
+  build_and_deploy:
     jobs:
-      - python-3.6
       - python-3.7
+      - python-3.6
+      - release:
+          requires:
+            - python-3.7
+            - python-3.6
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
 
 jobs:
-  python-3.6: &job-template
+  python-3.7: &job-template
     docker:
-      - image: circleci/python:3.6.8
+      - image: circleci/python:3.7.3
 
     environment:
       PIPENV_VENV_IN_PROJECT: 1
@@ -27,15 +36,48 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "Pipfile.lock" }}
+            - v2-dependencies-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+            - v2-dependencies-
 
       - run:
           name: install dependencies
           command: |
-            python3 -m venv .venv
-            . .venv/bin/activate
+            sudo pip install pipenv
+            pipenv install --dev --deploy
+            touch .installed
+
+      - save_cache:
+          paths:
+            - ./.venv
+          key: v2-dependencies-{{ checksum "Pipfile.lock" }}
+
+      - run:
+          name: run tests
+          command: |
+            make tests
+
+  python-3.6:
+    <<: *job-template
+    docker:
+      - image: circleci/python:3.6.8
+
+  release:
+    <<: *job-template
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v2-dependencies-{{ checksum "Pipfile.lock" }}
+            # fallback to using the latest cache if no exact match is found
+            - v2-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            sudo pip install pipenv
             pip install pipenv
             pipenv install --dev --deploy
             touch .installed
@@ -43,14 +85,27 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v1-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v2-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
-          name: run tests
+          name: verify git tag vs. version
           command: |
-            make tests
+            pipenv run python setup.py verify
 
-  python-3.7:
-    <<: *job-template
-    docker:
-      - image: circleci/python:3.7.3
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = zupo" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+
+      - run:
+          name: create packages
+          command: |
+            pipenv run python setup.py sdist
+            pipenv run python setup.py bdist_wheel
+
+      - run:
+          name: upload to pypi
+          command: |
+            pipenv run twine upload dist/*

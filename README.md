@@ -99,7 +99,7 @@ c) Generation approach has the drawback of having to write Python code even for 
 
 ## Running tests
 
-    $ tox
+    $ make tests
 
 ## Related packages
 
@@ -130,6 +130,7 @@ A couple of projects that use pyramid_openapi3 in production:
 - [ ] Go through all docstrings.
 - [ ] Automatic PyPI releases for tags, via CircleCI.
 - [ ] 100% test coverage.
+- [ ] How to contribute.
 - [ ] Document that `pyramid_openapi3_validation_error_view()` is [registered without permissions](https://github.com/niteoweb/pyramid_openapi3/pull/6#discussion_r272651906).
 - [ ] Move demo.py into examples/singlefile/
 - [ ] Move https://github.com/zupo/minimal_openapi into examples/minimal/

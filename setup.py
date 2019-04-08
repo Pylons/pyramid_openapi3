@@ -6,22 +6,44 @@ https://github.com/pypa/sampleproject
 """
 
 from io import open
-from os import path
 from setuptools import find_packages
 from setuptools import setup
+from setuptools.command.install import install
 
-here = path.abspath(path.dirname(__file__))
+import os
+import sys
+
+here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, "README.md"), encoding="utf-8") as f:
+with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 
-version = "0.1.0"
+VERSION = "0.1.0"
+
+
+class VerifyVersionCommand(install):
+    """Custom command to verify that the git tag matches our version.
+
+    Taken from https://circleci.com/blog/continuously-deploying-python-packages-to-pypi-with-circleci/
+    """
+
+    description = "verify that the git tag matches our version"
+
+    def run(self):  # noqa: D102
+        tag = os.getenv("CIRCLE_TAG")
+
+        if tag != VERSION:
+            info = "Git tag: {0} does not match the version of this app: {1}".format(
+                tag, VERSION
+            )
+            sys.exit(info)
+
 
 setup(
     name="pyramid_openapi3",
-    version=version,
+    version=VERSION,
     description="Pyramid addon for OpenAPI3 validation",
     long_description=long_description,
     license="MIT",
@@ -45,4 +67,5 @@ setup(
     package_data={"pyramid_openapi3": ["static/*.*"], "": ["LICENSE"]},
     install_requires=["openapi-core", "openapi-spec-validator", "pyramid"],
     extras_require={':python_version<"3.7"': ["importlib-resources"]},
+    cmdclass={"verify": VerifyVersionCommand},
 )
