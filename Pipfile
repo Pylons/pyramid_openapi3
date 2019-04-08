@@ -1,0 +1,37 @@
+[[source]]
+url = "https://pypi.org/simple/"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+black = "==19.3b0"
+codespell = "*"
+flake8 = "*"
+flake8-assertive = "*"
+flake8-blind-except = "*"
+flake8-bugbear = "*"
+flake8-builtins = "*"
+flake8-comprehensions = "*"
+flake8-debugger = "*"
+flake8-deprecated = "*"
+flake8-docstrings = "*"
+flake8-isort = "*"
+flake8-mock = "*"
+flake8-mutable = "*"
+flake8-per-file-ignores = "*"
+flake8-plone-hasattr = "*"
+flake8-print = "*"
+flake8-self = "*"
+flake8-super-call = "*"
+flake8-tuple = "*"
+lxml = "*"
+mypy = "*"
+pre-commit = "*"
+pre-commit-hooks = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-randomly = "*"
+
+[packages]
+"e1839a8" = {path = ".", editable = true}
+"pyramid-openapi3" = {editable = true, path = "."}

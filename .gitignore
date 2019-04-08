@@ -108,3 +108,8 @@ venv.bak/
 
 # Sublime Markdown preview
 Readme.html
+
+# Coverage reports
+cov.xml
+htmltypecov/
+typecov/
