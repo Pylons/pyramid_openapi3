@@ -3,32 +3,36 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2
+
+defaults: &defaults
+    working_directory: ~/repo
+    environment:
+      PIPENV_VENV_IN_PROJECT: 1
+      PIPENV_IGNORE_VIRTUALENVS: 1
+    docker:
+      - image: circleci/python:3.7.3
+
 workflows:
   version: 2
   build_and_deploy:
     jobs:
-      - python-3.7
-      - python-3.6
-      - release:
-          requires:
-            - python-3.7
-            - python-3.6
+      - build:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /.*/
+      - release:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /[0-9]+\.[0-9]+\.[0-9]+/
             branches:
               ignore: /.*/
 
 jobs:
-  python-3.7: &job-template
-    docker:
-      - image: circleci/python:3.7.3
 
-    environment:
-      PIPENV_VENV_IN_PROJECT: 1
-      PIPENV_IGNORE_VIRTUALENVS: 1
-
-    working_directory: ~/repo
+  build:
+    <<: *defaults
 
     steps:
       - checkout
@@ -36,9 +40,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "Pipfile.lock" }}
+            - v3-dependencies-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v2-dependencies-
+            - v3-dependencies-
 
       - run:
           name: install dependencies
@@ -50,29 +54,24 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v2-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run tests
           command: |
             make tests
 
-  python-3.6:
-    <<: *job-template
-    docker:
-      - image: circleci/python:3.6.8
-
   release:
-    <<: *job-template
+    <<: *defaults
 
     steps:
       - checkout
 
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "Pipfile.lock" }}
+            - v3-dependencies-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v2-dependencies-
+            - v3-dependencies-
 
       - run:
           name: install dependencies
@@ -85,7 +84,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v2-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: verify git tag vs. version
