@@ -152,8 +152,9 @@ def add_spec_view(
         def spec_view(request):
             return FileResponse(filepath, request=request, content_type="text/yaml")
 
-        config.add_view(route_name=route_name, view=spec_view)
         config.add_route(route_name, route)
+        config.add_view(route_name=route_name, view=spec_view)
+        config.add_view(route_name=route_name, view=spec_view)
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
 
