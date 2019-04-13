@@ -13,7 +13,7 @@
   </a>
   <a href="https://github.com/niteoweb/pyramid_openapi3/blob/master/Makefile#L56">
     <img alt="Test coverage (master branch)"
-         src="https://img.shields.io/badge/coverage-47%25-orange.svg">
+         src="https://img.shields.io/badge/coverage-81%25-orange.svg">
   </a>
   <a href="https://pypi.org/project/pyramid_openapi3/">
     <img alt="latest version of pyramid_openapi3 on PyPI"

@@ -6,6 +6,7 @@ from pyramid.interfaces import IRouteRequest
 from pyramid.interfaces import IRoutesMapper
 from pyramid.interfaces import IView
 from pyramid.interfaces import IViewClassifier
+from pyramid.testing import DummyRequest
 from pyramid.testing import testConfig
 from zope.interface import Interface
 
@@ -81,3 +82,40 @@ def test_add_validation_error_view():
             config.registry._pyramid_openapi3_validation_view_name  # noqa: SF01
             == "foo_view"
         )
+
+
+def test_add_explorer_view():
+    """Test registration of a view serving the Swagger UI."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
+        with tempfile.NamedTemporaryFile() as document:
+            # fmt: off
+            document.write(
+                b'openapi: "3.0.0"\n'
+                b'info:\n'
+                b'  version: "1.0.0"\n'
+                b'  title: Foo API\n'
+                b'paths:\n'
+                b'  /pets:\n'
+                b'    get:\n'
+                b'      responses:\n'
+                b'        200:\n'
+                b'          description: An paged array of pets\n'
+            )
+            # fmt: on
+            document.seek(0)
+
+            config.pyramid_openapi3_spec(
+                document.name, route="/foo.yaml", route_name="foo_api_spec"
+            )
+
+        config.pyramid_openapi3_add_explorer()
+        request = config.registry.queryUtility(
+            IRouteRequest, name="pyramid_openapi3.explorer"
+        )
+        view = config.registry.adapters.registered(
+            (IViewClassifier, request, Interface), IView, name=""
+        )
+        response = view(request=DummyRequest(config=config), context=None)
+        assert b"<title>Swagger UI</title>" in response.body
