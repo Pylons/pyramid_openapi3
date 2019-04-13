@@ -13,7 +13,7 @@
   </a>
   <a href="https://github.com/niteoweb/pyramid_openapi3/blob/master/Makefile#L56">
     <img alt="Test coverage (master branch)"
-         src="https://img.shields.io/badge/coverage-34%25-orange.svg">
+         src="https://img.shields.io/badge/coverage-47%25-orange.svg">
   </a>
   <a href="https://pypi.org/project/pyramid_openapi3/">
     <img alt="latest version of pyramid_openapi3 on PyPI"
@@ -128,9 +128,10 @@ A couple of projects that use pyramid_openapi3 in production:
 - [x] CircleCI integration.
 - [ ] Beta PyPI release.
 - [ ] Go through all docstrings.
-- [ ] Automatic PyPI releases for tags, via CircleCI.
+- [x] Automatic PyPI releases for tags, via CircleCI.
 - [ ] 100% test coverage.
 - [ ] How to contribute.
+- [ ] Add Changelog.
 - [ ] How to release (`vim setup.py && git add setup.py && git ci -m "release 0.2.0" && git tag 0.2.0 && git push --tags`
 - [ ] Document that `pyramid_openapi3_validation_error_view()` is [registered without permissions](https://github.com/niteoweb/pyramid_openapi3/pull/6#discussion_r272651906).
 - [ ] Move demo.py into examples/singlefile/
