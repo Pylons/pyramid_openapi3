@@ -120,8 +120,8 @@ def add_explorer_view(
                 )
             return Response(html)
 
-        config.add_view(route_name=route_name, view=explorer_view)
         config.add_route(route_name, route)
+        config.add_view(route_name=route_name, view=explorer_view)
 
     config.action(("pyramid_openapi3_add_explorer",), register, order=PHASE0_CONFIG)
 
