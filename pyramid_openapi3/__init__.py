@@ -1,7 +1,4 @@
-"""Configure pyramid_openapi3 addon.
-
-TODO: split out views
-"""
+"""Configure pyramid_openapi3 addon."""
 
 from .wrappers import PyramidOpenAPIRequest
 from .wrappers import PyramidOpenAPIResponse
@@ -36,7 +33,7 @@ def openapi_view(view, info):
 
     If `openapi=True` is passed to `@view_config`, this decorator will:
 
-    - validate request and submit results into request.openali_validated
+    - validate request and submit results into request.openapi_validated
     - validate response and raise an Exception if errors are found
     """
     if info.options.get("openapi"):

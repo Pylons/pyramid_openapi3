@@ -124,12 +124,12 @@ A couple of projects that use pyramid_openapi3 in production:
 - [x] mypy.
 - [x] codespell.
 - [x] pre-commit.
-- [ ] Testing framework.
+- [x] Testing framework.
 - [x] CircleCI integration.
-- [ ] Beta PyPI release.
+- [x] Beta PyPI release.
 - [ ] Go through all docstrings.
 - [x] Automatic PyPI releases for tags, via CircleCI.
-- [ ] 100% test coverage.
+- [x] 100% test coverage.
 - [ ] How to contribute.
 - [ ] Add Changelog.
 - [ ] How to release (`vim setup.py && git add setup.py && git ci -m "release 0.2.0" && git tag 0.2.0 && git push --tags`
