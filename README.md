@@ -99,6 +99,8 @@ c) Generation approach has the drawback of having to write Python code even for 
 
 ## Running tests
 
+You need to have [pipenv](https://pipenv.readthedocs.io/) and Python 3.7 installed on your machine. Then you can run:
+
     $ make tests
 
 ## Related packages
@@ -130,7 +132,7 @@ A couple of projects that use pyramid_openapi3 in production:
 - [x] Go through all docstrings.
 - [x] Automatic PyPI releases for tags, via CircleCI.
 - [x] 100% test coverage.
-- [ ] How to contribute.
+- [x] How to contribute.
 - [x] Add Changelog.
 - [x] How to release (`vim setup.py && git add setup.py && git ci -m "release 0.2.0" && git tag 0.2.0 && git push --tags`
 - [ ] Document that `pyramid_openapi3_validation_error_view()` is [registered without permissions](https://github.com/niteoweb/pyramid_openapi3/pull/6#discussion_r272651906).
