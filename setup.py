@@ -20,7 +20,7 @@ with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 
-VERSION = "0.2.5"
+VERSION = "0.2.6"
 
 
 class VerifyVersionCommand(install):
@@ -59,7 +59,6 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
     keywords="pyramid openapi3 openapi rest restful",
