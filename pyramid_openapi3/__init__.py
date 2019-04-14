@@ -59,6 +59,7 @@ def openapi_view(view, info):
                     )
                 else:
                     # Do the view
+                    request.openapi_validated.raise_for_errors()
                     response = view(context, request)
 
             except HTTPException as exc:
@@ -150,7 +151,6 @@ def add_spec_view(
             return FileResponse(filepath, request=request, content_type="text/yaml")
 
         config.add_route(route_name, route)
-        config.add_view(route_name=route_name, view=spec_view)
         config.add_view(route_name=route_name, view=spec_view)
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")

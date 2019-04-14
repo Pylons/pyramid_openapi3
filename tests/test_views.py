@@ -17,18 +17,18 @@ from zope.interface import Interface
 import pytest
 import tempfile
 
-MINIMAL_DOCUMENT = (
-    b'openapi: "3.0.0"\n'
-    b"info:\n"
-    b'  version: "1.0.0"\n'
-    b"  title: Foo API\n"
-    b"paths:\n"
-    b"  /foo:\n"
-    b"    get:\n"
-    b"      responses:\n"
-    b"        200:\n"
-    b"          description: A foo\n"
-)
+MINIMAL_DOCUMENT = b"""
+    openapi: "3.0.0"
+    info:
+      version: "1.0.0"
+      title: Foo API
+    paths:
+      /foo:
+        get:
+          responses:
+            200:
+              description: A foo
+"""
 
 
 def test_add_spec_view():

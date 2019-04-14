@@ -32,6 +32,7 @@ pytest = "*"
 pytest-cov = "*"
 pytest-randomly = "*"
 twine = "*"
+webtest = "*"
 
 [packages]
 "pyramid-openapi3" = {editable = true, path = "."}
