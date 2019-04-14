@@ -53,8 +53,7 @@ filter = "."
 # additional arguments for pytest
 args = ""
 pytest_args = -k $(filter) $(args)
-COVERAGE_THRESHOLD = 81
-coverage_args = --cov=pyramid_openapi3 --cov-branch --cov-report html --cov-report xml:cov.xml --cov-report term-missing --cov-fail-under=$(COVERAGE_THRESHOLD)
+coverage_args = --cov=pyramid_openapi3 --cov-branch --cov-report html --cov-report xml:cov.xml --cov-report term-missing --cov-fail-under=100
 
 .PHONY: unit
 unit: .installed

@@ -107,7 +107,7 @@ def add_explorer_view(
         def explorer_view(request):
             settings = config.registry.settings
             if settings.get("pyramid_openapi3") is None:
-                ConfigurationError(
+                raise ConfigurationError(
                     "You need to call config.pyramid_openapi3_spec for explorer to work."
                 )
             with open(resolved_template.abspath()) as f:

@@ -16,7 +16,7 @@ def test_mapped_values_request():
     """Test that values are correctly mapped from pyramid's Request."""
 
     pyramid_request = DummyRequest(path="/foo")
-    pyramid_request.matched_route = DummyRoute(name="foo", pattern="{foo}")
+    pyramid_request.matched_route = DummyRoute(name="foo", pattern="/foo")
     pyramid_request.matchdict["foo"] = "bar"
     pyramid_request.headers["X-Foo"] = "Bar"
     pyramid_request.cookies["tasty-foo"] = "tasty-bar"
@@ -32,7 +32,7 @@ def test_mapped_values_request():
     assert openapi_request.host_url == "http://example.com"
     assert openapi_request.path == "/foo"
     assert openapi_request.method == "get"
-    assert openapi_request.path_pattern == "{foo}"
+    assert openapi_request.path_pattern == "/foo"
     assert openapi_request.body == ""
     assert openapi_request.mimetype == "text/html"
     assert openapi_request.parameters == {
