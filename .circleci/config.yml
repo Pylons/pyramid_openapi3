@@ -40,9 +40,9 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+            - v4-dependencies-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v3-dependencies-
+            - v4-dependencies-
 
       - run:
           name: install dependencies
@@ -54,12 +54,18 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v4-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run tests
           command: |
             make tests
+
+      - run:
+          name: run tests for the singlefile example
+          command: |
+            cd examples/singlefile
+            pipenv run python -m unittest app.py
 
   release:
     <<: *defaults
@@ -69,9 +75,9 @@ jobs:
 
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+            - v4-dependencies-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v3-dependencies-
+            - v4-dependencies-
 
       - run:
           name: install dependencies
@@ -84,7 +90,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v4-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: verify git tag vs. version
