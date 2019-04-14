@@ -19,8 +19,11 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
+with open(os.path.join(here, "CHANGELOG.md"), encoding="utf-8") as f:
+    long_description += "\n\n" + f.read()
 
-VERSION = "0.2.6"
+
+VERSION = "0.2.7"
 
 
 class VerifyVersionCommand(install):
