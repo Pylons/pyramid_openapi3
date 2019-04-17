@@ -78,12 +78,14 @@ def myview(request):
 For requests, `request.openapi_validated` is available with two fields: `parameters` and `body`.
 For responses, if the payload does not match the API document, an exception is raised.
 
-## Demo
+## Demo / Examples
 
-    $ pip install -e .[dev]
-    $ python demo.py
+There are two examples provided with this package:
+* A fairly simple [single-file app providing a Hello World API](https://github.com/niteoweb/pyramid_openapi3/tree/master/examples/singlefile).
+* A slightly more [built-out app providing a TODO app API](https://github.com/niteoweb/pyramid_openapi3/tree/master/examples/todoapp).
 
-There's also a self-contained [TODO app example](https://github.com/zupo/minimal_openapi).
+All examples come with tests that exhibit pyramid_openapi's error handling and validation capabilities.
+
 
 ## Design defense
 
@@ -134,17 +136,15 @@ A couple of projects that use pyramid_openapi3 in production:
 - [x] 100% test coverage.
 - [x] How to contribute.
 - [x] Add Changelog.
-- [x] How to release (`vim setup.py && git add setup.py && git ci -m "release 0.2.0" && git tag 0.2.0 && git push --tags`
+- [x] How to release
 - [ ] Document that `pyramid_openapi3_validation_error_view()` is [registered without permissions](https://github.com/niteoweb/pyramid_openapi3/pull/6#discussion_r272651906).
-- [ ] Move demo.py into examples/singlefile/
-- [ ] Move https://github.com/zupo/minimal_openapi into examples/minimal/
+- [x] Move demo.py into examples/singlefile/
+- [x] Move https://github.com/zupo/minimal_openapi into examples/minimal/
 - [ ] Move this repo to https://github.com/Pylons organization.
 - [ ] Documentation how to validate Enums, Dataclases, PyDantic models against schema.
-- [ ] Create a http://todobackend.com/ example.
 - [ ] Create a https://realworld.io/ example.
 - [ ] Add to https://trypyramid.com/extending-pyramid.html.
 - [x] Add to https://github.com/p1c2u/openapi-core.
-- [ ] Add to https://github.com/p1c2u/openapi-spec-validator.
 - [ ] Add to https://github.com/uralbash/awesome-pyramid.
 - [ ] Add to https://github.com/vinta/awesome-python.
 - [ ] Announcement blog post.
