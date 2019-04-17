@@ -1,0 +1,80 @@
+openapi: "3.0.0"
+
+info:
+  version: "1.0.0"
+  title: A simple Todo app API
+
+paths:
+
+  /:
+
+    get:
+      summary: List of my TODO items
+      responses:
+        '200':
+          description: A list of my TODO items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Item"
+
+    post:
+      summary: Create a TODO item
+      operationId: todo.create
+      requestBody:
+        required: true
+        description: Data for creating a new TODO item
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+
+      responses:
+        '200':
+          description: Success message.
+          content:
+            application/json:
+              schema:
+                type: string
+
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+
+components:
+
+  schemas:
+
+    Item:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          maxLength: 40
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+        exception:
+          type: string
+
+  responses:
+
+    BadRequest:
+      description: OpenAPI request/response validation failed
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Error"

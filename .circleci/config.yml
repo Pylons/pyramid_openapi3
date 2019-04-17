@@ -67,6 +67,12 @@ jobs:
             cd examples/singlefile
             pipenv run python -m unittest app.py
 
+      - run:
+          name: run tests for the todoapp example
+          command: |
+            cd examples/todoapp
+            pipenv run python -m unittest tests.py
+
   release:
     <<: *defaults
 
