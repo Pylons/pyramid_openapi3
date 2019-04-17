@@ -1,5 +1,11 @@
 ## Changelog
 
+0.2.8 (2019-04-17)
+------------------
+
+* Fix for double-registering views. [zupo]
+* Add a single-file example. [zupo]
+
 
 0.2.7 (2019-04-14)
 ------------------
