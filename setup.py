@@ -52,7 +52,7 @@ setup(
     license="MIT",
     long_description_content_type="text/markdown",
     url="https://github.com/niteoweb/pyramid_openapi3",
-    author="Niteo Gmbh",
+    author="niteo.co",
     author_email="info@niteo.co",
     classifiers=[
         "Development Status :: 4 - Beta",
