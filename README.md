@@ -39,7 +39,7 @@
 
 ## Peace of Mind
 
-The reason this package exists is to give you peace of mind when providing a RESTful API with your Pyramid app. Instead of chasing down preventable bugs and saying sorry to consumers, you can focus on more important things in life.
+The reason this package exists is to give you peace of mind when providing a RESTful API. Instead of chasing down preventable bugs and saying sorry to consumers, you can focus on more important things in life.
 
 - Your **API documentation is never out-of-date**, since it is generated out of the API document that you write.
 - The documentation comes with **_try-it-out_ examples** for every endpoint in your API. You don't have to provide (and maintain) `curl` commands to showcase how your API works. Users can try it themselves, right in their browsers.
@@ -47,6 +47,7 @@ The reason this package exists is to give you peace of mind when providing a RES
 - Automatic request **payload validation and sanitization**. Your views do not require any code for validation and input sanitation. Your view code only deals with business logic. Tons of tests never need to be written since every request, and its payload, is validated against your API document before it reaches your view code.
 - Your API **responses always match your API document**. Every response from your view is validated against your document and a `500 Internal Server Error` is returned if the response does not exactly match what your document says the output of a certain API endpoint should be.
 - **A single source of truth**. Because of the checks outlined above you can be sure that whatever your API document says is in fact what is going on in reality. You have a single source of truth to consult when asking an API related question, such as "Remind me again, which fields does the endpoint /user/info return?".
+- Based on [Pyramid](https://trypyramid.com), a **mature Python Web framework**. Companies such as Mozilla, Yelp, RollBar and SurveyMonkey [trust Pyramid](https://trypyramid.com/community-powered-by-pyramid.html), and the new [pypi.org](https://github.com/pypa/warehouse) runs on Pyramid too. Pyramid is thoroughly [tested](https://travis-ci.org/Pylons/pyramid) and [documented](http://docs.pylonsproject.org/projects/pyramid/en/latest/), providing flexibility, performance, and a large ecosystem of [high-quality add-ons](https://trypyramid.com/extending-pyramid.html).
 
 ## Features
 
