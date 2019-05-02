@@ -145,7 +145,7 @@ A couple of projects that use pyramid_openapi3 in production:
 - [ ] Create a https://realworld.io/ example.
 - [ ] Add to https://trypyramid.com/extending-pyramid.html.
 - [x] Add to https://github.com/p1c2u/openapi-core.
-- [ ] Add to https://github.com/uralbash/awesome-pyramid.
+- [x] Add to https://github.com/uralbash/awesome-pyramid.
 - [ ] Add to https://github.com/vinta/awesome-python.
 - [ ] Announcement blog post.
 - [ ] Announce to https://groups.google.com/forum/#!forum/pylons-discuss.
