@@ -4,7 +4,7 @@ All projects under the Pylons Project, including this one, follow the guidelines
 
 You can contribute to this project in several ways.
 
-*   [File an Issue on GitHub](https://github.com/niteoweb/pyramid_openapi3/issues)
+*   [File an Issue on GitHub](https://github.com/Pylons/pyramid_openapi3/issues)
 *   Fork this project, create a new branch, commit your suggested change, and push to your fork on GitHub.
     When ready, submit a pull request for consideration.
     [GitHub Flow](https://guides.github.com/introduction/flow/index.html) describes the workflow process and why it's a good practice.
@@ -14,9 +14,9 @@ You can contribute to this project in several ways.
 
 Git branches and their purpose and status at the time of this writing are listed below.
 
-*   [master](https://github.com/niteoweb/pyramid_openapi3/) - The branch which should always be *deployable*. The default branch on GitHub.
+*   [master](https://github.com/Pylons/pyramid_openapi3/) - The branch which should always be *deployable*. The default branch on GitHub.
 *   For development, create a new branch. If changes on your new branch are accepted, they will be merged into the master branch and deployed.
 
 ## Prerequisites
 
-Follow the instructions in [README.rst](https://github.com/niteoweb/pyramid_openapi3/) to install the tools needed to run the project.
+Follow the instructions in [README.rst](https://github.com/Pylons/pyramid_openapi3/) to install the tools needed to run the project.
