@@ -51,7 +51,7 @@ setup(
     long_description=long_description,
     license="MIT",
     long_description_content_type="text/markdown",
-    url="https://github.com/niteoweb/pyramid_openapi3",
+    url="https://github.com/Pylons/pyramid_openapi3",
     author="niteo.co",
     author_email="info@niteo.co",
     classifiers=[

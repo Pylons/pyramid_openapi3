@@ -1,17 +1,15 @@
 ## Validate [Pyramid](https://trypyramid.com) views against an [OpenAPI 3.0](https://swagger.io/specification/) document
 
-> **Warning: This project is currently in beta. Stable release planned in May 2019. If you're curious about the progress, ping `zupo` on [irc.freenode.net](https://webchat.freenode.net/?channels=niteo).**
-
 <p align="center">
-  <img height="200" src="https://github.com/niteoweb/pyramid_openapi3/blob/master/header.jpg?raw=true" />
+  <img height="200" src="https://github.com/Pylons/pyramid_openapi3/blob/master/header.jpg?raw=true" />
 </p>
 
 <p align="center">
-  <a href="https://circleci.com/gh/niteoweb/pyramid_openapi3">
+  <a href="https://circleci.com/gh/Pylons/pyramid_openapi3">
     <img alt="CircleCI for pyramid_openapi3 (master branch)"
-         src="https://circleci.com/gh/niteoweb/pyramid_openapi3.svg?style=shield">
+         src="https://circleci.com/gh/Pylons/pyramid_openapi3.svg?style=shield">
   </a>
-  <a href="https://github.com/niteoweb/pyramid_openapi3/blob/master/Makefile#L56">
+  <a href="https://github.com/Pylons/pyramid_openapi3/blob/master/Makefile#L56">
     <img alt="Test coverage (master branch)"
          src="https://img.shields.io/badge/coverage-100%25-brightgreen.svg">
   </a>
@@ -23,13 +21,13 @@
     <img alt="Supported Python versions"
          src="https://img.shields.io/pypi/pyversions/pyramid_openapi3.svg">
   </a>
-  <a href="https://github.com/niteoweb/pyramid_openapi3/blob/master/LICENSE">
+  <a href="https://github.com/Pylons/pyramid_openapi3/blob/master/LICENSE">
     <img alt="License: MIT"
          src="https://img.shields.io/badge/License-MIT-yellow.svg">
   </a>
-  <a href="https://github.com/niteoweb/pyramid_openapi3/graphs/contributors">
+  <a href="https://github.com/Pylons/pyramid_openapi3/graphs/contributors">
     <img alt="Built by these great folks!"
-         src="https://img.shields.io/github/contributors/niteoweb/pyramid_openapi3.svg">
+         src="https://img.shields.io/github/contributors/Pylons/pyramid_openapi3.svg">
   </a>
   <a href="https://webchat.freenode.net/?channels=pyramid">
     <img alt="Talk to us in #pyramid on Freenode IRC"
@@ -82,10 +80,12 @@ For responses, if the payload does not match the API document, an exception is r
 ## Demo / Examples
 
 There are two examples provided with this package:
-* A fairly simple [single-file app providing a Hello World API](https://github.com/niteoweb/pyramid_openapi3/tree/master/examples/singlefile).
-* A slightly more [built-out app providing a TODO app API](https://github.com/niteoweb/pyramid_openapi3/tree/master/examples/todoapp).
+* A fairly simple [single-file app providing a Hello World API](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/singlefile).
+* A slightly more [built-out app providing a TODO app API](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/todoapp).
 
-All examples come with tests that exhibit pyramid_openapi's error handling and validation capabilities.
+Both examples come with tests that exhibit pyramid_openapi's error handling and validation capabilities.
+
+A **fully built-out app**, with 100% test coverage, providing a [RealWorld.io](https://realworld.io) API is available at [niteoweb/pyramid-realworld-example-app](https://github.com/niteoweb/pyramid-realworld-example-app). It is a Heroku-deployable Pyramid app that provides an API for a Medium.com-like social app. You are encouraged to use it as a scaffold for your next project.
 
 
 ## Design defense
@@ -120,34 +120,3 @@ These packages tackle the same problem-space:
 A couple of projects that use pyramid_openapi3 in production:
 
 - [WooCart API](https://app.woocart.com/api/v1/) - Users' control panel for WooCart Managed WooCommerce service.
-
-## TODO
-
-- [x] Makefile.
-- [x] Flake8.
-- [x] Black.
-- [x] mypy.
-- [x] codespell.
-- [x] pre-commit.
-- [x] Testing framework.
-- [x] CircleCI integration.
-- [x] Beta PyPI release.
-- [x] Go through all docstrings.
-- [x] Automatic PyPI releases for tags, via CircleCI.
-- [x] 100% test coverage.
-- [x] How to contribute.
-- [x] Add Changelog.
-- [x] How to release
-- [ ] Document that `pyramid_openapi3_validation_error_view()` is [registered without permissions](https://github.com/niteoweb/pyramid_openapi3/pull/6#discussion_r272651906).
-- [x] Move demo.py into examples/singlefile/
-- [x] Move https://github.com/zupo/minimal_openapi into examples/minimal/
-- [ ] Move this repo to https://github.com/Pylons organization.
-- [ ] Documentation how to validate Enums, Dataclases, PyDantic models against schema.
-- [ ] Create a https://realworld.io/ example.
-- [ ] Add to https://trypyramid.com/extending-pyramid.html.
-- [x] Add to https://github.com/p1c2u/openapi-core.
-- [x] Add to https://github.com/uralbash/awesome-pyramid.
-- [ ] Add to https://github.com/vinta/awesome-python.
-- [ ] Announcement blog post.
-- [ ] Announce to https://groups.google.com/forum/#!forum/pylons-discuss.
-- [ ] Announce via Twitter https://twitter.com/pylonsproject.
