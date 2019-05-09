@@ -1,10 +1,9 @@
 """A single-file demo of pyramid_openapi3.
 
 Usage:
-* git clone https://github.com/niteoweb/pyramid_openapi3.git
-* cd pyramid_openapi3/examples/singlefile
-* virtualenv -p python3.7 .
-* source bin/activate
+* mkdir my-openapi
+* cd my-openapi
+* wget https://raw.githubusercontent.com/Pylons/pyramid_openapi3/master/examples/singlefile/app.py
 * pip install pyramid_openapi3
 * python app.py
 """
