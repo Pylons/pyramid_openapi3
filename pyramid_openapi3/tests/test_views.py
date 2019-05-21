@@ -31,7 +31,7 @@ MINIMAL_DOCUMENT = b"""
 """
 
 
-def test_add_spec_view():
+def test_add_spec_view() -> None:
     """Test registration of a view that serves the openapi document."""
 
     with testConfig() as config:
@@ -67,7 +67,7 @@ def test_add_spec_view():
             assert view(request=None, context=None).body == MINIMAL_DOCUMENT
 
 
-def test_add_validation_error_view():
+def test_add_validation_error_view() -> None:
     """Test registration of a view for rendering validation errors."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -78,7 +78,7 @@ def test_add_validation_error_view():
         )
 
 
-def test_add_explorer_view():
+def test_add_explorer_view() -> None:
     """Test registration of a view serving the Swagger UI."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -102,7 +102,7 @@ def test_add_explorer_view():
         assert b"<title>Swagger UI</title>" in response.body
 
 
-def test_explorer_view_missing_spec():
+def test_explorer_view_missing_spec() -> None:
     """Test graceful failure if explorer view is not registered."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -129,7 +129,7 @@ class DummyRoute:
     pattern: str
 
 
-def test_openapi_view():
+def test_openapi_view() -> None:
     """Test registration a an openapi view."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -143,8 +143,8 @@ def test_openapi_view():
             )
 
         config.add_route("foo", "/foo")
-        view = lambda *arg: "bar"  # noqa: E731
-        config.add_view(openapi=True, renderer="json", view=view, route_name="foo")
+        view_func = lambda *arg: "bar"  # noqa: E731
+        config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
         request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
         view = config.registry.adapters.registered(
@@ -152,12 +152,13 @@ def test_openapi_view():
         )
         request = DummyRequest(config=config)
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        response = view(request=request, context=None)
+        context = None
+        response = view(context, request)
 
         assert response.json == "bar"
 
 
-def test_openapi_view_validation_error():
+def test_openapi_view_validation_error() -> None:
     """Test registration a an openapi view."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -188,8 +189,8 @@ def test_openapi_view_validation_error():
             )
 
         config.add_route("foo", "/foo")
-        view = lambda *arg: "foo"  # noqa: E731
-        config.add_view(openapi=True, renderer="json", view=view, route_name="foo")
+        view_func = lambda *arg: "foo"  # noqa: E731  # pragma: no branch
+        config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
         validation_view = lambda *arg: "validation error"  # noqa: E731
         config.add_view(view=validation_view, name="validation_view", renderer="json")
@@ -201,12 +202,13 @@ def test_openapi_view_validation_error():
         )
         request = DummyRequest(config=config)
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        response = view(request=request, context=None)
+        context = None
+        response = view(context, request)
 
         assert response.json == "validation error"
 
 
-def test_openapi_view_validate_HTTPExceptions():
+def test_openapi_view_validate_HTTPExceptions() -> None:
     """Test that raised HTTPExceptions are validated against the spec.
 
     I.e. create a dummy view that raises 403 Forbidden. The openapi integration
@@ -225,10 +227,10 @@ def test_openapi_view_validate_HTTPExceptions():
             )
 
         config.add_route("foo", "/foo")
-        view = lambda *arg: (_ for _ in ()).throw(  # noqa: E731
+        view_func = lambda *arg: (_ for _ in ()).throw(  # noqa: E731
             exception_response(403, json_body="Forbidden")
         )
-        config.add_view(openapi=True, renderer="json", view=view, route_name="foo")
+        config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
         request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
         view = config.registry.adapters.registered(
@@ -236,8 +238,9 @@ def test_openapi_view_validate_HTTPExceptions():
         )
         request = DummyRequest(config=config)
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
+        context = None
 
         with pytest.raises(InvalidResponse) as exc:
-            view(request=request, context=None)
+            view(context, request)
 
         assert str(exc.value) == "Unknown response http status: 403"

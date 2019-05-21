@@ -7,17 +7,22 @@ from openapi_core.shortcuts import RequestValidator
 from openapi_core.shortcuts import ResponseValidator
 from openapi_spec_validator import validate_spec
 from openapi_spec_validator.schemas import read_yaml_file
+from pyramid.config import Configurator
 from pyramid.config import PHASE0_CONFIG
+from pyramid.config.views import ViewDeriverInfo
 from pyramid.exceptions import ConfigurationError
 from pyramid.httpexceptions import HTTPException
 from pyramid.path import AssetResolver
+from pyramid.request import Request
 from pyramid.response import FileResponse
 from pyramid.response import Response
 from pyramid.view import render_view_to_response
 from string import Template
 
+import typing as t
 
-def includeme(config):
+
+def includeme(config: Configurator) -> None:
     """Pyramid knob."""
     config.add_view_deriver(openapi_view)
     config.add_directive("pyramid_openapi3_add_formatter", add_formatter)
@@ -28,7 +33,10 @@ def includeme(config):
     )
 
 
-def openapi_view(view, info):
+View = t.Callable[[t.Any, Request], Response]
+
+
+def openapi_view(view: View, info: ViewDeriverInfo) -> t.Optional[View]:
     """View deriver that takes care of request/response validation.
 
     If `openapi=True` is passed to `@view_config`, this decorator will:
@@ -85,12 +93,12 @@ openapi_view.options = ("openapi",)  # type: ignore
 
 
 def add_explorer_view(
-    config,
-    route="/docs/",
-    route_name="pyramid_openapi3.explorer",
-    template="static/index.html",
-    ui_version="3.17.1",
-):
+    config: Configurator,
+    route: str = "/docs/",
+    route_name: str = "pyramid_openapi3.explorer",
+    template: str = "static/index.html",
+    ui_version: str = "3.17.1",
+) -> None:
     """Serve Swagger UI at `route` url path.
 
     :param route: URL path where to serve
@@ -124,7 +132,7 @@ def add_explorer_view(
     config.action(("pyramid_openapi3_add_explorer",), register, order=PHASE0_CONFIG)
 
 
-def add_formatter(config, name, func):
+def add_formatter(config: Configurator, name: str, func: t.Callable):
     """Add support for configuring formatters."""
     config.registry.settings.setdefault("pyramid_openapi3_formatters", {})
     reg = config.registry.settings["pyramid_openapi3_formatters"]
@@ -132,8 +140,11 @@ def add_formatter(config, name, func):
 
 
 def add_spec_view(
-    config, filepath, route="/openapi.yaml", route_name="pyramid_openapi3.spec"
-):
+    config: Configurator,
+    filepath: str,
+    route: str = "/openapi.yaml",
+    route_name: str = "pyramid_openapi3.spec",
+) -> None:
     """Serve and register OpenApi 3.0 specification file.
 
     :param filepath: absolute/relative path to the specification file
@@ -141,13 +152,13 @@ def add_spec_view(
     :param route_name: Route name under which specification file will be served
     """
 
-    def register():
+    def register() -> None:
         spec_dict = read_yaml_file(filepath)
 
         validate_spec(spec_dict)
         spec = create_spec(spec_dict)
 
-        def spec_view(request):
+        def spec_view(request: Request) -> FileResponse:
             return FileResponse(filepath, request=request, content_type="text/yaml")
 
         config.add_route(route_name, route)
@@ -166,10 +177,10 @@ def add_spec_view(
     config.action(("pyramid_openapi3_spec",), register, order=PHASE0_CONFIG)
 
 
-def add_validation_error_view(config, view_name):
+def add_validation_error_view(config: Configurator, view_name: str) -> None:
     """Use this to register a view for rendering validation errors."""
 
-    def register():
+    def register() -> None:
         config.registry._pyramid_openapi3_validation_view_name = view_name  # noqa: SF01
 
     config.action(

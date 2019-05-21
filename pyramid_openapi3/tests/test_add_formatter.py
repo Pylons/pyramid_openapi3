@@ -4,7 +4,7 @@ from pyramid.testing import DummyRequest
 from pyramid.testing import testConfig
 
 
-def test_add_formatter():
+def test_add_formatter() -> None:
     """Test registration of a custom formatter."""
 
     with testConfig() as config:
