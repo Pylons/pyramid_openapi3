@@ -110,6 +110,7 @@ You need to have [pipenv](https://pipenv.readthedocs.io/) and Python 3.7 install
 
 These packages tackle the same problem-space:
 
+- [pyramid_oas3](https://github.com/kazuki/pyramid-oas3) seems to do things very similarly to pyramid_openapi3, but the documentation is not in English and we sadly can't fully understand what it does just reading the code.
 - [pyramid_swagger](https://github.com/striglia/pyramid_swagger) does a similar
   thing, but for Swagger 2.0 documents.
 - [connexion](https://github.com/zalando/connexion) takes the same "write spec first, code second" approach as pyramid_openapi3, but is based on Flask.
