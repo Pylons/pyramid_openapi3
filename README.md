@@ -113,6 +113,7 @@ These packages tackle the same problem-space:
 - [pyramid_swagger](https://github.com/striglia/pyramid_swagger) does a similar
   thing, but for Swagger 2.0 documents.
 - [connexion](https://github.com/zalando/connexion) takes the same "write spec first, code second" approach as pyramid_openapi3, but is based on Flask.
+- [bottle-swagger](https://github.com/ampedandwired/bottle-swagger) takes the same "write spec first, code second" approach too, but is based on Bottle.
 - [pyramid_apispec](https://github.com/ergo/pyramid_apispec) uses generation with
   help of apispec and marshmallow validation library. See above [why we prefer validation instead of generation](#why---design-defense).
 
