@@ -3,6 +3,9 @@ url = "https://pypi.org/simple/"
 verify_ssl = true
 name = "pypi"
 
+[packages]
+"pyramid-openapi3" = {editable = true, path = "."}
+
 [dev-packages]
 black = "==19.3b0"
 codespell = "*"
@@ -33,6 +36,3 @@ pytest-cov = "*"
 pytest-randomly = "*"
 twine = "*"
 webtest = "*"
-
-[packages]
-"pyramid-openapi3" = {editable = true, path = "."}
