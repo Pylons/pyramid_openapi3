@@ -12,7 +12,7 @@ class DummyRoute:
     pattern: str
 
 
-def test_mapped_values_request():
+def test_mapped_values_request() -> None:
     """Test that values are correctly mapped from pyramid's Request."""
 
     pyramid_request = DummyRequest(path="/foo")
@@ -43,7 +43,7 @@ def test_mapped_values_request():
     }
 
 
-def test_no_matched_route():
+def test_no_matched_route() -> None:
     """Test path_pattern when no route is matched."""
     pyramid_request = DummyRequest(path="/foo")
     pyramid_request.matched_route = None
@@ -52,7 +52,7 @@ def test_no_matched_route():
     assert openapi_request.path_pattern == "/foo"
 
 
-def test_mapped_values_response():
+def test_mapped_values_response() -> None:
     """Test that values are correctly mapped from pyramid's Response."""
     pyramid_request = DummyRequest()
 

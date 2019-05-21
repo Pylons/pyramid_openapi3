@@ -9,10 +9,10 @@
     <img alt="CircleCI for pyramid_openapi3 (master branch)"
          src="https://circleci.com/gh/Pylons/pyramid_openapi3.svg?style=shield">
   </a>
-  <a href="https://github.com/Pylons/pyramid_openapi3/blob/master/Makefile#L56">
-    <img alt="Test coverage (master branch)"
-         src="https://img.shields.io/badge/coverage-100%25-brightgreen.svg">
-  </a>
+  <img alt="Test coverage (master branch)"
+       src="https://img.shields.io/badge/tests_coverage-100%25-brightgreen.svg">
+  <img alt="Test coverage (master branch)"
+       src="https://img.shields.io/badge/types_coverage-100%25-brightgreen.svg">
   <a href="https://pypi.org/project/pyramid_openapi3/">
     <img alt="latest version of pyramid_openapi3 on PyPI"
          src="https://img.shields.io/pypi/v/pyramid_openapi3.svg">
