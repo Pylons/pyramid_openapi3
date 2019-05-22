@@ -1,5 +1,14 @@
 ## Changelog
 
+0.3.0 (2019-05-22)
+------------------
+
+* Added type hints. [zupo]
+* Added additional references to other packages covering the same problem-space. [zupo]
+* Moved repo to Pylons GitHub organization. [stevepiercy, zupo]
+* Added a more built-out TODO-app example. [zupo]
+
+
 0.2.8 (2019-04-17)
 ------------------
 
