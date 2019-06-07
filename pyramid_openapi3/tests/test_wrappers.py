@@ -36,8 +36,8 @@ def test_mapped_values_request() -> None:
     assert openapi_request.body == ""
     assert openapi_request.mimetype == "text/html"
     assert openapi_request.parameters == {
-        "cookies": {"tasty-foo": "tasty-bar"},
-        "headers": {"X-Foo": "Bar"},
+        "cookie": {"tasty-foo": "tasty-bar"},
+        "header": {"X-Foo": "Bar"},
         "path": {"foo": "bar"},
         "query": {},
     }
