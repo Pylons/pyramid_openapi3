@@ -12,6 +12,7 @@ from pyramid.interfaces import IView
 from pyramid.interfaces import IViewClassifier
 from pyramid.testing import DummyRequest
 from pyramid.testing import testConfig
+from pyramid_openapi3.exceptions import RequestValidationError
 from zope.interface import Interface
 
 import pytest
@@ -181,3 +182,58 @@ def test_openapi_view_validate_HTTPExceptions() -> None:
 
         with pytest.raises(HTTPForbidden):
             view(context, request)
+
+
+def test_path_parameters() -> None:
+    """Test parameters in path are validated correctly."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+        with tempfile.NamedTemporaryFile() as document:
+            document.write(
+                b'openapi: "3.0.0"\n'
+                b"info:\n"
+                b'  version: "1.0.0"\n'
+                b"  title: Foo API\n"
+                b"paths:\n"
+                b"  /foo:\n"
+                b"    parameters:\n"
+                b"      - name: foo\n"
+                b"        in: query\n"
+                b"        required: true\n"
+                b"        schema:\n"
+                b"          type: integer\n"
+                b"    get:\n"
+                b"      responses:\n"
+                b"        200:\n"
+                b"          description: A foo\n"
+            )
+            document.seek(0)
+
+            config.pyramid_openapi3_spec(
+                document.name, route="/foo.yaml", route_name="foo_api_spec"
+            )
+
+        config.add_route("foo", "/foo")
+        view_func = lambda *arg: "foo"  # noqa: E731  # pragma: no branch
+        config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
+
+        request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
+        view = config.registry.adapters.registered(
+            (IViewClassifier, request_interface, Interface), IView, name=""
+        )
+        # Test validation fails
+        request = DummyRequest(config=config)
+        request.matched_route = DummyRoute(name="foo", pattern="/foo")
+        context = None
+        with pytest.raises(RequestValidationError) as exc:
+            response = view(context, request)
+
+        assert str(exc.value) == "Missing required parameter: foo"
+
+        # Test validation succeeds
+        request = DummyRequest(config=config, params={"foo": "1"})
+        request.matched_route = DummyRoute(name="foo", pattern="/foo")
+        context = None
+        response = view(context, request)
+
+        assert response.json == "foo"
