@@ -41,8 +41,8 @@ class PyramidOpenAPIRequest(BaseOpenAPIRequest):
         return {
             "path": self.request.matchdict,
             "query": self.request.GET,
-            "headers": self.request.headers,
-            "cookies": self.request.cookies,
+            "header": self.request.headers,
+            "cookie": self.request.cookies,
         }
 
     @property
