@@ -19,8 +19,8 @@ def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]
 
     The only problem here is, that when response validation fails, we have
     to return some exception response, with an unknown content type.
-    The advantage is, that this are server errors, and if 500 errors are
-    only possibly due to response validation errors we don't need to document
+    The advantage is, that these are server errors, and if 500 errors are
+    only possible due to response validation errors we don't need to document
     them in the openapi spec file.
     """
 
