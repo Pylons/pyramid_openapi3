@@ -38,6 +38,8 @@ OPENAPI_DOCUMENT = b"""
           responses:
             200:
               description: Say hello
+            400:
+              description: Bad Request
 """
 
 
@@ -78,10 +80,6 @@ if __name__ == "__main__":
 # Usage: python -m unittest app.py    #
 #######################################
 
-from openapi_core.schema.parameters.exceptions import InvalidParameterValue  # noqa
-from openapi_core.schema.parameters.exceptions import MissingRequiredParameter  # noqa
-from openapi_core.schema.responses.exceptions import InvalidResponse  # noqa
-
 
 class FunctionalTests(unittest.TestCase):
     """A suite of tests that make actual requests to a running app."""
@@ -115,36 +113,31 @@ class FunctionalTests(unittest.TestCase):
         """Saying hello to admin should fail with 403 Forbidden.
 
         But because we have not defined how a 403 response should look in
-        OPENAPI_DOCUMENT, we instead get a InvalidResponse exception.
+        OPENAPI_DOCUMENT, we instead get an error 500 response, because it is
+        the servers fault to generate an invalid response.
 
         This is to prevent us from forgetting to define all possible responses
         in our opeanapi document.
         """
-        try:
-            self.testapp.get("/hello?name=admin", status=200)
-        except InvalidResponse as exc:
-            self.assertEqual(str(exc), "Unknown response http status: 403")
+        res = self.testapp.get("/hello?name=admin", status=500)
+        self.assertIn("Unknown response http status: 403", res.text)
 
     def test_name_missing(self):
         """Our view code does not even get called is request is not per-spec.
 
         We don't have to write (and test!) any validation code in our view!
         """
-        try:
-            self.testapp.get("/hello", status=200)
-        except MissingRequiredParameter as exc:
-            self.assertEqual(str(exc), "Missing required parameter: name")
+        res = self.testapp.get("/hello", status=400)
+        self.assertIn("Missing required parameter: name", res.text)
 
     def test_name_too_short(self):
         """A name that is too short is picked up by openapi-core validation.
 
         We don't have to write (and test!) any validation code in our view!
         """
-        try:
-            self.testapp.get("/hello?name=yo", status=200)
-        except InvalidParameterValue as exc:
-            self.assertEqual(
-                str(exc),
-                "Invalid parameter value for `name`: Value is shorter (2) "
-                "than the minimum length of 3",
-            )
+        res = self.testapp.get("/hello?name=yo", status=400)
+        self.assertIn(
+            "Invalid parameter value for `name`: Value is shorter (2) "
+            "than the minimum length of 3",
+            res.text,
+        )

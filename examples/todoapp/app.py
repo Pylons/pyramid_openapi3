@@ -5,9 +5,11 @@ from openapi_core.schema.exceptions import OpenAPIError
 from openapi_core.schema.exceptions import OpenAPIMappingError
 from pyramid.config import Configurator
 from pyramid.httpexceptions import exception_response
+from pyramid.httpexceptions import HTTPException
 from pyramid.request import Request
-from pyramid.traversal import DefaultRootFactory
+from pyramid.view import exception_view_config
 from pyramid.view import view_config
+from pyramid_openapi3.exceptions import RequestValidationError
 from wsgiref.simple_server import make_server
 
 import os
@@ -49,12 +51,12 @@ def post(request: Request) -> t.List[t.Dict["str", "str"]]:
     return "Item added."
 
 
-@view_config(name="openapi_validation_error")
+@exception_view_config(RequestValidationError, renderer="json")
 def openapi_validation_error(
-    context: DefaultRootFactory, request: Request
+    context: HTTPException, request: Request
 ) -> exception_response:
     """If there are errors when handling the request, return them as response."""
-    errors = [extract_error(err) for err in request.openapi_validated.errors]
+    errors = [extract_error(err) for err in context.errors]
     return exception_response(400, json_body=errors)
 
 
@@ -81,7 +83,6 @@ def app():
         config.pyramid_openapi3_spec(
             os.path.join(os.path.dirname(__file__), "openapi.yaml")
         )
-        config.pyramid_openapi3_validation_error_view("openapi_validation_error")
         config.pyramid_openapi3_add_explorer()
         config.add_route("todo", "/")
         config.scan(".")

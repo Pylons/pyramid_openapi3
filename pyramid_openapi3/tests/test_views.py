@@ -1,11 +1,11 @@
 """Tests views."""
 
 from dataclasses import dataclass
-from openapi_core.schema.responses.exceptions import InvalidResponse
 from openapi_core.shortcuts import RequestValidator
 from openapi_core.shortcuts import ResponseValidator
 from pyramid.exceptions import ConfigurationError
 from pyramid.httpexceptions import exception_response
+from pyramid.httpexceptions import HTTPForbidden
 from pyramid.interfaces import IRouteRequest
 from pyramid.interfaces import IRoutesMapper
 from pyramid.interfaces import IView
@@ -179,10 +179,5 @@ def test_openapi_view_validate_HTTPExceptions() -> None:
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
         context = None
 
-        from pyramid_openapi3 import ResponseValidationError
-
-        with pytest.raises(ResponseValidationError) as exc:
+        with pytest.raises(HTTPForbidden):
             view(context, request)
-
-        assert str(exc.value) == "Unknown response http status: 403"
-        assert isinstance(exc.value.errors[0], InvalidResponse)
