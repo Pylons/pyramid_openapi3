@@ -143,7 +143,9 @@ class TestRequestValidation(TestCase):
         """
         from pyramid.httpexceptions import HTTPBadRequest
 
-        self._add_view(lambda *arg: (_ for _ in ()).throw(HTTPBadRequest("failed")))
+        self._add_view(
+            lambda *arg: (_ for _ in ()).throw(HTTPBadRequest("bad foo request"))
+        )
         view = self._get_view()
         request = self._get_request(params={"bar": "1"})
         with self.assertRaises(HTTPBadRequest) as cm:
@@ -152,7 +154,7 @@ class TestRequestValidation(TestCase):
         # not enough of pyramid has been set up so we need to render the
         # exception response ourselves.
         response.prepare({"HTTP_ACCEPT": "application/json"})
-        self.assertIn("failed", response.json["message"])
+        self.assertIn("bad foo request", response.json["message"])
 
     def test_default_exception_view(self) -> None:
         """Test Pyramid default exception response view.
