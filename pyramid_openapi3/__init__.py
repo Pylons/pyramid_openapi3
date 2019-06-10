@@ -11,12 +11,13 @@ from pyramid.config import Configurator
 from pyramid.config import PHASE0_CONFIG
 from pyramid.config.views import ViewDeriverInfo
 from pyramid.exceptions import ConfigurationError
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPException
+from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.path import AssetResolver
 from pyramid.request import Request
 from pyramid.response import FileResponse
 from pyramid.response import Response
-from pyramid.view import render_view_to_response
 from string import Template
 
 import typing as t
@@ -28,9 +29,40 @@ def includeme(config: Configurator) -> None:
     config.add_directive("pyramid_openapi3_add_formatter", add_formatter)
     config.add_directive("pyramid_openapi3_add_explorer", add_explorer_view)
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
-    config.add_directive(
-        "pyramid_openapi3_validation_error_view", add_validation_error_view
-    )
+
+
+class RequestValidationError(HTTPBadRequest):
+
+    explanation = "Request validation failed."
+
+    def __init__(self, *args, errors, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.errors = errors
+        self.detail = self.message = "\n".join(str(e) for e in errors)
+
+    def __str__(self) -> str:
+        """Return str(self.detail) or self.explanation."""
+        return str(self.detail) if self.detail else self.explanation
+
+    def _json_formatter(self, status, body, title, environ) -> t.Dict:
+        return {"message": body, "code": status, "title": self.title}
+
+
+class ResponseValidationError(HTTPInternalServerError):
+
+    explanation = "Response validation failed."
+
+    def __init__(self, *args, errors, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.errors = errors
+        self.detail = self.message = "\n".join(str(e) for e in errors)
+
+    def __str__(self) -> str:
+        """Return str(self.detail) or self.explanation."""
+        return str(self.detail) if self.detail else self.explanation
+
+    def _json_formatter(self, status, body, title, environ) -> t.Dict:
+        return {"message": body, "code": status, "title": self.title}
 
 
 View = t.Callable[[t.Any, Request], Response]
@@ -54,26 +86,20 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> t.Optional[View]:
                 open_request
             )
 
+            raise_response = False
             try:
-                if request.openapi_validated.errors and getattr(
-                    request.registry, "_pyramid_openapi3_validation_view_name", None
-                ):
-                    # handle request errors
-                    view_name = (
-                        request.registry._pyramid_openapi3_validation_view_name  # noqa: SF01
+                if request.openapi_validated.errors:
+                    raise RequestValidationError(
+                        errors=request.openapi_validated.errors
                     )
-                    response = render_view_to_response(
-                        context, request, name=view_name, secure=False
-                    )
-                else:
-                    # Do the view
-                    request.openapi_validated.raise_for_errors()
-                    response = view(context, request)
+                # Do the view
+                response = view(context, request)
 
             except HTTPException as exc:
                 # If view raises one of the HTTPExceptions, catch it
                 # so that we can validate the response and hence make sure
                 # all possible responses are documented in openapi spec.
+                raise_response = True
                 response = exc
 
             # Validate response and raise if an error is found
@@ -81,8 +107,11 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> t.Optional[View]:
             result = settings["response_validator"].validate(
                 request=open_request, response=open_response
             )
-            result.raise_for_errors()
-
+            if result.errors:
+                raise ResponseValidationError(errors=result.errors)
+            if raise_response:
+                # raise if response has been raised before
+                raise response
             return response
 
         return wrapper_view
@@ -175,14 +204,3 @@ def add_spec_view(
         }
 
     config.action(("pyramid_openapi3_spec",), register, order=PHASE0_CONFIG)
-
-
-def add_validation_error_view(config: Configurator, view_name: str) -> None:
-    """Use this to register a view for rendering validation errors."""
-
-    def register() -> None:
-        config.registry._pyramid_openapi3_validation_view_name = view_name  # noqa: SF01
-
-    config.action(
-        ("pyramid_openapi3_validation_error_view",), register, order=PHASE0_CONFIG
-    )
