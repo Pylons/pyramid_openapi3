@@ -143,9 +143,10 @@ class TestRequestValidation(TestCase):
         """
         from pyramid.httpexceptions import HTTPBadRequest
 
-        self._add_view(
-            lambda *arg: (_ for _ in ()).throw(HTTPBadRequest("bad foo request"))
-        )
+        def view_func(*args):
+            raise HTTPBadRequest("bad foo request")
+
+        self._add_view(view_func)
         view = self._get_view()
         request = self._get_request(params={"bar": "1"})
         with self.assertRaises(HTTPBadRequest) as cm:
