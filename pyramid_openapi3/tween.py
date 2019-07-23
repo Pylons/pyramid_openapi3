@@ -47,6 +47,8 @@ def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]
                 response = request.invoke_exception_view(exc_info)
             except HTTPNotFound:
                 reraise(*exc_info)
+            finally:
+                del exc_info
             return response
         return response
 
