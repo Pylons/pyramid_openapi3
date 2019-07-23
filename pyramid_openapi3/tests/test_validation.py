@@ -228,6 +228,32 @@ class TestRequestValidation(TestCase):
         self.assertEqual(start_response.status, "200 OK")
         self.assertIn(b"foo", b"".join(response))
 
+    def test_nonapi_view_exception(self) -> None:
+        """Test View without openapi validation raises HTTPException.
+
+        Example view raises a defined response code.
+        """
+        from pyramid.httpexceptions import HTTPBadRequest
+
+        def view_func(*args):
+            raise HTTPBadRequest("bad foo request")
+
+        self._add_view(view_func, openapi=False)
+        self._add_default_exception_view()
+        # run request through router
+        router = Router(self.config.registry)
+        environ = {
+            "wsgi.url_scheme": "http",
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": "8080",
+            "REQUEST_METHOD": "GET",
+            "PATH_INFO": "/foo",
+        }
+        start_response = DummyStartResponse()
+        response = router(environ, start_response)
+        self.assertEqual(start_response.status, "400 Bad Request")
+        self.assertIn(b"foo", b"".join(response))
+
     def test_no_default_exception_view(self) -> None:
         """Test Response Validation Error without default exception view.
 
