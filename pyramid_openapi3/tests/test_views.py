@@ -280,9 +280,11 @@ def test_header_parameters() -> None:
         request = DummyRequest(config=config)
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
         context = None
-        response = view(context, request)
 
-        assert response.json == "validation error"
+        with pytest.raises(RequestValidationError) as exc:
+            response = view(context, request)
+
+        assert str(exc.value) == "Missing required parameter: foo"
 
         # Test validation succeeds
         request = DummyRequest(config=config, headers={"foo": "1"})
@@ -334,9 +336,10 @@ def test_cookie_parameters() -> None:
         request = DummyRequest(config=config)
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
         context = None
-        response = view(context, request)
+        with pytest.raises(RequestValidationError) as exc:
+            response = view(context, request)
 
-        assert response.json == "validation error"
+        assert str(exc.value) == "Missing required parameter: foo"
 
         # Test validation succeeds
         request = DummyRequest(config=config, cookies={"foo": "1"})
