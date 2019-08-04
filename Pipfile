@@ -40,3 +40,9 @@ pytest-cov = "*"
 pytest-randomly = "*"
 twine = "*"
 webtest = "*"
+
+[testing]
+pytest = "*"
+coverage = "*"
+pytest-cov = "*"
+pytest-xdist = "*"
