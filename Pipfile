@@ -4,13 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"pyramid-openapi3" = {editable = true, path = "."}
+pyramid-openapi3 = {editable = true, path = "."}
 
 [dev-packages]
 black = "==19.3b0"
 codespell = "*"
 docutils = "==0.15"
-dataclasses = {version="*", markers="python_version < '3.7'"}
 flake8 = "*"
 flake8-assertive = "*"
 flake8-blind-except = "*"
@@ -29,20 +28,12 @@ flake8-print = "*"
 flake8-self = "*"
 flake8-super-call = "*"
 flake8-tuple = "*"
-importlib-resources = {version="*", markers="python_version < '3.7'"}
 lxml = "*"
 mypy = "*"
 pre-commit = "*"
 pre-commit-hooks = "*"
 pydocstyle = "<4.0.0"
-pytest = "*"
-pytest-cov = "*"
+pyramid-openapi3 = {editable = true, path = ".", extras = ["testing"]}
 pytest-randomly = "*"
 twine = "*"
 webtest = "*"
-
-[testing]
-pytest = "*"
-coverage = "*"
-pytest-cov = "*"
-pytest-xdist = "*"
