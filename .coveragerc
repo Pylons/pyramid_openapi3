@@ -1,7 +1,18 @@
 [run]
+parallel = true
+source =
+    pyramid_openapi3
 branch = True
 
+[paths]
+source =
+    pyramid_openapi3
+    */site-packages/pyramid_openapi3
+
 [report]
+show_missing = true
+precision = 2
+
 # Regexes for lines to exclude from consideration
 exclude_lines =
     # Have to re-enable the standard pragma
