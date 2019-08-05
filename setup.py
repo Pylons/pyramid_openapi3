@@ -45,7 +45,6 @@ class VerifyVersionCommand(install):
 
 testing_extras = [
     "pytest >= 3.1.0",  # >= 3.1.0 so we can use pytest.param
-    "coverage",
     "pytest-cov",
     "pytest-xdist",
 ]
@@ -74,6 +73,6 @@ setup(
     packages=find_packages(exclude=["tests"]),
     package_data={"pyramid_openapi3": ["static/*.*"], "": ["LICENSE"]},
     install_requires=["openapi-core", "openapi-spec-validator", "pyramid"],
-    extras_require={"testing": testing_extras, ':python_version<"3.7"': ["importlib-resources"]},
+    extras_require={"testing": testing_extras},
     cmdclass={"verify": VerifyVersionCommand},
 )
