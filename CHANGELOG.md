@@ -1,5 +1,16 @@
 ## Changelog
 
+
+0.4.0 (2019-08-05)
+------------------
+
+* Fix handling parameters in Headers and Cookies. [gweis]
+
+* Introduce RequestValidationError and ResponseValidationError exceptions
+  in favor of pyramid_openapi3_validation_error_view directive.
+  [gweis]
+
+
 0.3.0 (2019-05-22)
 ------------------
 
