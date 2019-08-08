@@ -47,7 +47,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo pip install pipenv
+            sudo pip install pipenv tox
             pipenv install --dev --deploy
             touch .installed
 
@@ -60,6 +60,11 @@ jobs:
           name: run tests
           command: |
             make tests
+
+      - run:
+          name: run tests via tox
+          command: |
+            tox
 
       - run:
           name: run tests for the singlefile example
