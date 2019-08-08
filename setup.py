@@ -43,6 +43,7 @@ class VerifyVersionCommand(install):
             )
             sys.exit(info)
 
+
 testing_extras = [
     "pytest >= 3.1.0",  # >= 3.1.0 so we can use pytest.param
     "pytest-cov",
