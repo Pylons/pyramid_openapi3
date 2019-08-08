@@ -29,11 +29,6 @@ workflows:
             branches:
               ignore: /.*/
 
-dependencies:
-  override:
-    - pip install tox tox-pyenv
-    - pyenv local 3.7.3 3.8-dev
-
 jobs:
 
   build:
@@ -52,9 +47,10 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo pip install pipenv
+            sudo pip install pipenv tox tox-pyenv
             pipenv install --dev --deploy
             touch .installed
+            pyenv local 3.7.3 3.8-dev
 
       - save_cache:
           paths:
