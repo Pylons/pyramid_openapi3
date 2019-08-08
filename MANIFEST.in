@@ -1,2 +1,16 @@
 include *.md LICENSE
 graft pyramid_openapi3
+
+exclude Makefile
+exclude Pipfile
+exclude .circleci .coveragerc .editorconfig .flake8 .isort.cfg .mypy
+exclude tox.ini
+exclude *.jpg *.lock *.pws *.yaml
+exclude examples
+
+recursive-exclude .circleci *
+recursive-exclude .mypy *
+recursive-exclude examples *
+
+global-exclude __pycache__ *.py[cod]
+global-exclude .DS_Store
