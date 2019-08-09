@@ -49,9 +49,9 @@ jobs:
           name: install tox dependencies
           command: |
             unset PYENV_ROOT
-            echo 'export PATH="/home/circleci/.pyenv/bin:$PATH"' >> $BASH_ENV
-            echo 'eval "$(pyenv init -)"' >> $BASH_ENV
-            echo 'eval "$(pyenv virtualenv-init -)"' >> $BASH_ENV
+            echo 'export PATH="/home/circleci/.pyenv/bin:$PATH"' >> /home/circleci/.bashrc
+            echo 'eval "$(pyenv init -)"' >> /home/circleci/.bashrc
+            echo 'eval "$(pyenv virtualenv-init -)"' >> /home/circleci/.bashrc
             cat /home/circleci/.bashrc
             source /home/circleci/.bashrc
             sudo curl https://pyenv.run | bash  # https://github.com/pyenv/pyenv-installer
