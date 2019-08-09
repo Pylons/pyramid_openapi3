@@ -49,7 +49,7 @@ jobs:
           name: install tox dependencies
           command: |
             pip install -U pip setuptools
-            pip install tox tox-env
+            pip install tox tox-pyenv
 
       - run:
           name: run tests via tox
