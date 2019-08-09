@@ -48,8 +48,8 @@ jobs:
       - run:
           name: install tox dependencies
           command: |
-            pip install --user -U pip setuptools
-            pip install --user tox tox-pyenv
+            sudo pip install -U pip setuptools
+            sudo pip install tox tox-pyenv
 
       - run:
           name: run tests via tox
