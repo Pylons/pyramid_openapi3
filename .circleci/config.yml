@@ -20,10 +20,10 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - py38:
-          filters:
-            tags:
-              only: /.*/
+#      - py38:
+#          filters:
+#            tags:
+#              only: /.*/
       - build:
           filters:
             tags:
@@ -49,30 +49,31 @@ jobs:
           name: install tox dependencies
           command: |
             sudo pip install -U pip setuptools
-            sudo pip install tox
+            sudo pip install tox pyenv tox-pyenv
+            pyenv local 3.7.4 3.8.0b3
 
       - run:
           name: run tests via tox
           command: |
-            tox -e py37
+            tox
 
-  py38:
-    working_directory: ~/repo
-    docker:
-      - image: circleci/python:3.8.0b3
-    steps:
-      - checkout
-      - run:
-          name: install tox dependencies
-          command: |
-            sudo pip install -U pip setuptools
-            sudo pip install tox
-
-      - run:
-          name: run tests via tox
-          command: |
-            tox -e py38
-
+#  py38:
+#    working_directory: ~/repo
+#    docker:
+#      - image: circleci/python:3.8.0b3
+#    steps:
+#      - checkout
+#      - run:
+#          name: install tox dependencies
+#          command: |
+#            sudo pip install -U pip setuptools
+#            sudo pip install tox
+#
+#      - run:
+#          name: run tests via tox
+#          command: |
+#            tox -e py38
+#
   build:
     <<: *defaults
 
