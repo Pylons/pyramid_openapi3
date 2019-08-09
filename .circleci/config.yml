@@ -16,6 +16,14 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
+      - py37:
+          filters:
+            tags:
+              only: /.*/
+#      - py38:
+#          filters:
+#            tags:
+#              only: /.*/
       - build:
           filters:
             tags:
@@ -30,6 +38,28 @@ workflows:
               ignore: /.*/
 
 jobs:
+
+  py37:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/python:3.7.4
+    steps:
+      - checkout
+      - run:
+          name: install tox dependencies
+          command: |
+            pip install -U pip setuptools
+            pip install tox tox-env
+
+      - run:
+          name: run tests via tox
+          command: |
+            tox -e py37
+
+#  py38:
+#    working_directory: ~/repo
+#    docker:
+#      - image: circleci/python:3.8.0b3
 
   build:
     <<: *defaults
