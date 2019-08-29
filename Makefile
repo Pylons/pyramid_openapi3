@@ -32,7 +32,7 @@ type: types
 types: .installed
 	@pipenv run mypy pyramid_openapi3
 	@cat ./typecov/linecount.txt
-	@pipenv run python .mypy/type_coverage.py 100 ./typecov/linecount.txt
+	@pipenv run typecov 100 ./typecov/linecount.txt
 
 .PHONY: sort
 sort: .installed
