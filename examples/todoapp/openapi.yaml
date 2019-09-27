@@ -40,7 +40,9 @@ paths:
                 type: string
 
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/ValidationError'
 
 
 components:
@@ -70,7 +72,7 @@ components:
 
   responses:
 
-    BadRequest:
+    ValidationError:
       description: OpenAPI request/response validation failed
       content:
         application/json:

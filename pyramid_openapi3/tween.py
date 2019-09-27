@@ -32,13 +32,12 @@ def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]
                 # not an openapi view or response validation not requested
                 return response
             # validate response
-            open_request = PyramidOpenAPIRequest(request)
-            open_response = PyramidOpenAPIResponse(response)
+            openapi_request = PyramidOpenAPIRequest.create(request)
+            openapi_response = PyramidOpenAPIResponse.create(response)
             settings = request.registry.settings["pyramid_openapi3"]
             result = settings["response_validator"].validate(
-                request=open_request, response=open_response
+                request=openapi_request, response=openapi_response
             )
-
             if result.errors:
                 raise ResponseValidationError(errors=result.errors)
         # If there is no exception view, we also see request validation errors here
