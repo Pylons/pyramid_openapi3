@@ -64,6 +64,7 @@ The reason this package exists is to give you peace of mind when providing a RES
 config.include("pyramid_openapi3")
 config.pyramid_openapi3_spec('openapi.yaml', route='/api/v1/openapi.yaml')
 config.pyramid_openapi3_add_explorer(route='/api/v1/')
+config.pyramid_openapi3_JSONify_errors()
 ```
 
 3. Use the `openapi` [view predicate](https://docs.pylonsproject.org/projects/pyramid/en/latest/narr/viewconfig.html#view-configuration-parameters) to enable request/response validation:
@@ -76,6 +77,7 @@ def myview(request):
 
 For requests, `request.openapi_validated` is available with two fields: `parameters` and `body`.
 For responses, if the payload does not match the API document, an exception is raised.
+
 
 ## Demo / Examples
 

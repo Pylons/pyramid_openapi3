@@ -131,8 +131,4 @@ class FunctionalTests(unittest.TestCase):
         We don't have to write (and test!) any validation code in our view!
         """
         res = self.testapp.get("/hello?name=yo", status=400)
-        self.assertIn(
-            "Invalid parameter value for `name`: Value is shorter (2) "
-            "than the minimum length of 3",
-            res.text,
-        )
+        self.assertIn("'yo' is too short", res.text)

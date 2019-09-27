@@ -23,7 +23,7 @@ with open(os.path.join(here, "CHANGELOG.md"), encoding="utf-8") as f:
     long_description += "\n\n" + f.read()
 
 
-VERSION = "0.4.1"
+VERSION = "0.5.0-beta.1"
 
 
 class VerifyVersionCommand(install):
@@ -68,6 +68,6 @@ setup(
     keywords="pyramid openapi3 openapi rest restful",
     packages=find_packages(exclude=["tests"]),
     package_data={"pyramid_openapi3": ["static/*.*"], "": ["LICENSE"]},
-    install_requires=["openapi-core<0.12.0", "openapi-spec-validator", "pyramid"],
+    install_requires=["openapi-core", "openapi-spec-validator", "pyramid"],
     cmdclass={"verify": VerifyVersionCommand},
 )
