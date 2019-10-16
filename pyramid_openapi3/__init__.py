@@ -1,6 +1,7 @@
 """Configure pyramid_openapi3 addon."""
 
 from .exceptions import MissingEndpointsError
+from .check_openapi_responses import validate_required_responses
 from .exceptions import RequestValidationError
 from .wrappers import PyramidOpenAPIRequest
 from openapi_core import create_spec
@@ -132,6 +133,7 @@ def add_spec_view(
         spec_dict = read_yaml_file(filepath)
 
         validate_spec(spec_dict)
+        validate_required_responses(spec_dict, config)
         spec = create_spec(spec_dict)
 
         def spec_view(request: Request) -> FileResponse:
