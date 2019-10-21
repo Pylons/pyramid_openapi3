@@ -95,11 +95,18 @@ Some notes:
 - The `route` that you set for `pyramid_openapi3_spec_directory` should not contain any file extensions as this becomes the root for all of the files in your specified `filepath`.
 - You cannot use `pyramid_openapi3_spec_directory` and `pyramid_openapi3_spec` in the same app.
 
-### Toggle Request / Response Validation
+### Endpoints / Request / Response Validation
 
-If you would like to disable request / response validation, you can do so by adjusting either of the following options (you can also set them in your `.ini` if you prefer)
+pyramid-openapi3 offers builtin solutions to validate all endpoints are present on the
+app's codebase, accordingly to the OpenAPI specification, as well as validating every
+incoming/outgoing request and response.
+
+These features are enabled as a default, but if you would like to disable it, you can
+do so by adjusting either of the following options (you can also set them in your
+`.ini` config file, if you prefer)
 
 ```python
+config.registry.settings["pyramid_openapi3.enable_endpoint_validation"] = False
 config.registry.settings["pyramid_openapi3.enable_request_validation"] = False
 config.registry.settings["pyramid_openapi3.enable_response_validation"] = False
 ```

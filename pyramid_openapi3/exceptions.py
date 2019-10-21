@@ -129,3 +129,12 @@ def extract_errors(
             output.update({"field": field})
 
         yield output
+
+
+class MissingEndpointsError(Exception):
+    missing: list
+
+    def __init__(self, missing: t.List[str]) -> None:
+        self.missing = missing
+        message = f"Unable to find registered " f"routes or endpoints {missing}"
+        super(MissingEndpointsError, self).__init__(message)
