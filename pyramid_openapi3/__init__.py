@@ -1,6 +1,7 @@
 """Configure pyramid_openapi3 addon."""
 
 from .exceptions import extract_errors
+from .exceptions import MissingEndpointsError
 from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequestFactory
@@ -14,6 +15,7 @@ from pathlib import Path
 from pyramid.config import Configurator
 from pyramid.config import PHASE0_CONFIG
 from pyramid.config.views import ViewDeriverInfo
+from pyramid.events import ApplicationCreated
 from pyramid.exceptions import ConfigurationError
 from pyramid.httpexceptions import exception_response
 from pyramid.path import AssetResolver
@@ -39,6 +41,7 @@ def includeme(config: Configurator) -> None:
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
     config.add_directive("pyramid_openapi3_spec_directory", add_spec_view_directory)
     config.add_tween("pyramid_openapi3.tween.response_tween_factory", over=EXCVIEW)
+    config.add_subscriber(check_all_routes, ApplicationCreated)
 
     if not config.registry.settings.get(  # pragma: no branch
         "pyramid_openapi3_extract_errors"
@@ -287,3 +290,31 @@ def openapi_validation_error(
         status_code = 500
 
     return exception_response(status_code, json_body=errors)
+
+
+def check_all_routes(event: ApplicationCreated):
+    """Assert all endpoints in the spec are registered as routes.
+
+    Listen for ApplicationCreated event and assert all endpoints defined in
+    the API spec have been registered as Pyramid routes.
+    """
+
+    app = event.app
+    openapi_settings = app.registry.settings.get("pyramid_openapi3")
+    if not openapi_settings:
+        # pyramid_openapi3 not configured?
+        logger.warning(
+            "pyramid_openapi3 settings not found. "
+            "Did you forget to call config.pyramid_openapi3_spec?"
+        )
+        return
+
+    if not openapi_settings.get("enable_endpoint_validation", True):
+        logger.info("Endpoint validation against specification is disabled")
+        return
+    paths = list(openapi_settings["spec"].paths.keys())
+    routes = [route.path for name, route in app.routes_mapper.routes.items()]
+
+    missing = [r for r in paths if r not in routes]
+    if missing:
+        raise MissingEndpointsError(missing)
