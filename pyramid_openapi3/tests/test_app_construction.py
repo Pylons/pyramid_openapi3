@@ -38,7 +38,7 @@ def bar_view(request):
     return "Bar"  # pragma: no cover
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def document():
     """Simple fixture to load the DOCUMENT into a temp file."""
     with tempfile.NamedTemporaryFile() as document:
@@ -48,7 +48,7 @@ def document():
         yield document
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def simple_config():
     """Simple app config fixture."""
     with testConfig() as config:
@@ -57,7 +57,7 @@ def simple_config():
         yield config
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def app_config(simple_config, document):
     """Incremented fixture that loads the DOCUMENT above into the config."""
     simple_config.pyramid_openapi3_spec(
