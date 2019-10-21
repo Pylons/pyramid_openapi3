@@ -1,5 +1,6 @@
 """Configure pyramid_openapi3 addon."""
 
+from .exceptions import MissingEndpointsError
 from .exceptions import RequestValidationError
 from .wrappers import PyramidOpenAPIRequest
 from openapi_core import create_spec
@@ -10,6 +11,7 @@ from openapi_spec_validator.schemas import read_yaml_file
 from pyramid.config import Configurator
 from pyramid.config import PHASE0_CONFIG
 from pyramid.config.views import ViewDeriverInfo
+from pyramid.events import ApplicationCreated
 from pyramid.exceptions import ConfigurationError
 from pyramid.path import AssetResolver
 from pyramid.request import Request
@@ -28,6 +30,7 @@ def includeme(config: Configurator) -> None:
     config.add_directive("pyramid_openapi3_add_explorer", add_explorer_view)
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
     config.add_tween("pyramid_openapi3.tween.response_tween_factory", over=EXCVIEW)
+    config.add_subscriber(check_all_routes, ApplicationCreated)
 
 
 View = t.Callable[[t.Any, Request], Response]
@@ -148,3 +151,23 @@ def add_spec_view(
         }
 
     config.action(("pyramid_openapi3_spec",), register, order=PHASE0_CONFIG)
+
+
+def check_all_routes(event: ApplicationCreated):
+    """Asserts all routes in the spec are defined on the app.
+
+    This handler method that listens for ApplicationCreated event and asserts
+    all routes defined on the spec have been registered
+    """
+
+    app = event.app
+    openapi_settings = app.registry.settings.get("pyramid_openapi3")
+    if not openapi_settings:
+        return  # pyramid_openapi3 not configured?
+
+    paths = list(openapi_settings["spec"].paths.keys())
+    routes = [route.path for name, route in app.routes_mapper.routes.items()]
+
+    missing = [r for r in paths if r not in routes]
+    if len(missing):
+        raise MissingEndpointsError(missing)

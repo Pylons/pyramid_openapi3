@@ -37,3 +37,12 @@ class ResponseValidationError(HTTPInternalServerError):
 
     def _json_formatter(self, status, body, title, environ) -> t.Dict:
         return {"message": body, "code": status, "title": self.title}
+
+
+class MissingEndpointsError(Exception):
+    missing: list
+
+    def __init__(self, missing):
+        self.missing = missing
+        message = f"Unable to find registered " f"routes or endpoints {missing}"
+        super(MissingEndpointsError, self).__init__(message)
