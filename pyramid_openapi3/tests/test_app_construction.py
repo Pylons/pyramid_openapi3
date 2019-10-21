@@ -30,28 +30,40 @@ DOCUMENT = b"""
 
 def foo_view(request):
     """Dummy view method."""
-    return "Foo"
+    return "Foo"  # pragma: no cover
 
 
 def bar_view(request):
     """Dummy view method."""
-    return "Bar"
+    return "Bar"  # pragma: no cover
 
 
-@pytest.fixture
-def app_config():
-    """Simple fixture that loads a config using DOCUMENT above."""
-    with tempfile.NamedTemporaryFile() as document, testConfig() as config:
-
-        config.include("pyramid_openapi3")
-
+@pytest.fixture(scope="module")
+def document():
+    """Simple fixture to load the DOCUMENT into a temp file."""
+    with tempfile.NamedTemporaryFile() as document:
         document.write(DOCUMENT)
         document.seek(0)
 
-        config.pyramid_openapi3_spec(
-            document.name, route="/foo.yaml", route_name="foo_api_spec"
-        )
+        yield document
+
+
+@pytest.fixture(scope="module")
+def simple_config():
+    """Simple app config fixture."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
         yield config
+
+
+@pytest.fixture(scope="module")
+def app_config(simple_config, document):
+    """Incremented fixture that loads the DOCUMENT above into the config."""
+    simple_config.pyramid_openapi3_spec(
+        document.name, route="/foo.yaml", route_name="foo_api_spec"
+    )
+    yield simple_config
 
 
 def test_all_routes(app_config):
@@ -79,3 +91,13 @@ def test_missing_routes(app_config):
         app_config.make_wsgi_app()
 
     assert "/bar" in ex.value.missing
+
+
+def test_unconfigured_app(simple_config):
+    """Asserts the app can be created if no spec has been defined."""
+    simple_config.add_route(name="foo", pattern="/foo")
+    simple_config.add_view(
+        foo_view, route_name="foo", renderer="string", request_method="OPTIONS"
+    )
+
+    simple_config.make_wsgi_app()
