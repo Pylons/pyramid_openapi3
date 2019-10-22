@@ -22,7 +22,7 @@ class Item:
 
     title: str
 
-    def __json__(self, request: Request) -> t.Dict["str", "str"]:
+    def __json__(self, request: Request) -> t.Dict[str, str]:
         """JSON-renderer for this object."""
         return {"title": self.title}
 
@@ -44,7 +44,7 @@ def get(request: Request) -> t.List[Item]:
 
 
 @view_config(route_name="todo", renderer="json", request_method="POST", openapi=True)
-def post(request: Request) -> t.List[t.Dict["str", "str"]]:
+def post(request: Request) -> t.List[t.Dict[str, str]]:
     """Handle POST requests and create TODO items."""
     item = Item(title=request.openapi_validated.body.title)
     ITEMS.append(item)
