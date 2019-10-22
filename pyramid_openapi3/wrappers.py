@@ -1,14 +1,14 @@
 """Wrap Pyramid's Request and Response."""
 
-from openapi_core.wrappers.base import BaseOpenAPIRequest
-from openapi_core.wrappers.base import BaseOpenAPIResponse
+from openapi_core.validation.request.datatypes import OpenAPIRequest
+from openapi_core.validation.response.datatypes import OpenAPIResponse
 from pyramid.request import Request
 from pyramid.response import Response
 
 import typing as t
 
 
-class PyramidOpenAPIRequest(BaseOpenAPIRequest):
+class PyramidOpenAPIRequest(OpenAPIRequest):
     def __init__(self, request: Request) -> None:
         self.request = request
 
@@ -56,7 +56,7 @@ class PyramidOpenAPIRequest(BaseOpenAPIRequest):
         return self.request.content_type
 
 
-class PyramidOpenAPIResponse(BaseOpenAPIResponse):
+class PyramidOpenAPIResponse(OpenAPIResponse):
     def __init__(self, response: Response):
         self.response = response
 

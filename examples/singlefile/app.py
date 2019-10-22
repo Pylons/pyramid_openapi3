@@ -137,7 +137,8 @@ class FunctionalTests(unittest.TestCase):
         """
         res = self.testapp.get("/hello?name=yo", status=400)
         self.assertIn(
-            "Invalid parameter value for `name`: Value is shorter (2) "
-            "than the minimum length of 3",
+            "Invalid parameter value for `name`: "
+            "Value yo not valid for schema of type SchemaType.STRING: "
+            "[<ValidationError: \"'yo' is too short\">]\n\n",
             res.text,
         )

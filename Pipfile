@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 pyramid-openapi3 = {editable = true,path = "."}
+openapi-core = {git = "https://github.com/p1c2u/openapi-core.git",editable = true}
+werkzeug = "*"
 
 [dev-packages]
 black = "==19.3b0"
