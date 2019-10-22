@@ -1,5 +1,13 @@
 ## Changelog
 
+0.4.1 (2019-10-22)
+------------------
+
+* Pin openapi-core dependency to a sub 0.12.0 version, to avoid
+  regressions with validation. Details on
+  https://github.com/p1c2u/openapi-core/issues/160
+  [zupo]
+
 
 0.4.0 (2019-08-05)
 ------------------
