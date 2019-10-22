@@ -21,7 +21,7 @@ For example:
 * Getting a 400 BadRequest response for an empty POST request
 * Getting a 400 BadRequest response for a POST request when `title` is too long (over 40 characters).
 
-All of these examples are covered with tests that you can run with `$ python -m unittest tests.py`.
+All of these examples are covered with tests that you can run with `$ python -m unittest tests.py`. The tests need the Python webtest module installed. If your virtualenv is still activated you can install it with `pip install webtest`.
 
 
 ## Further read

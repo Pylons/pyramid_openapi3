@@ -20,7 +20,7 @@ For example:
 * Get an Exception raised if you omit the required `name` query parameter.
 * Get an Exception raised if the query parameter `name` is too short.
 
-All of these examples are covered with tests that you can run with `$ python -m unittest app.py`.
+All of these examples are covered with tests that you can run with `$ python -m unittest app.py`. The tests need the Python webtest module installed. If your virtualenv is still activated you can install it with `pip install webtest`.
 
 
 ## Further read
