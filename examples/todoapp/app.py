@@ -22,7 +22,7 @@ class Item:
 
     title: str
 
-    def __json__(self, request: Request) -> t.Dict["str", "str"]:
+    def __json__(self, request: Request) -> t.Dict[str, str]:
         """JSON-renderer for this object."""
         return {"title": self.title}
 
