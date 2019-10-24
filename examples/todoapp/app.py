@@ -60,19 +60,24 @@ def openapi_validation_error(
     return exception_response(400, json_body=errors)
 
 
-def extract_error(err: OpenAPIError, field_name: str = None) -> t.Dict[str, str]:
+def extract_error(err: OpenAPIError) -> t.Dict[str, str]:
     """Extract error JSON response using an Exception instance."""
     output = {"message": str(err), "exception": err.__class__.__name__}
+    field_name = None
 
-    if getattr(err, "name", None) is not None:
-        field_name = err.name
-    if getattr(err, "property_name", None) is not None:
-        field_name = err.property_name
-    if field_name is None:
-        if isinstance(getattr(err, "original_exception", None), OpenAPIMappingError):
-            return extract_error(err.original_exception, field_name)
+    if isinstance(getattr(err, "original_exception", None), OpenAPIMappingError):
+        return extract_error(err.original_exception)
+    if getattr(err, "schema_errors", []):
+        for schema_error in err.schema_errors:
+            return extract_error(schema_error)
+    if getattr(err, "message", None) is not None:
+        output["message"] = err.message
+    if getattr(err, "absolute_path", []):
+        field_name = err.absolute_path.pop()
+
     if field_name is not None:
         output.update({"field": field_name})
+
     return output
 
 

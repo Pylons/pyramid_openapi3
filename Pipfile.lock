@@ -82,7 +82,7 @@
         "openapi-core": {
             "editable": true,
             "git": "https://github.com/p1c2u/openapi-core.git",
-            "ref": "4c4636a2637e55cdbfb54527333de2a692e78baa"
+            "ref": "cabe512fb043d3e95b93fbe7a20b8e2d095d7d99"
         },
         "openapi-spec-validator": {
             "hashes": [

@@ -40,9 +40,8 @@ class TestBadRequests(TestHappyPath):
             res.json,
             [
                 {
-                    "exception": "MissingSchemaProperty",
-                    "field": "title",
-                    "message": "Missing schema property: title",
+                    "exception": "ValidationError",
+                    "message": "'title' is a required property",
                 }
             ],
         )
@@ -54,10 +53,9 @@ class TestBadRequests(TestHappyPath):
             res.json,
             [
                 {
-                    "exception": "InvalidSchemaProperty",
+                    "exception": "ValidationError",
                     "field": "title",
-                    "message": "Invalid schema property title: "
-                    "Value is longer (41) than the maximum length of 40",
+                    "message": "'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' is too long",
                 }
             ],
         )
