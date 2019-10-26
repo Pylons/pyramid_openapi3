@@ -3,7 +3,7 @@
 Usage:
 * git clone https://github.com/Pylons/pyramid_openapi3.git
 * cd pyramid_openapi3/examples/singlefile
-* virtualenv -p python3.7 .
+* virtualenv -p python3.8 .
 * source bin/activate
 * pip install pyramid_openapi3
 * python app.py

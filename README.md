@@ -102,7 +102,7 @@ c) Generation approach has the drawback of having to write Python code even for 
 
 ## Running tests
 
-You need to have [pipenv](https://pipenv.readthedocs.io/) and Python 3.7 installed on your machine. Then you can run:
+You need to have [pipenv](https://pipenv.readthedocs.io/) and Python 3.7 or 3.8 installed on your machine. Then you can run:
 
     $ make tests
 
@@ -118,9 +118,16 @@ These packages tackle the same problem-space:
 - [pyramid_apispec](https://github.com/ergo/pyramid_apispec) uses generation with
   help of apispec and marshmallow validation library. See above [why we prefer validation instead of generation](#design-defense).
 
+## Deprecation policy
+
+We do our best to follow the rules below.
+
+* Support the latest two releases of Python, currently Python 3.7 and 3.8.
+* Support only a single release of `openapi-core` and its sub-dependencies. See `Pipfile.lock` for a frozen-in-time known-good-set of all dependencies.
 
 ## Use in the wild
 
 A couple of projects that use pyramid_openapi3 in production:
 
-- [WooCart API](https://app.woocart.com/api/v1/) - Users' control panel for WooCart Managed WooCommerce service.
+- [WooCart API](https://app.woocart.com/api/v1/) - User control panel for WooCart Managed WooCommerce service.
+- [Kafkai API](https://app.kafkai.com/api/v1) - User control panel for Kafkai text generation service.
