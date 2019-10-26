@@ -7,7 +7,7 @@ This folder showcases how to use the [pyramid_openapi3](https://github.com/Pylon
 ```bash
 $ git clone https://github.com/Pylons/pyramid_openapi3.git
 $ cd pyramid_openapi3/examples/todoapp
-$ virtualenv -p python3.7 .
+$ virtualenv -p python3.8 .
 $ source bin/activate
 $ pip install pyramid_openapi3
 $ python app.py

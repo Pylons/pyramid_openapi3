@@ -8,7 +8,11 @@
 
     -   id: flake8
         name: Flake8
-        entry: pipenv run flake8
+        # I get the following error if jobs is more than 1:
+        # AttributeError: 'pep257Checker' object has no attribute 'convention'
+        # Try to remove the `--jobs=1` in the future when someone might
+        # have fixed the underlying problem.
+        entry: pipenv run flake8 --jobs=1
         language: system
         types: [python]
 

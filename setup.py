@@ -63,11 +63,11 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
     keywords="pyramid openapi3 openapi rest restful",
     packages=find_packages(exclude=["tests"]),
     package_data={"pyramid_openapi3": ["static/*.*"], "": ["LICENSE"]},
     install_requires=["openapi-core<0.12.0", "openapi-spec-validator", "pyramid"],
-    extras_require={':python_version<"3.7"': ["importlib-resources"]},
     cmdclass={"verify": VerifyVersionCommand},
 )

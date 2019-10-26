@@ -10,19 +10,24 @@ defaults: &defaults
       PIPENV_VENV_IN_PROJECT: 1
       PIPENV_IGNORE_VIRTUALENVS: 1
     docker:
-      - image: circleci/python:3.7.3
+      - image: circleci/python:3.8.0
 
 workflows:
   version: 2
-  build_and_deploy:
+  pyramid_openapi3:
     jobs:
-      - build:
+      - test_37:
+          filters:
+            tags:
+              only: /.*/
+      - test_38:
           filters:
             tags:
               only: /.*/
       - release:
           requires:
-            - build
+            - test_37
+            - test_38
           filters:
             tags:
               only: /[0-9]+\.[0-9]+\.[0-9]+/
@@ -31,18 +36,21 @@ workflows:
 
 jobs:
 
-  build:
+  test_38: &test-template
     <<: *defaults
 
     steps:
       - checkout
 
-      # Download and cache dependencies
+      - run:
+          name: Prepare cache key
+          command: python --version > python_version.txt
+
       - restore_cache:
           keys:
-            - v5-dependencies-{{ checksum "Pipfile.lock" }}
+            - v5-dependencies-{{ checksum "python_version.txt" }}-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v5-dependencies-
+            - v5-dependencies-{{ checksum "python_version.txt" }}
 
       - run:
           name: install dependencies
@@ -54,7 +62,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v5-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v5-dependencies-{{ checksum "python_version.txt" }}-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run tests
@@ -73,17 +81,26 @@ jobs:
             cd examples/todoapp
             pipenv run python -m unittest tests.py
 
+  test_37:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.7.5
+
   release:
     <<: *defaults
 
     steps:
       - checkout
 
+      - run:
+          name: Prepare cache key
+          command: python --version > python_version.txt
+
       - restore_cache:
           keys:
-            - v5-dependencies-{{ checksum "Pipfile.lock" }}
+            - v5-dependencies-{{ checksum "python_version.txt" }}-{{ checksum "Pipfile.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v5-dependencies-
+            - v5-dependencies-{{ checksum "python_version.txt" }}
 
       - run:
           name: install dependencies
@@ -96,7 +113,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v5-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v5-dependencies-{{ checksum "python_version.txt" }}-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: verify git tag vs. version
