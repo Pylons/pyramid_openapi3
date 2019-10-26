@@ -1,4 +1,8 @@
-"""A Todo-app implementation using pyramid_openapi3."""
+"""A Todo-app implementation using pyramid_openapi3.
+
+See README.md at
+https://github.com/Pylons/pyramid_openapi3/tree/master/examples/todoapp
+"""
 
 from dataclasses import dataclass
 from openapi_core.schema.exceptions import OpenAPIError
