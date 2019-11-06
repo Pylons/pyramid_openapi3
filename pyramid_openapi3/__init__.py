@@ -1,5 +1,4 @@
 """Configure pyramid_openapi3 addon."""
-
 from .exceptions import MissingEndpointsError
 from .check_openapi_responses import validate_required_responses
 from .exceptions import RequestValidationError
@@ -22,6 +21,7 @@ from pyramid.tweens import EXCVIEW
 from string import Template
 
 import typing as t
+import warnings
 
 
 def includeme(config: Configurator) -> None:
@@ -165,11 +165,16 @@ def check_all_routes(event: ApplicationCreated):
     app = event.app
     openapi_settings = app.registry.settings.get("pyramid_openapi3")
     if not openapi_settings:
-        return  # pyramid_openapi3 not configured?
+        # pyramid_openapi3 not configured?
+        warnings.warn(
+            "pyramid_openapi3 settings not found. "
+            "Did you forget to call config.pyramid_openapi3_spec?"
+        )
+        return
 
     paths = list(openapi_settings["spec"].paths.keys())
     routes = [route.path for name, route in app.routes_mapper.routes.items()]
 
     missing = [r for r in paths if r not in routes]
-    if len(missing):
+    if missing:
         raise MissingEndpointsError(missing)
