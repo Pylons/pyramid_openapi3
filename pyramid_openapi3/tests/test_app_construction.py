@@ -100,4 +100,5 @@ def test_unconfigured_app(simple_config):
         foo_view, route_name="foo", renderer="string", request_method="OPTIONS"
     )
 
-    simple_config.make_wsgi_app()
+    with pytest.warns(UserWarning, match="pyramid_openapi3 settings not found"):
+        simple_config.make_wsgi_app()
