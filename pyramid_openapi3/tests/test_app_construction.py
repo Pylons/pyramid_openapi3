@@ -29,18 +29,18 @@ DOCUMENT = b"""
 
 
 def foo_view(request):
-    """Dummy view method."""
+    """Return a dummy string."""
     return "Foo"  # pragma: no cover
 
 
 def bar_view(request):
-    """Dummy view method."""
+    """Return a dummy string."""
     return "Bar"  # pragma: no cover
 
 
 @pytest.fixture
 def document():
-    """Simple fixture to load the DOCUMENT into a temp file."""
+    """Load the DOCUMENT into a temp file."""
     with tempfile.NamedTemporaryFile() as document:
         document.write(DOCUMENT)
         document.seek(0)
@@ -50,7 +50,7 @@ def document():
 
 @pytest.fixture
 def simple_config():
-    """Simple app config fixture."""
+    """Config fixture."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
 

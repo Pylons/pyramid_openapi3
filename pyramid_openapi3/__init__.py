@@ -154,7 +154,7 @@ def add_spec_view(
 
 
 def check_all_routes(event: ApplicationCreated):
-    """Asserts all routes in the spec are defined on the app.
+    """Assert all routes in the spec are defined on the app.
 
     This handler method that listens for ApplicationCreated event and asserts
     all routes defined on the spec have been registered
