@@ -1,9 +1,13 @@
 """Tests for app creation when using pyramid_openapi3."""
+
+from pyramid.config import Configurator
+from pyramid.request import Request
 from pyramid.testing import testConfig
 from pyramid_openapi3 import MissingEndpointsError
 
 import pytest
 import tempfile
+import typing as t
 
 DOCUMENT = b"""
     openapi: "3.0.0"
@@ -28,18 +32,18 @@ DOCUMENT = b"""
 """
 
 
-def foo_view(request):
+def foo_view(request: Request) -> str:
     """Return a dummy string."""
     return "Foo"  # pragma: no cover
 
 
-def bar_view(request):
+def bar_view(request: Request) -> str:
     """Return a dummy string."""
     return "Bar"  # pragma: no cover
 
 
 @pytest.fixture
-def document():
+def document() -> t.Generator[t.IO, None, None]:
     """Load the DOCUMENT into a temp file."""
     with tempfile.NamedTemporaryFile() as document:
         document.write(DOCUMENT)
@@ -49,7 +53,7 @@ def document():
 
 
 @pytest.fixture
-def simple_config():
+def simple_config() -> Configurator:
     """Config fixture."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -58,7 +62,7 @@ def simple_config():
 
 
 @pytest.fixture
-def app_config(simple_config, document):
+def app_config(simple_config: Configurator, document: t.IO):
     """Incremented fixture that loads the DOCUMENT above into the config."""
     simple_config.pyramid_openapi3_spec(
         document.name, route="/foo.yaml", route_name="foo_api_spec"
@@ -66,7 +70,7 @@ def app_config(simple_config, document):
     yield simple_config
 
 
-def test_all_routes(app_config):
+def test_all_routes(app_config: Configurator) -> None:
     """Test case showing that an app can be created with all routes define."""
     app_config.add_route(name="foo", pattern="/foo")
     app_config.add_route(name="bar", pattern="/bar")
@@ -80,7 +84,7 @@ def test_all_routes(app_config):
     app_config.make_wsgi_app()
 
 
-def test_missing_routes(app_config):
+def test_missing_routes(app_config: Configurator) -> None:
     """Test case showing app creation fails, when define routes are missing."""
     app_config.add_route(name="foo", pattern="/foo")
     app_config.add_view(
@@ -93,7 +97,7 @@ def test_missing_routes(app_config):
     assert "/bar" in ex.value.missing
 
 
-def test_unconfigured_app(simple_config):
+def test_unconfigured_app(simple_config: Configurator) -> None:
     """Asserts the app can be created if no spec has been defined."""
     simple_config.add_route(name="foo", pattern="/foo")
     simple_config.add_view(

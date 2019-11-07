@@ -1,6 +1,6 @@
 """Configure pyramid_openapi3 addon."""
-from .exceptions import MissingEndpointsError
 from .check_openapi_responses import validate_required_responses
+from .exceptions import MissingEndpointsError
 from .exceptions import RequestValidationError
 from .wrappers import PyramidOpenAPIRequest
 from openapi_core import create_spec
