@@ -67,7 +67,7 @@ setup(
     ],
     keywords="pyramid openapi3 openapi rest restful",
     packages=find_packages(exclude=["tests"]),
-    package_data={"pyramid_openapi3": ["static/*.*"], "": ["LICENSE"]},
+    include_package_data=True,
     install_requires=["openapi-core", "openapi-spec-validator", "pyramid"],
     cmdclass={"verify": VerifyVersionCommand},
 )
