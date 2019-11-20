@@ -30,6 +30,9 @@ type: types
 
 .PHONY: types
 types: .installed
+	@pipenv run mypy examples/todoapp
+	@cat ./typecov/linecount.txt
+	@pipenv run typecov 100 ./typecov/linecount.txt
 	@pipenv run mypy pyramid_openapi3
 	@cat ./typecov/linecount.txt
 	@pipenv run typecov 100 ./typecov/linecount.txt
@@ -47,6 +50,7 @@ black: format
 
 .PHONY: format
 format: .installed sort
+	@pipenv run black examples
 	@pipenv run black pyramid_openapi3
 	@pipenv run black setup.py
 

@@ -65,7 +65,7 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> t.Optional[View]:
     """
     if info.options.get("openapi"):
 
-        def wrapper_view(context, request):
+        def wrapper_view(context: t.Any, request: Request):
             # Validate request and attach all findings for view to introspect
             request.environ["pyramid_openapi3.validate_response"] = True
             settings = request.registry.settings["pyramid_openapi3"]
@@ -106,10 +106,10 @@ def add_explorer_view(
     :param ui_version: Swagger UI version string
     """
 
-    def register():
+    def register() -> None:
         resolved_template = AssetResolver().resolve(template)
 
-        def explorer_view(request):
+        def explorer_view(request: Request) -> Response:
             settings = config.registry.settings
             if settings.get("pyramid_openapi3") is None:
                 raise ConfigurationError(

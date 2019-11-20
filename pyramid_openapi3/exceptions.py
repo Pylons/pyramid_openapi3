@@ -14,7 +14,7 @@ class RequestValidationError(HTTPBadRequest):
 
     explanation = "Request validation failed."
 
-    def __init__(self, *args, errors, **kwargs) -> None:
+    def __init__(self, *args, errors: t.List[Exception], **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.errors = errors
         self.detail = self.message = "\n".join(str(e) for e in errors)
