@@ -1,4 +1,5 @@
 """A tween to validate openapi responses."""
+
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequest
 from .wrappers import PyramidOpenAPIResponse
@@ -24,7 +25,7 @@ def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]
     them in the openapi spec file.
     """
 
-    def excview_tween(request) -> Response:
+    def excview_tween(request: Request) -> Response:
         try:
             response = handler(request)
             if not request.environ.get("pyramid_openapi3.validate_response"):
