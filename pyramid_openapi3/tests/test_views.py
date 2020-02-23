@@ -104,13 +104,11 @@ def test_explorer_view_missing_spec() -> None:
         view = config.registry.adapters.registered(
             (IViewClassifier, request, Interface), IView, name=""
         )
-        with pytest.raises(ConfigurationError) as exc:
+        with pytest.raises(
+            ConfigurationError,
+            match="You need to call config.pyramid_openapi3_spec for explorer to work.",
+        ):
             view(request=DummyRequest(config=config), context=None)
-
-        assert (
-            str(exc.value)
-            == "You need to call config.pyramid_openapi3_spec for explorer to work."
-        )
 
 
 @dataclass
@@ -225,10 +223,10 @@ def test_path_parameters() -> None:
         request = DummyRequest(config=config)
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
         context = None
-        with pytest.raises(RequestValidationError) as exc:
+        with pytest.raises(
+            RequestValidationError, match="Missing required parameter: foo"
+        ):
             response = view(context, request)
-
-        assert str(exc.value) == "Missing required parameter: foo"
 
         # Test validation succeeds
         request = DummyRequest(config=config, params={"foo": "1"})
@@ -281,10 +279,10 @@ def test_header_parameters() -> None:
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
         context = None
 
-        with pytest.raises(RequestValidationError) as exc:
+        with pytest.raises(
+            RequestValidationError, match="Missing required parameter: foo"
+        ):
             response = view(context, request)
-
-        assert str(exc.value) == "Missing required parameter: foo"
 
         # Test validation succeeds
         request = DummyRequest(config=config, headers={"foo": "1"})
@@ -336,10 +334,10 @@ def test_cookie_parameters() -> None:
         request = DummyRequest(config=config)
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
         context = None
-        with pytest.raises(RequestValidationError) as exc:
+        with pytest.raises(
+            RequestValidationError, match="Missing required parameter: foo"
+        ):
             response = view(context, request)
-
-        assert str(exc.value) == "Missing required parameter: foo"
 
         # Test validation succeeds
         request = DummyRequest(config=config, cookies={"foo": "1"})
