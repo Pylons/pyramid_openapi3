@@ -94,6 +94,8 @@ def extract_error(err: OpenAPIError) -> t.Dict[str, str]:
         field = err.name
     elif getattr(err, "validator", None) is not None and err.validator == "required":
         field = "/".join(err.validator_value)
+    elif getattr(err, "validator", None) is not None and err.validator == "format":
+        field = None
     elif getattr(err, "path", None) and err.path[0]:
         field = "/".join(err.path)
     elif getattr(err, "relative_schema_path", None):

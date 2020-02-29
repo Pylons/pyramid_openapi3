@@ -10,13 +10,13 @@ import typing as t
 import unittest
 
 
-def app(spec: str, view: t.Callable) -> Router:
+def app(spec: str, view: t.Callable, route: str) -> Router:
     """Prepare a Pyramid app."""
     with Configurator() as config:
         config.include("pyramid_openapi3")
         config.pyramid_openapi3_spec(spec)
         config.pyramid_openapi3_JSONify_errors()
-        config.add_route("foo", "/foo")
+        config.add_route("foo", route)
         config.add_view(openapi=True, renderer="json", view=view, route_name="foo")
         return config.make_wsgi_app()
 
@@ -33,41 +33,38 @@ class BadRequestsTests(unittest.TestCase):
           version: "1.0.0"
           title: Foo
         paths:
-          /foo:
-            post:
-              {parameters}
-              responses:
-                200:
-                  description: Say hello
-                400:
-                  description: Bad Request
+          {endpoints}
     """
 
-    def _testapp(self, view: t.Callable, parameters: str) -> TestApp:
+    def _testapp(self, view: t.Callable, endpoints: str, route="/foo") -> TestApp:
         """Start up the app so that tests can send requests to it."""
         from webtest import TestApp
 
         with tempfile.NamedTemporaryFile() as document:
-            document.write(self.OPENAPI_YAML.format(parameters=parameters).encode())
+            document.write(self.OPENAPI_YAML.format(endpoints=endpoints).encode())
             document.seek(0)
 
-            return TestApp(app(document.name, view))
+            return TestApp(app(document.name, view, route))
 
-    def test_missing_path_parameter(self) -> None:
-        """Render nice ValidationError if path parameter is missing."""
-
-        parameters = """
+    def test_missing_query_parameter(self) -> None:
+        """Render nice ValidationError if query parameter is missing."""
+        endpoints = """
+          /foo:
+            post:
               parameters:
                 - name: bar
                   in: query
                   required: true
                   schema:
                     type: integer
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, parameters=parameters).post(
-            "/foo", status=400
-        )
+        res = self._testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
@@ -76,21 +73,111 @@ class BadRequestsTests(unittest.TestCase):
             }
         ]
 
+    def test_invalid_query_parameter(self) -> None:
+        """Render nice ValidationError if query parameter is invalid."""
+        endpoints = """
+          "/foo":
+            post:
+              parameters:
+                - name: bar
+                  in: query
+                  required: true
+                  schema:
+                    type: integer
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
+        """
+
+        res = self._testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
+        assert res.json == [
+            {
+                "exception": "MissingRequiredParameter",
+                "message": "Missing required parameter: bar",
+                "field": "bar",
+            }
+        ]
+
+    def test_invalid_path_parameter(self) -> None:
+        """Render nice ValidationError if path parameter is invalid."""
+        endpoints = """
+          "/foo/{bar}":
+            post:
+              parameters:
+                - name: bar
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
+        """
+
+        res = self._testapp(
+            view=self.foo, endpoints=endpoints, route="/foo/{bar}"
+        ).post("/foo/bar", status=400)
+        assert res.json == [
+            {
+                "exception": "CastError",
+                "message": "Failed to cast value bar to type integer",
+            }
+        ]
+
+    def test_invalid_path_parameter_uuid(self) -> None:
+        """Render nice ValidationError if path parameter is not UUID."""
+        endpoints = """
+          "/foo/{bar}":
+            post:
+              parameters:
+                - name: bar
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
+        """
+
+        res = self._testapp(
+            view=self.foo, endpoints=endpoints, route="/foo/{bar}"
+        ).post("/foo/not-a-valid-uuid", status=400)
+        assert res.json == [
+            {
+                "exception": "ValidationError",
+                "message": "'not-a-valid-uuid' is not a 'uuid'",
+                # TODO: ideally, this response would include "field"
+                # but I don't know how I can achieve this ATM ¯\_(ツ)_/¯
+            }
+        ]
+
     def test_missing_header_parameter(self) -> None:
         """Render nice ValidationError if header parameter is missing."""
-
-        parameters = """
+        endpoints = """
+          "/foo":
+            post:
               parameters:
                 - name: bar
                   in: header
                   required: true
                   schema:
                     type: integer
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, parameters=parameters).post(
-            "/foo", status=400
-        )
+        res = self._testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
@@ -101,19 +188,23 @@ class BadRequestsTests(unittest.TestCase):
 
     def test_missing_cookie_parameter(self) -> None:
         """Render nice ValidationError if cookie parameter is missing."""
-
-        parameters = """
+        endpoints = """
+          "/foo":
+            post:
               parameters:
                 - name: bar
                   in: cookie
                   required: true
                   schema:
                     type: integer
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, parameters=parameters).post(
-            "/foo", status=400
-        )
+        res = self._testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
@@ -124,8 +215,9 @@ class BadRequestsTests(unittest.TestCase):
 
     def test_missing_POST_parameter(self) -> None:
         """Render nice ValidationError if POST parameter is missing."""
-
-        parameters = """
+        endpoints = """
+          "/foo":
+            post:
               requestBody:
                 required: true
                 description: Data for saying foo
@@ -138,9 +230,14 @@ class BadRequestsTests(unittest.TestCase):
                       properties:
                         foo:
                           type: string
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, parameters=parameters).post_json(
+        res = self._testapp(view=self.foo, endpoints=endpoints).post_json(
             "/foo", {}, status=400
         )
         assert res.json == [
@@ -153,8 +250,9 @@ class BadRequestsTests(unittest.TestCase):
 
     def test_missing_type_POST_parameter(self) -> None:
         """Render nice ValidationError if POST parameter is of invalid type."""
-
-        parameters = """
+        endpoints = """
+          "/foo":
+            post:
               requestBody:
                 required: true
                 description: Data for saying foo
@@ -167,9 +265,14 @@ class BadRequestsTests(unittest.TestCase):
                       properties:
                         foo:
                           type: string
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, parameters=parameters).post_json(
+        res = self._testapp(view=self.foo, endpoints=endpoints).post_json(
             "/foo", {"foo": 1}, status=400
         )
         assert res.json == [
@@ -182,7 +285,9 @@ class BadRequestsTests(unittest.TestCase):
 
     def test_invalid_length_POST_parameter(self) -> None:
         """Render nice ValidationError if POST parameter is of invalid length."""
-        parameters = """
+        endpoints = """
+          "/foo":
+            post:
               requestBody:
                 required: true
                 description: Data for saying foo
@@ -194,9 +299,14 @@ class BadRequestsTests(unittest.TestCase):
                         foo:
                           type: string
                           minLength: 3
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, parameters=parameters).post_json(
+        res = self._testapp(view=self.foo, endpoints=endpoints).post_json(
             "/foo", {"foo": "12"}, status=400
         )
         assert res.json == [
@@ -238,7 +348,7 @@ class BadResponsesTests(unittest.TestCase):
             document.write(self.OPENAPI_YAML)
             document.seek(0)
 
-            return TestApp(app(document.name, view))
+            return TestApp(app(document.name, view, route="/foo"))
 
     def test_foo(self) -> None:
         """Say foo."""
