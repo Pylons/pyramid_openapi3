@@ -15,7 +15,6 @@ def app(spec: str, view: t.Callable, route: str) -> Router:
     with Configurator() as config:
         config.include("pyramid_openapi3")
         config.pyramid_openapi3_spec(spec)
-        config.pyramid_openapi3_JSONify_errors()
         config.add_route("foo", route)
         config.add_view(openapi=True, renderer="json", view=view, route_name="foo")
         return config.make_wsgi_app()

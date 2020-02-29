@@ -10,12 +10,10 @@ from pyramid.router import Router
 from pyramid.testing import DummyRequest
 from pyramid.testing import setUp
 from pyramid.testing import tearDown
-from pyramid_openapi3.exceptions import ResponseValidationError
 from unittest import TestCase
 from zope.interface import Interface
 
 import json
-import pytest
 import tempfile
 import typing as t
 
@@ -136,7 +134,6 @@ class TestRequestValidation(TestCase):
     def test_request_validation_error(self) -> None:
         """Request validation errors are rendered as 400 JSON responses."""
         self._add_view()
-        self.config.pyramid_openapi3_JSONify_errors()
         # run request through router
         router = Router(self.config.registry)
         environ = {
@@ -148,7 +145,9 @@ class TestRequestValidation(TestCase):
             "HTTP_ACCEPT": "application/json",
         }
         start_response = DummyStartResponse()
-        response = router(environ, start_response)
+        with self.assertLogs(level="INFO") as cm:
+            response = router(environ, start_response)
+
         self.assertEqual(start_response.status, "400 Bad Request")
         self.assertEqual(
             json.loads(response[0]),
@@ -159,6 +158,9 @@ class TestRequestValidation(TestCase):
                     "field": "bar",
                 }
             ],
+        )
+        self.assertEqual(
+            cm.output, ["INFO:pyramid_openapi3:Missing required parameter: bar"]
         )
 
     def test_response_validation_error(self) -> None:
@@ -184,14 +186,8 @@ class TestRequestValidation(TestCase):
             "QUERY_STRING": "bar=1",
         }
         start_response = DummyStartResponse()
-        with pytest.raises(
-            ResponseValidationError, match="Unknown response http status: 412"
-        ):
+        with self.assertLogs(level="WARN") as cm:
             response = router(environ, start_response)
-
-        self.config.pyramid_openapi3_JSONify_errors()
-        start_response = DummyStartResponse()
-        response = router(environ, start_response)
         self.assertEqual(start_response.status, "500 Internal Server Error")
         self.assertEqual(
             json.loads(response[0]),
@@ -201,6 +197,9 @@ class TestRequestValidation(TestCase):
                     "message": "Unknown response http status: 412",
                 }
             ],
+        )
+        self.assertEqual(
+            cm.output, ["WARNING:pyramid_openapi3:Unknown response http status: 412"]
         )
 
     def test_nonapi_view(self) -> None:
