@@ -1,6 +1,6 @@
 """Configure pyramid_openapi3 addon."""
 
-from .exceptions import extract_error as default_extract_error
+from .exceptions import extract_error
 from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequest
@@ -21,7 +21,10 @@ from pyramid.response import Response
 from pyramid.tweens import EXCVIEW
 from string import Template
 
+import logging
 import typing as t
+
+logger = logging.getLogger(__name__)
 
 
 def includeme(config: Configurator) -> None:
@@ -30,8 +33,20 @@ def includeme(config: Configurator) -> None:
     config.add_directive("pyramid_openapi3_add_formatter", add_formatter)
     config.add_directive("pyramid_openapi3_add_explorer", add_explorer_view)
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
-    config.add_directive("pyramid_openapi3_JSONify_errors", JSONify_errors)
     config.add_tween("pyramid_openapi3.tween.response_tween_factory", over=EXCVIEW)
+
+    if not config.registry.settings.get(  # pragma: no branch
+        "pyramid_openapi3_extract_error"
+    ):
+        config.registry.settings["pyramid_openapi3_extract_error"] = extract_error
+
+    config.add_exception_view(
+        view=openapi_validation_error, context=RequestValidationError, renderer="json"
+    )
+
+    config.add_exception_view(
+        view=openapi_validation_error, context=ResponseValidationError, renderer="json"
+    )
 
 
 View = t.Callable[[t.Any, Request], Response]
@@ -158,34 +173,19 @@ def openapi_validation_error(
     context: t.Union[RequestValidationError, ResponseValidationError], request: Request
 ) -> Response:
     """Render any validation errors as JSON."""
+    if isinstance(context, RequestValidationError):
+        logger.info(context)
+    if isinstance(context, ResponseValidationError):
+        logger.warn(context)
+
     extract_error = request.registry.settings["pyramid_openapi3_extract_error"]
-    errors = [extract_error(err) for err in context.errors]
+    errors = [extract_error(request, err) for err in context.errors]
 
     # If validation failed for request, it is user's fault (-> 400), but if
     # validation failed for response, it is our fault (-> 500)
     if isinstance(context, RequestValidationError):
         status_code = 400
-    else:
+    if isinstance(context, ResponseValidationError):
         status_code = 500
 
     return exception_response(status_code, json_body=errors)
-
-
-def JSONify_errors(
-    config: Configurator, extract_error: t.Optional[t.Callable] = None
-) -> None:
-    """Render OpenAPI Validation errors as JSON.
-
-    Without this, Pyramid renders text/plain version of errors.
-    """
-    config.registry.settings["pyramid_openapi3_extract_error"] = (
-        extract_error or default_extract_error
-    )
-
-    config.add_exception_view(
-        view=openapi_validation_error, context=RequestValidationError, renderer="json"
-    )
-
-    config.add_exception_view(
-        view=openapi_validation_error, context=ResponseValidationError, renderer="json"
-    )

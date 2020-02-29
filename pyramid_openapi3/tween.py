@@ -3,12 +3,9 @@
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequest
 from .wrappers import PyramidOpenAPIResponse
-from pyramid.httpexceptions import HTTPNotFound
 from pyramid.request import Request
 from pyramid.response import Response
-from pyramid.tweens import reraise
 
-import sys
 import typing as t
 
 
@@ -42,14 +39,7 @@ def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]
                 raise ResponseValidationError(errors=result.errors)
         # If there is no exception view, we also see request validation errors here
         except ResponseValidationError:
-            exc_info = sys.exc_info()
-            try:
-                response = request.invoke_exception_view(exc_info)
-            except HTTPNotFound:
-                reraise(*exc_info)
-            finally:
-                del exc_info
-            return response
+            return request.invoke_exception_view(reraise=True)
         return response
 
     return excview_tween

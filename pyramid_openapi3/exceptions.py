@@ -3,6 +3,7 @@
 from openapi_core.schema.exceptions import OpenAPIError
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPInternalServerError
+from pyramid.request import Request
 
 import typing as t
 
@@ -35,7 +36,7 @@ class ResponseValidationError(HTTPInternalServerError):
         return str(self.detail) if self.detail else self.explanation
 
 
-def extract_error(err: OpenAPIError) -> t.Dict[str, str]:
+def extract_error(request: Request, err: OpenAPIError) -> t.Dict[str, str]:
     """Extract error's JSON response.
 
     You can tell pyramid_openapi3 to use your own version of this
@@ -78,7 +79,7 @@ def extract_error(err: OpenAPIError) -> t.Dict[str, str]:
     """
     if getattr(err, "schema_errors", None) is not None:
         for schema_error in err.schema_errors:  # pragma: no branch
-            return extract_error(schema_error)
+            return extract_error(request, schema_error)
 
     output = {"exception": err.__class__.__name__}
 

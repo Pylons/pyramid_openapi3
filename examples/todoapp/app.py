@@ -57,7 +57,6 @@ def app():
             os.path.join(os.path.dirname(__file__), "openapi.yaml")
         )
         config.pyramid_openapi3_add_explorer()
-        config.pyramid_openapi3_JSONify_errors()
         config.add_route("todo", "/")
         config.scan(".")
 

@@ -1,16 +1,22 @@
 ## Changelog
 
-0.5.0-beta.1 (2020-02-27)
+0.5.0-beta.2 (2020-02-29)
 -------------------------
 
 * Move `openapi_validation_error` from `examples/todoapp` into the main
   package so it becomes a first-class citizen and people can use it without
-  copy/pasting. Enable it with `config.pyramid_openapi3_JSONify_errors()`.
+  copy/pasting. If you need custom JSON rendering, you can provide
+  your own `extract_error` function via `pyramid_openapi3_extract_error`
+  config setting.
   [zupo]
 
 * Upgrade `openapi-core` to `0.13.x` which brings a complete rewrite of the
   validation mechanism that is now based on `jsonschema` library. This
   manifests as different validation error messages.
+
+  [BREAKING CHANGE] By default, `openapi-core` no longer creates models
+  from validated data, but returns `dict`s. More info on
+  https://github.com/p1c2u/openapi-core/issues/205
   [zupo]
 
 
