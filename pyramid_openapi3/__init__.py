@@ -3,7 +3,7 @@
 from .exceptions import extract_error
 from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
-from .wrappers import PyramidOpenAPIRequest
+from .wrappers import PyramidOpenAPIRequestFactory
 from openapi_core import create_spec
 from openapi_core.validation.request.validators import RequestValidator
 from openapi_core.validation.response.validators import ResponseValidator
@@ -68,7 +68,7 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> t.Optional[View]:
             # Validate request and attach all findings for view to introspect
             request.environ["pyramid_openapi3.validate_response"] = True
             settings = request.registry.settings["pyramid_openapi3"]
-            openapi_request = PyramidOpenAPIRequest.create(request)
+            openapi_request = PyramidOpenAPIRequestFactory.create(request)
             request.openapi_validated = settings["request_validator"].validate(
                 openapi_request
             )
