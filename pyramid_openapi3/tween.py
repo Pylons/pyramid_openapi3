@@ -1,8 +1,8 @@
 """A tween to validate openapi responses."""
 
 from .exceptions import ResponseValidationError
-from .wrappers import PyramidOpenAPIRequest
-from .wrappers import PyramidOpenAPIResponse
+from .wrappers import PyramidOpenAPIRequestFactory
+from .wrappers import PyramidOpenAPIResponseFactory
 from pyramid.request import Request
 from pyramid.response import Response
 
@@ -29,8 +29,8 @@ def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]
                 # not an openapi view or response validation not requested
                 return response
             # validate response
-            openapi_request = PyramidOpenAPIRequest.create(request)
-            openapi_response = PyramidOpenAPIResponse.create(response)
+            openapi_request = PyramidOpenAPIRequestFactory.create(request)
+            openapi_response = PyramidOpenAPIResponseFactory.create(response)
             settings = request.registry.settings["pyramid_openapi3"]
             result = settings["response_validator"].validate(
                 request=openapi_request, response=openapi_response

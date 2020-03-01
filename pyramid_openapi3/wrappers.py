@@ -10,10 +10,10 @@ from urllib.parse import urljoin
 import typing as t
 
 
-class PyramidOpenAPIRequest:
+class PyramidOpenAPIRequestFactory:
     @classmethod
     def create(
-        cls: t.Type["PyramidOpenAPIRequest"], request: Request
+        cls: t.Type["PyramidOpenAPIRequestFactory"], request: Request
     ) -> "OpenAPIRequest":
         """Create OpenAPIRequest from Pyramid Request."""
         method = request.method.lower()
@@ -38,10 +38,10 @@ class PyramidOpenAPIRequest:
         )
 
 
-class PyramidOpenAPIResponse:
+class PyramidOpenAPIResponseFactory:
     @classmethod
     def create(
-        cls: t.Type["PyramidOpenAPIResponse"], response: Response
+        cls: t.Type["PyramidOpenAPIResponseFactory"], response: Response
     ) -> "OpenAPIResponse":
         """Create OpenAPIResponse from Pyramid Response."""
         return OpenAPIResponse(
