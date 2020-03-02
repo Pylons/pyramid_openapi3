@@ -1,6 +1,6 @@
 ## Changelog
 
-0.5.0-beta.2 (2020-02-29)
+0.5.0-beta.3 (2020-03-02)
 -------------------------
 
 * Move `openapi_validation_error` from `examples/todoapp` into the main

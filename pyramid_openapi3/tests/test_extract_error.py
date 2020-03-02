@@ -127,6 +127,37 @@ class BadRequestsTests(unittest.TestCase):
             }
         ]
 
+    def test_invalid_path_parameter_regex(self) -> None:
+        """Render nice ValidationError if path parameter does not match regex."""
+        endpoints = """
+          "/foo/{bar}":
+            post:
+              parameters:
+                - name: bar
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    pattern: '^[0-9]{2}-[A-F]{4}$'
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
+        """
+
+        res = self._testapp(
+            view=self.foo, endpoints=endpoints, route="/foo/{bar}"
+        ).post("/foo/not-a-valid-uuid", status=400)
+        assert res.json == [
+            {
+                "exception": "ValidationError",
+                "message": "'not-a-valid-uuid' does not match '^[0-9]{2}-[A-F]{4}$'",
+                # TODO: ideally, this response would include "field"
+                # but I don't know how I can achieve this ATM ¯\_(ツ)_/¯
+            }
+        ]
+
     def test_invalid_path_parameter_uuid(self) -> None:
         """Render nice ValidationError if path parameter is not UUID."""
         endpoints = """
