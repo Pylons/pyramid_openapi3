@@ -1,6 +1,6 @@
 """Configure pyramid_openapi3 addon."""
 
-from .exceptions import extract_error
+from .exceptions import extract_errors
 from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequestFactory
@@ -36,9 +36,9 @@ def includeme(config: Configurator) -> None:
     config.add_tween("pyramid_openapi3.tween.response_tween_factory", over=EXCVIEW)
 
     if not config.registry.settings.get(  # pragma: no branch
-        "pyramid_openapi3_extract_error"
+        "pyramid_openapi3_extract_errors"
     ):
-        config.registry.settings["pyramid_openapi3_extract_error"] = extract_error
+        config.registry.settings["pyramid_openapi3_extract_errors"] = extract_errors
 
     config.add_exception_view(
         view=openapi_validation_error, context=RequestValidationError, renderer="json"
@@ -178,8 +178,8 @@ def openapi_validation_error(
     if isinstance(context, ResponseValidationError):
         logger.warn(context)
 
-    extract_error = request.registry.settings["pyramid_openapi3_extract_error"]
-    errors = [extract_error(request, err) for err in context.errors]
+    extract_errors = request.registry.settings["pyramid_openapi3_extract_errors"]
+    errors = list(extract_errors(request, context.errors))
 
     # If validation failed for request, it is user's fault (-> 400), but if
     # validation failed for response, it is our fault (-> 500)

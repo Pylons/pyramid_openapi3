@@ -347,6 +347,64 @@ class BadRequestsTests(unittest.TestCase):
             }
         ]
 
+    def test_multiple_errors(self) -> None:
+        """Render a list of errors if there are more than one."""
+        endpoints = """
+          /foo:
+            post:
+              requestBody:
+                required: true
+                description: Data for saying foo
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        foo:
+                          type: string
+                          minLength: 5
+                          maxLength: 3
+              parameters:
+                - name: bar
+                  in: query
+                  required: true
+                  schema:
+                    type: string
+                - name: bam
+                  in: query
+                  schema:
+                    type: integer
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
+        """
+        res = self._testapp(view=self.foo, endpoints=endpoints).post_json(
+            "/foo?bam=abc", {"foo": "1234"}, status=400
+        )
+        assert res.json == [
+            {
+                "exception": "MissingRequiredParameter",
+                "message": "Missing required parameter: bar",
+                "field": "bar",
+            },
+            {
+                "exception": "CastError",
+                "message": "Failed to cast value abc to type integer",
+            },
+            {
+                "exception": "ValidationError",
+                "message": "'1234' is too short",
+                "field": "foo",
+            },
+            {
+                "exception": "ValidationError",
+                "message": "'1234' is too long",
+                "field": "foo",
+            },
+        ]
+
 
 class BadResponsesTests(unittest.TestCase):
     """A suite of tests that make sure bad responses are prevented."""

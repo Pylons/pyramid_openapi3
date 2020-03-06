@@ -36,16 +36,18 @@ class ResponseValidationError(HTTPInternalServerError):
         return str(self.detail) if self.detail else self.explanation
 
 
-def extract_error(request: Request, err: OpenAPIError) -> t.Dict[str, str]:
-    """Extract error's JSON response.
+def extract_errors(
+    request: Request, errors: t.List[OpenAPIError]
+) -> t.Iterator[t.Dict[str, str]]:
+    """Extract errors for JSON response.
 
     You can tell pyramid_openapi3 to use your own version of this
     function by providing a dotted-name to your function in
-    `request.registry.settings["pyramid_openapi3_extract_error"]`.
+    `request.registry.settings["pyramid_openapi3_extract_errors"]`.
 
     This function expects the below definition in openapi.yaml
     file. If your openapi.yaml is different, you have to
-    provide your own extract_error() function.
+    provide your own extract_errors() function.
 
     ```
     components:
@@ -77,34 +79,39 @@ def extract_error(request: Request, err: OpenAPIError) -> t.Dict[str, str]:
                   $ref: "#/components/schemas/Error"
     ```
     """
-    if getattr(err, "schema_errors", None) is not None:
-        for schema_error in err.schema_errors:  # pragma: no branch
-            return extract_error(request, schema_error)
+    for err in errors:
+        if getattr(err, "schema_errors", None) is not None:
+            yield from extract_errors(request, err.schema_errors)
+            continue
 
-    output = {"exception": err.__class__.__name__}
+        output = {"exception": err.__class__.__name__}
 
-    if getattr(err, "message", None) is not None:
-        message = err.message
-    else:
-        message = str(err)
+        if getattr(err, "message", None) is not None:
+            message = err.message
+        else:
+            message = str(err)
 
-    output.update({"message": message})
+        output.update({"message": message})
 
-    field = None
-    if getattr(err, "name", None) is not None:
-        field = err.name
-    elif getattr(err, "validator", None) is not None and err.validator == "required":
-        field = "/".join(err.validator_value)
-    elif getattr(err, "validator", None) is not None and err.validator == "format":
-        field = None  # TODO: figure out how to get field name here
-    elif getattr(err, "validator", None) is not None and err.validator == "pattern":
-        field = None  # TODO: figure out how to get field name here
-    elif getattr(err, "path", None) and err.path[0]:
-        field = "/".join(err.path)
-    elif getattr(err, "relative_schema_path", None):
-        field = "/".join(err.relative_schema_path)
+        field = None
+        if getattr(err, "name", None) is not None:
+            field = err.name
+        elif (
+            getattr(err, "validator", None) is not None and err.validator == "required"
+        ):
+            field = "/".join(err.validator_value)
+        elif getattr(err, "validator", None) is not None and err.validator == "format":
+            field = None  # TODO: figure out how to get field name here
+        elif getattr(err, "validator", None) is not None and err.validator == "pattern":
+            field = None  # TODO: figure out how to get field name here
+        elif (
+            getattr(err, "path", None) and err.path[0] and isinstance(err.path[0], str)
+        ):
+            field = "/".join(err.path)
+        elif getattr(err, "relative_schema_path", None):
+            field = "/".join(err.relative_schema_path)
 
-    if field:
-        output.update({"field": field})
+        if field:
+            output.update({"field": field})
 
-    return output
+        yield output

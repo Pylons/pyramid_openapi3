@@ -74,14 +74,18 @@ class TestBadResponses(TestHappyPath):
         """
         with mock.patch("app.ITEMS", ["foo", "bar"]):
             res = self.testapp.get("/", status=500)
-
         self.assertEqual(
             res.json,
             [
                 {
                     "exception": "ValidationError",
-                    "field": "items/type",
                     "message": "'foo' is not of type object",
-                }
+                    "field": "items/type",
+                },
+                {
+                    "exception": "ValidationError",
+                    "message": "'bar' is not of type object",
+                    "field": "items/type",
+                },
             ],
         )
