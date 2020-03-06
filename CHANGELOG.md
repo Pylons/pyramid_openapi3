@@ -6,7 +6,7 @@
 * Move `openapi_validation_error` from `examples/todoapp` into the main
   package so it becomes a first-class citizen and people can use it without
   copy/pasting. If you need custom JSON rendering, you can provide
-  your own `extract_error` function via `pyramid_openapi3_extract_error`
+  your own `extract_errors` function via `pyramid_openapi3_extract_errors`
   config setting.
   [zupo]
 
