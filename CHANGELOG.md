@@ -1,11 +1,11 @@
 ## Changelog
 
-0.5.0-beta.3 (2020-03-02)
--------------------------
+0.5.0 (2020-03-07)
+------------------
 
-* Move `openapi_validation_error` from `examples/todoapp` into the main
-  package so it becomes a first-class citizen and people can use it without
-  copy/pasting. If you need custom JSON rendering, you can provide
+* [BREAKING CHANGE] Move `openapi_validation_error` from `examples/todoapp`
+  into the main package so it becomes a first-class citizen and people can use
+  it without copy/pasting. If you need custom JSON rendering, you can provide
   your own `extract_errors` function via `pyramid_openapi3_extract_errors`
   config setting.
   [zupo]
