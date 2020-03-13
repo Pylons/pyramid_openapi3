@@ -405,6 +405,34 @@ class BadRequestsTests(unittest.TestCase):
             },
         ]
 
+    def test_bad_JWT_token(self) -> None:
+        """Render 401 on bad JWT token."""
+        endpoints = """
+          /foo:
+            get:
+              security:
+                - Token:
+                    []
+              responses:
+                200:
+                  description: Say hello
+                401:
+                  description: Unauthorized
+        components:
+          securitySchemes:
+            Token:
+              type: apiKey
+              name: Authorization
+              in: header
+        """
+        res = self._testapp(view=self.foo, endpoints=endpoints).get("/foo", status=401)
+        assert res.json == [
+            {
+                "exception": "InvalidSecurity",
+                "message": "Security not valid for any requirement",
+            }
+        ]
+
 
 class BadResponsesTests(unittest.TestCase):
     """A suite of tests that make sure bad responses are prevented."""

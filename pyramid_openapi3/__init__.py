@@ -5,6 +5,7 @@ from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequestFactory
 from openapi_core import create_spec
+from openapi_core.validation.exceptions import InvalidSecurity
 from openapi_core.validation.request.validators import RequestValidator
 from openapi_core.validation.response.validators import ResponseValidator
 from openapi_spec_validator import validate_spec
@@ -191,6 +192,10 @@ def openapi_validation_error(
     # validation failed for response, it is our fault (-> 500)
     if isinstance(context, RequestValidationError):
         status_code = 400
+        for error in context.errors:
+            if isinstance(error, InvalidSecurity):
+                status_code = 401
+
     if isinstance(context, ResponseValidationError):
         status_code = 500
 
