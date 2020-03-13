@@ -1,5 +1,13 @@
 ## Changelog
 
+0.5.1 (2020-03-13)
+------------------
+
+* Fix a regression with relative `servers` entries in `openapi.yaml`.
+  Refs https://github.com/p1c2u/openapi-core/issues/218.
+  [zupo]
+
+
 0.5.0 (2020-03-07)
 ------------------
 
