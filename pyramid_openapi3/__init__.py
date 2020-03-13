@@ -68,6 +68,12 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> t.Optional[View]:
             # Validate request and attach all findings for view to introspect
             request.environ["pyramid_openapi3.validate_response"] = True
             settings = request.registry.settings["pyramid_openapi3"]
+
+            # Needed to support relative `servers` entries in `openapi.yaml`,
+            # see https://github.com/p1c2u/openapi-core/issues/218.
+            settings["request_validator"].base_url = request.application_url
+            settings["response_validator"].base_url = request.application_url
+
             openapi_request = PyramidOpenAPIRequestFactory.create(request)
             request.openapi_validated = settings["request_validator"].validate(
                 openapi_request
