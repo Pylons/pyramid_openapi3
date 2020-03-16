@@ -1,5 +1,12 @@
 ## Changelog
 
+0.5.2 (2020-03-16)
+------------------
+
+* Bad JWT tokens should result in 401 instead of 400.
+  [zupo]
+
+
 0.5.1 (2020-03-13)
 ------------------
 
