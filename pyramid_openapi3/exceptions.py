@@ -100,16 +100,10 @@ def extract_errors(
             getattr(err, "validator", None) is not None and err.validator == "required"
         ):
             field = "/".join(err.validator_value)
-        elif getattr(err, "validator", None) is not None and err.validator == "format":
-            field = None  # TODO: figure out how to get field name here
-        elif getattr(err, "validator", None) is not None and err.validator == "pattern":
-            field = None  # TODO: figure out how to get field name here
         elif (
             getattr(err, "path", None) and err.path[0] and isinstance(err.path[0], str)
         ):
             field = "/".join(err.path)
-        elif getattr(err, "relative_schema_path", None):
-            field = "/".join(err.relative_schema_path)
 
         if field:
             output.update({"field": field})

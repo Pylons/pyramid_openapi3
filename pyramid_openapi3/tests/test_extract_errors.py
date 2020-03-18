@@ -502,6 +502,5 @@ class BadResponsesTests(unittest.TestCase):
             {
                 "exception": "ValidationError",
                 "message": "{'foo': 'bar'} is not of type string",
-                "field": "type",
             }
         ]
