@@ -80,12 +80,10 @@ class TestBadResponses(TestHappyPath):
                 {
                     "exception": "ValidationError",
                     "message": "'foo' is not of type object",
-                    "field": "items/type",
                 },
                 {
                     "exception": "ValidationError",
                     "message": "'bar' is not of type object",
-                    "field": "items/type",
                 },
             ],
         )
