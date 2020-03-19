@@ -1,10 +1,12 @@
 """Exceptions used in pyramid_openapi3."""
 
 from openapi_core.schema.exceptions import OpenAPIError
+from openapi_core.unmarshalling.schemas.exceptions import InvalidSchemaFormatValue
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.request import Request
 
+import attr
 import typing as t
 
 
@@ -34,6 +36,17 @@ class ResponseValidationError(HTTPInternalServerError):
     def __str__(self) -> str:
         """Return str(self.detail) or self.explanation."""
         return str(self.detail) if self.detail else self.explanation
+
+
+@attr.s(hash=True)
+class InvalidCustomFormatterValue(InvalidSchemaFormatValue):
+    """Value failed to format with a custom formatter."""
+
+    field = attr.ib()
+
+    def __str__(self) -> str:
+        """Provide more control over error message."""
+        return str(self.original_exception)
 
 
 def extract_errors(
@@ -94,7 +107,9 @@ def extract_errors(
         output.update({"message": message})
 
         field = None
-        if getattr(err, "name", None) is not None:
+        if getattr(err, "field", None) is not None:
+            field = err.field
+        elif getattr(err, "name", None) is not None:
             field = err.name
         elif (
             getattr(err, "validator", None) is not None and err.validator == "required"
