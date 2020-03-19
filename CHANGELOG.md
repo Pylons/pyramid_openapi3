@@ -1,5 +1,12 @@
 ## Changelog
 
+0.6.0 (2020-03-19)
+------------------
+
+* Better support for custom formatters and a test showcasing how to use them.
+  [zupo]
+
+
 0.5.2 (2020-03-16)
 ------------------
 
