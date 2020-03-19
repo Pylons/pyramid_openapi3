@@ -1,8 +1,11 @@
 """Test rendering errors as JSON responses."""
 
+from openapi_core.unmarshalling.schemas.formatters import Formatter
 from pyramid.config import Configurator
 from pyramid.httpexceptions import exception_response
 from pyramid.router import Router
+from pyramid_openapi3.exceptions import InvalidCustomFormatterValue
+from pyramid_openapi3.exceptions import RequestValidationError
 from webtest.app import TestApp
 
 import tempfile
@@ -502,5 +505,117 @@ class BadResponsesTests(unittest.TestCase):
             {
                 "exception": "ValidationError",
                 "message": "{'foo': 'bar'} is not of type string",
+            }
+        ]
+
+
+class CustomFormattersTests(unittest.TestCase):
+    """A suite of tests that showcase how custom formatters can be used."""
+
+    def hello(self, context, request) -> str:
+        """Say hello."""
+        return f"Hello {request.openapi_validated.body['name']}"
+
+    class UniqueName(Formatter):  # noqa: D106
+        def validate(self, name: str) -> str:
+            """Ensure name is unique."""
+            if not isinstance(name, str):
+                return name
+
+            name = name.lower()
+            if name in ["alice", "bob"]:
+                raise RequestValidationError(
+                    errors=[
+                        InvalidCustomFormatterValue(  # type: ignore
+                            value=name,
+                            type="unique-name",
+                            original_exception=f"Name '{name}' already taken. Choose a different name!",
+                            field="name",
+                        )
+                    ]
+                )
+            return name
+
+    OPENAPI_YAML = """
+        openapi: "3.0.0"
+        info:
+          version: "1.0.0"
+          title: Foo
+        paths:
+          /hello:
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      required:
+                        - name
+                      properties:
+                        name:
+                          type: string
+                          minLength: 3
+                          format: unique-name
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
+    """
+
+    def _testapp(self) -> TestApp:
+        """Start up the app so that tests can send requests to it."""
+        from webtest import TestApp
+
+        with tempfile.NamedTemporaryFile() as document:
+            document.write(self.OPENAPI_YAML.encode())
+            document.seek(0)
+
+            with Configurator() as config:
+                config.include("pyramid_openapi3")
+                config.pyramid_openapi3_spec(document.name)
+                config.pyramid_openapi3_add_formatter("unique-name", self.UniqueName())
+                config.add_route("hello", "/hello")
+                config.add_view(
+                    openapi=True, renderer="json", view=self.hello, route_name="hello"
+                )
+                app = config.make_wsgi_app()
+
+            return TestApp(app)
+
+    def test_say_hello(self) -> None:
+        """Test happy path."""
+        res = self._testapp().post_json("/hello", {"name": "zupo"}, status=200)
+        assert res.json == "Hello zupo"
+
+    def test_name_taken(self) -> None:
+        """Test passing a name that is taken."""
+        res = self._testapp().post_json("/hello", {"name": "Alice"}, status=400)
+        assert res.json == [
+            {
+                "exception": "InvalidCustomFormatterValue",
+                "field": "name",
+                "message": "Name 'alice' already taken. Choose a different name!",
+            }
+        ]
+
+    def test_invalid_name(self) -> None:
+        """Test that built-in type formatters do their job."""
+        res = self._testapp().post_json("/hello", {"name": 12}, status=400)
+        assert res.json == [
+            {
+                "exception": "ValidationError",
+                "message": "12 is not of type string",
+                "field": "name",
+            }
+        ]
+
+        res = self._testapp().post_json("/hello", {"name": "yo"}, status=400)
+        assert res.json == [
+            {
+                "exception": "ValidationError",
+                "message": "'yo' is too short",
+                "field": "name",
             }
         ]
