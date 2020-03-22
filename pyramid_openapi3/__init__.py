@@ -50,10 +50,11 @@ def includeme(config: Configurator) -> None:
     )
 
 
-View = t.Callable[[t.Any, Request], Response]
+Context = t.TypeVar("Context")
+View = t.Callable[[Context, Request], Response]
 
 
-def openapi_view(view: View, info: ViewDeriverInfo) -> t.Optional[View]:
+def openapi_view(view: View, info: ViewDeriverInfo) -> View:
     """View deriver that takes care of request/response validation.
 
     If `openapi=True` is passed to `@view_config`, this decorator will:
@@ -65,7 +66,7 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> t.Optional[View]:
     """
     if info.options.get("openapi"):
 
-        def wrapper_view(context: t.Any, request: Request):
+        def wrapper_view(context: Context, request: Request) -> Response:
             # Validate request and attach all findings for view to introspect
             request.environ["pyramid_openapi3.validate_response"] = True
             settings = request.registry.settings["pyramid_openapi3"]
