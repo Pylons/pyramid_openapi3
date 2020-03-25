@@ -115,3 +115,6 @@ typecov/
 
 # `make install` flag
 .installed
+
+# support for fast reloading direnv
+.direnv
