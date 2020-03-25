@@ -21,9 +21,21 @@ install:
 		> .installed
 
 # Testing and linting targets
+all = false
+
+# Testing and linting targets
 .PHONY: lint
 lint: .installed
-	@pipenv run pre-commit run --all-files --hook-stage push
+# 1. get all unstaged modified files
+# 2. get all staged modified files
+# 3. get all untracked files
+# 4. run pre-commit checks on them
+ifeq ($(all),true)
+	@pipenv run pre-commit run --hook-stage push --all-files
+else
+	@{ git diff --name-only ./; git diff --name-only --staged ./;git ls-files --other --exclude-standard; } \
+		| sort -u | uniq | xargs pipenv run pre-commit run --hook-stage push --files
+endif
 
 .PHONY: type
 type: types
@@ -37,44 +49,36 @@ types: .installed
 	@cat ./typecov/linecount.txt
 	@pipenv run typecov 100 ./typecov/linecount.txt
 
-.PHONY: sort
-sort: .installed
-	@pipenv run isort -rc --atomic pyramid_openapi3
-	@pipenv run isort -rc --atomic setup.py
-
-.PHONY: fmt
-fmt: format
-
-.PHONY: black
-black: format
-
-.PHONY: format
-format: .installed sort
-	@pipenv run black examples
-	@pipenv run black pyramid_openapi3
-	@pipenv run black setup.py
 
 # anything, in regex-speak
 filter = "."
+
 # additional arguments for pytest
+unit_test_all = "false"
+ifeq ($(filter),".")
+	unit_test_all = "true"
+endif
 args = ""
 pytest_args = -k $(filter) $(args)
-coverage_args = --cov=pyramid_openapi3 --cov-branch --cov-report html --cov-report xml:cov.xml --cov-report term-missing --cov-fail-under=100
+coverage_args = ""
+ifeq ($(unit_test_all),"true")
+	coverage_args = --cov=pyramid_openapi3 --cov-branch --cov-report html --cov-report xml:cov.xml --cov-report term-missing --cov-fail-under=100
+endif
 
 .PHONY: unit
 unit: .installed
-	@pipenv run pytest pyramid_openapi3/ $(coverage_args) $(pytest_args)
+	@pipenv run pytest pyramid_openapi3 $(coverage_args) $(pytest_args)
 
 .PHONY: test
 test: tests
 
 .PHONY: tests
-tests: format lint types unit
+tests: lint types unit
 
 .PHONY: clean
 clean:
 	@if [ -d ".venv/" ]; then pipenv --rm; fi
 	@rm -rf .coverage htmlcov/ pyramid_openapi3.egg-info xunit.xml \
-	    htmltypecov typecov \
-	    .git/hooks/pre-commit .git/hooks/pre-push
+		htmltypecov typecov \
+		.git/hooks/pre-commit .git/hooks/pre-push
 	@rm -f .installed
