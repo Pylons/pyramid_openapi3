@@ -2,57 +2,55 @@
     hooks:
     -   id: isort
         name: isort
-        entry: make sort
+        description: A Python utility that sorts imports alphabetically
+        entry: pipenv run isort -rc --atomic
         language: system
         types: [python]
 
     -   id: flake8
         name: Flake8
+        description: Python Style Guide Enforcement
         entry: pipenv run flake8
         language: system
         types: [python]
 
     -   id: black
-        name: black
+        name: Black
+        description: Uncompromising Python code formatter
         entry: pipenv run black
         language: system
         types: [python]
 
     -   id: trailing-whitespace
-        name: Trim Trailing Space
+        name: Trailing Space
         entry: pipenv run trailing-whitespace-fixer
         language: system
         types: [non-executable, file, text]
-        exclude_types: [svg]
 
     -   id: end-of-file-fixer
-        name: Fix End of Files
+        name: End of Files
         description: Ensures that a file is either empty, or ends with one newline.
         entry: pipenv run end-of-file-fixer
         language: system
         types: [non-executable, file, text]
-        exclude_types: [svg]
 
     -   id: check-merge-conflict
-        name: Check for merge conflicts
+        name: Merge Conflicts
         description: Check for files that contain merge conflict strings.
         entry: pipenv run check-merge-conflict
         language: system
-        stages: [push]
+        types: [non-executable, file, text]
 
     -   id: codespell
-        name: Check Spelling
+        name: Spelling
         description: Checks for common misspellings in text files.
         entry: pipenv run codespell --ignore-words .aspell.en.pws
         language: system
         types: [non-executable, file, text]
-        exclude_types: [svg]
-        stages: [push]
 
     -   id: debug-statements
-        name: Check Debug Statements Absent (Python)
+        name: Debug Statements
         description: Checks that debug statements (pdb, ipdb, pudb) are not imported on commit.
         entry: pipenv run debug-statement-hook
         language: system
         types: [python]
-        stages: [push]

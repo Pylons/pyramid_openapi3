@@ -67,7 +67,9 @@ jobs:
       - run:
           name: run tests
           command: |
-            make tests
+            make lint all=true
+            make types
+            make unit
 
       - run:
           name: run tests for the singlefile example
