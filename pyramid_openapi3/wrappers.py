@@ -5,7 +5,6 @@ from openapi_core.validation.request.datatypes import RequestParameters
 from openapi_core.validation.response.datatypes import OpenAPIResponse
 from pyramid.request import Request
 from pyramid.response import Response
-from urllib.parse import urljoin
 
 import typing as t
 
@@ -18,8 +17,15 @@ class PyramidOpenAPIRequestFactory:
         """Create OpenAPIRequest from Pyramid Request."""
         method = request.method.lower()
         path_pattern = (
-            request.matched_route.pattern if request.matched_route else request.path
+            request.matched_route.pattern
+            if request.matched_route
+            else request.path_info
         )
+        # a path pattern is not normalized in pyramid so it may or may not
+        # start with a leading /, so normalize it here
+        path_pattern = path_pattern.lstrip("/")
+        app_url = request.application_url.rstrip("/")
+        full_url_pattern = app_url + "/" + path_pattern
 
         parameters = RequestParameters(
             path=request.matchdict,
@@ -27,7 +33,6 @@ class PyramidOpenAPIRequestFactory:
             header=request.headers,
             cookie=request.cookies,
         )
-        full_url_pattern = urljoin(request.host_url, path_pattern)
 
         return OpenAPIRequest(
             full_url_pattern=full_url_pattern,
