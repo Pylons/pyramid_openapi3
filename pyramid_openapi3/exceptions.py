@@ -28,8 +28,9 @@ class ResponseValidationError(HTTPInternalServerError):
 
     explanation = "Response validation failed."
 
-    def __init__(self, *args, errors, **kwargs) -> None:
+    def __init__(self, *args, response, errors, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.response = response
         self.errors = errors
         self.detail = self.message = "\n".join(str(e) for e in errors)
 
