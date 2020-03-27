@@ -24,8 +24,7 @@ class PyramidOpenAPIRequestFactory:
         # a path pattern is not normalized in pyramid so it may or may not
         # start with a leading /, so normalize it here
         path_pattern = path_pattern.lstrip("/")
-        app_url = request.application_url.rstrip("/")
-        full_url_pattern = app_url + "/" + path_pattern
+        full_url_pattern = request.application_url + "/" + path_pattern
 
         parameters = RequestParameters(
             path=request.matchdict,
