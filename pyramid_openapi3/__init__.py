@@ -22,6 +22,7 @@ from pyramid.response import Response
 from pyramid.tweens import EXCVIEW
 from string import Template
 
+import hupper
 import logging
 import typing as t
 
@@ -153,6 +154,8 @@ def add_spec_view(
     """
 
     def register() -> None:
+        if hupper.is_active():  # pragma: no cover
+            hupper.get_reloader().watch_files([filepath])
         spec_dict = read_yaml_file(filepath)
 
         validate_spec(spec_dict)
