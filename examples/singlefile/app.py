@@ -112,7 +112,7 @@ class FunctionalTests(unittest.TestCase):
         the servers fault to generate an invalid response.
 
         This is to prevent us from forgetting to define all possible responses
-        in our opeanapi document.
+        in our openapi document.
         """
         res = self.testapp.get("/hello?name=admin", status=500)
         self.assertIn("Unknown response http status: 403", res.text)
