@@ -1,5 +1,19 @@
 ## Changelog
 
+0.7.0 (2020-04-03)
+------------------
+
+* Better support for handling apps mounted at subpaths.
+  [mmerickel]
+
+* Pass the response into the response validation exception to support use-cases
+  where we can return the response but log the errors.
+  [mmerickel]
+
+* Reload development server also when YAML file changes.
+  [mmerickel]
+
+
 0.6.0 (2020-03-19)
 ------------------
 
