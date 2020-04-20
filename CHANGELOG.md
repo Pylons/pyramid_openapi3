@@ -1,5 +1,15 @@
 ## Changelog
 
+0.8.0 (2020-04-20)
+------------------
+
+* Log Response validation errors as errors, instead of warnings.
+  [zupo]
+
+* Log Request validation errors as warnings, instead of infos.
+  [zupo]
+
+
 0.7.0 (2020-04-03)
 ------------------
 
