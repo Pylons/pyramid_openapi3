@@ -145,7 +145,7 @@ class TestRequestValidation(TestCase):
             "HTTP_ACCEPT": "application/json",
         }
         start_response = DummyStartResponse()
-        with self.assertLogs(level="INFO") as cm:
+        with self.assertLogs(level="WARNING") as cm:
             response = router(environ, start_response)
 
         self.assertEqual(start_response.status, "400 Bad Request")
@@ -160,7 +160,7 @@ class TestRequestValidation(TestCase):
             ],
         )
         self.assertEqual(
-            cm.output, ["INFO:pyramid_openapi3:Missing required parameter: bar"]
+            cm.output, ["WARNING:pyramid_openapi3:Missing required parameter: bar"]
         )
 
     def test_response_validation_error(self) -> None:
@@ -186,7 +186,7 @@ class TestRequestValidation(TestCase):
             "QUERY_STRING": "bar=1",
         }
         start_response = DummyStartResponse()
-        with self.assertLogs(level="WARN") as cm:
+        with self.assertLogs(level="ERROR") as cm:
             response = router(environ, start_response)
         self.assertEqual(start_response.status, "500 Internal Server Error")
         self.assertEqual(
@@ -199,7 +199,7 @@ class TestRequestValidation(TestCase):
             ],
         )
         self.assertEqual(
-            cm.output, ["WARNING:pyramid_openapi3:Unknown response http status: 412"]
+            cm.output, ["ERROR:pyramid_openapi3:Unknown response http status: 412"]
         )
 
     def test_nonapi_view(self) -> None:
