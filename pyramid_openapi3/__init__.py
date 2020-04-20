@@ -185,9 +185,9 @@ def openapi_validation_error(
 ) -> Response:
     """Render any validation errors as JSON."""
     if isinstance(context, RequestValidationError):
-        logger.info(context)
+        logger.warning(context)
     if isinstance(context, ResponseValidationError):
-        logger.warn(context)
+        logger.error(context)
 
     extract_errors = request.registry.settings["pyramid_openapi3_extract_errors"]
     errors = list(extract_errors(request, context.errors))
