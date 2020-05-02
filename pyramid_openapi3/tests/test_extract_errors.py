@@ -436,6 +436,51 @@ class BadRequestsTests(unittest.TestCase):
             }
         ]
 
+    def test_lists(self) -> None:
+        """Error extracting works for lists too."""
+        endpoints = """
+          /foo:
+            post:
+              requestBody:
+                description: A list of bars
+                content:
+                  application/json:
+                    schema:
+                      required:
+                        - foo
+                      type: object
+                      properties:
+                        foo:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/bar"
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
+        components:
+          schemas:
+            bar:
+              required:
+                - bam
+              type: object
+              properties:
+                bam:
+                  type: number
+        """
+        res = self._testapp(view=self.foo, endpoints=endpoints).post_json(
+            "/foo", {"foo": [{"bam": "not a number"}]}, status=400
+        )
+
+        assert res.json == [
+            {
+                "exception": "ValidationError",
+                "message": "'not a number' is not of type number",
+                "field": "foo/0/bam",
+            }
+        ]
+
 
 class BadResponsesTests(unittest.TestCase):
     """A suite of tests that make sure bad responses are prevented."""
