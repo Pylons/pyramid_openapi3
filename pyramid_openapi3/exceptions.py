@@ -119,7 +119,7 @@ def extract_errors(
         elif (
             getattr(err, "path", None) and err.path[0] and isinstance(err.path[0], str)
         ):
-            field = "/".join(err.path)
+            field = "/".join([str(part) for part in err.path])
 
         if field:
             output.update({"field": field})
