@@ -1,5 +1,12 @@
 ## Changelog
 
+0.8.1 (2020-05-03)
+------------------
+
+* Fix extract_errors to support lists, refs #75.
+  [zupo]
+
+
 0.8.0 (2020-04-20)
 ------------------
 
