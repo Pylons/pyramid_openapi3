@@ -50,6 +50,10 @@ class InvalidCustomFormatterValue(InvalidSchemaFormatValue):
         return str(self.original_exception)
 
 
+class ImproperAPISpecificationWarning(UserWarning):
+    """A warning that an end-user's API specification has a problem."""
+
+
 def extract_errors(
     request: Request, errors: t.List[OpenAPIError]
 ) -> t.Iterator[t.Dict[str, str]]:

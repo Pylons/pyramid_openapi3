@@ -1,5 +1,5 @@
 """A tween to validate openapi responses."""
-
+from .exceptions import ImproperAPISpecificationWarning
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequestFactory
 from .wrappers import PyramidOpenAPIResponseFactory
@@ -7,6 +7,7 @@ from pyramid.request import Request
 from pyramid.response import Response
 
 import typing as t
+import warnings
 
 
 def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]:
@@ -36,6 +37,21 @@ def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]
                 request=openapi_request, response=openapi_response
             )
             if result.errors:
+                if request.openapi_validated.errors:
+                    warnings.warn_explicit(
+                        ImproperAPISpecificationWarning(
+                            "Discarding {response.status} validation error with body "
+                            "{response.text} as it is not a valid response for "
+                            "{request.method} to {request.path} ({route.name})".format(
+                                response=response,
+                                request=request,
+                                route=request.matched_route,
+                            )
+                        ),
+                        None,
+                        registry.settings["pyramid_openapi3"]["filepath"],
+                        0,
+                    )
                 raise ResponseValidationError(
                     response=response, errors=result.errors,
                 )

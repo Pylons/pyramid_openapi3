@@ -1,5 +1,11 @@
 ## Changelog
 
+0.8.2 (Unreleased)
+------------------
+
+* Raise a warning when a bad API spec causes validation errors to be discarded.
+  [matthewwilkes]
+
 0.8.1 (2020-05-03)
 ------------------
 
