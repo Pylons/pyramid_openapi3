@@ -16,6 +16,7 @@ from zope.interface import Interface
 import json
 import tempfile
 import typing as t
+import warnings
 
 View = t.Callable[[t.Any, Request], Response]
 
@@ -33,7 +34,9 @@ class DummyStartResponse(object):
         self.headerlist = headerlist
 
 
-class TestRequestValidation(TestCase):
+class RequestValidationBase(TestCase):
+    openapi_spec: bytes
+
     def setUp(self) -> None:
         """unittest.TestCase setUp for each test method.
 
@@ -44,26 +47,7 @@ class TestRequestValidation(TestCase):
         self.config.include("pyramid_openapi3")
 
         with tempfile.NamedTemporaryFile() as document:
-            document.write(
-                b'openapi: "3.0.0"\n'
-                b"info:\n"
-                b'  version: "1.0.0"\n'
-                b"  title: Foo API\n"
-                b"paths:\n"
-                b"  /foo:\n"
-                b"    get:\n"
-                b"      parameters:\n"
-                b"        - name: bar\n"
-                b"          in: query\n"
-                b"          required: true\n"
-                b"          schema:\n"
-                b"            type: integer\n"
-                b"      responses:\n"
-                b"        200:\n"
-                b"          description: A foo\n"
-                b"        400:\n"
-                b"          description: Bad Request\n"
-            )
+            document.write(self.openapi_spec)
             document.seek(0)
 
             self.config.pyramid_openapi3_spec(
@@ -109,6 +93,30 @@ class TestRequestValidation(TestCase):
         )
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
         return request
+
+
+class TestRequestValidation(RequestValidationBase):
+
+    openapi_spec = (
+        b'openapi: "3.0.0"\n'
+        b"info:\n"
+        b'  version: "1.0.0"\n'
+        b"  title: Foo API\n"
+        b"paths:\n"
+        b"  /foo:\n"
+        b"    get:\n"
+        b"      parameters:\n"
+        b"        - name: bar\n"
+        b"          in: query\n"
+        b"          required: true\n"
+        b"          schema:\n"
+        b"            type: integer\n"
+        b"      responses:\n"
+        b"        200:\n"
+        b"          description: A foo\n"
+        b"        400:\n"
+        b"          description: Bad Request\n"
+    )
 
     def test_view_raises_valid_http_exception(self) -> None:
         """Test View raises HTTPException.
@@ -218,3 +226,72 @@ class TestRequestValidation(TestCase):
         response = router(environ, start_response)
         self.assertEqual(start_response.status, "200 OK")
         self.assertIn(b"foo", b"".join(response))
+
+
+class TestImproperAPISpecValidation(RequestValidationBase):
+
+    openapi_spec = (
+        b'openapi: "3.0.0"\n'
+        b"info:\n"
+        b'  version: "1.0.0"\n'
+        b"  title: Foo API\n"
+        b"paths:\n"
+        b"  /foo:\n"
+        b"    get:\n"
+        b"      parameters:\n"
+        b"        - name: bar\n"
+        b"          in: query\n"
+        b"          required: true\n"
+        b"          schema:\n"
+        b"            type: integer\n"
+        b"      responses:\n"
+        b"        200:\n"
+        b"          description: A foo\n"
+    )
+
+    def test_request_validation_error_causes_response_validation_error(self) -> None:
+        """Tests fallback for when request validation is disallowed by the spec.
+
+        When a request fails validation an exception is raised which causes
+        a 400 error to be raised to the end user specifying what the problem was.
+        If the API spec disallows 400 errors, this will be transformed into a
+        500 error with a response validation message about incorrect types.
+
+        We should also raise a warning in this case, so developers are alerted to
+        such problems.
+        """
+        self._add_view()
+        # run request through router
+        router = Router(self.config.registry)
+        environ = {
+            "wsgi.url_scheme": "http",
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": "8080",
+            "REQUEST_METHOD": "GET",
+            "PATH_INFO": "/foo",
+            "HTTP_ACCEPT": "application/json",
+            "QUERY_STRING": "unknown=1",
+        }
+        start_response = DummyStartResponse()
+        with self.assertLogs(level="ERROR") as cm:
+            with warnings.catch_warnings(record=True) as cw:
+                response = router(environ, start_response)
+                self.assertEqual(len(cw), 1)
+                self.assertEqual(
+                    str(cw[0].message),
+                    'Discarding 400 Bad Request validation error with body [{"exception":"MissingRequiredParameter","message":"Missing required parameter: bar","field":"bar"}] as it is not a valid response for GET to /foo (foo)',
+                )
+        self.assertEqual(
+            cm.output, ["ERROR:pyramid_openapi3:Unknown response http status: 400"]
+        )
+
+        self.assertEqual(start_response.status, "500 Internal Server Error")
+        self.assertEqual(
+            json.loads(response[0]),
+            [
+                {
+                    "exception": "InvalidResponse",
+                    "message": "Unknown response http status: 400",
+                }
+            ],
+        )
