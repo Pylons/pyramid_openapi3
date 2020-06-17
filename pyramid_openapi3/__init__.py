@@ -173,8 +173,12 @@ def add_spec_view(
             "filepath": filepath,
             "spec_route_name": route_name,
             "spec": spec,
-            "request_validator": RequestValidator(spec, custom_formatters),
-            "response_validator": ResponseValidator(spec, custom_formatters),
+            "request_validator": RequestValidator(
+                spec, custom_formatters=custom_formatters
+            ),
+            "response_validator": ResponseValidator(
+                spec, custom_formatters=custom_formatters
+            ),
         }
 
     config.action(("pyramid_openapi3_spec",), register, order=PHASE0_CONFIG)
