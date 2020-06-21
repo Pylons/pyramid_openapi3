@@ -43,14 +43,12 @@ jobs:
       - checkout
 
       - run:
-          name: Prepare cache key
-          command: python --version > python_version.txt
+          name: Test minimal openapi-core version on Python 3.7
+          command: ./inject_minimal_openapi-core.sh
 
       - restore_cache:
           keys:
-            - v5-dependencies-{{ checksum "python_version.txt" }}-{{ checksum "Pipfile.lock" }}
-            # fallback to using the latest cache if no exact match is found
-            - v5-dependencies-{{ checksum "python_version.txt" }}
+            - v1-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install dependencies
@@ -62,7 +60,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v5-dependencies-{{ checksum "python_version.txt" }}-{{ checksum "Pipfile.lock" }}
+          key: v1-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run tests
@@ -94,15 +92,9 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: Prepare cache key
-          command: python --version > python_version.txt
-
       - restore_cache:
           keys:
-            - v5-dependencies-{{ checksum "python_version.txt" }}-{{ checksum "Pipfile.lock" }}
-            # fallback to using the latest cache if no exact match is found
-            - v5-dependencies-{{ checksum "python_version.txt" }}
+            - v1-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install dependencies
@@ -115,7 +107,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v5-dependencies-{{ checksum "python_version.txt" }}-{{ checksum "Pipfile.lock" }}
+          key: v1-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: verify git tag vs. version
