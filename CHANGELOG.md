@@ -1,10 +1,17 @@
 ## Changelog
 
-0.8.2 (Unreleased)
+0.8.2 (2020-06-21)
 ------------------
 
 * Raise a warning when a bad API spec causes validation errors to be discarded.
   [matthewwilkes]
+
+* Fix `custom_formatters` support in latest openapi-core 0.13.3.
+  [simondale00]
+
+* Declare a minimal supported version of openapi-core.
+  [zupo]
+
 
 0.8.1 (2020-05-03)
 ------------------
