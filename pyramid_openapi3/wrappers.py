@@ -29,7 +29,7 @@ class PyramidOpenAPIRequestFactory:
         parameters = RequestParameters(
             path=request.matchdict,
             query=request.GET,
-            header=request.headers,
+            header=request.headers.items(),
             cookie=request.cookies,
         )
 
