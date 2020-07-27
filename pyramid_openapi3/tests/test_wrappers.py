@@ -65,7 +65,7 @@ def test_relative_app_request() -> None:
     assert openapi_request.parameters == RequestParameters(
         path={"foo": "bar"},
         query={},
-        header=pyramid_request.headers,
+        header=pyramid_request.headers.items(),
         cookie={"tasty-foo": "tasty-bar"},
     )
 
