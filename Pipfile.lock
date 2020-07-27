@@ -82,11 +82,11 @@
         },
         "openapi-core": {
             "hashes": [
-                "sha256:57973b7383214a529012cf65ddac8c22b25a4df497366e588e88c627581c2928",
-                "sha256:8c5e2053c51f8d43d241b54d322f6c1c32adf1a20617490d361d9c0d5a123448",
-                "sha256:df53cc8b9d217616bbde4e6ef943c9213af810a01cd74f62e7885756c6080af4"
+                "sha256:1b4a21e2f0f5d567fb0835929d0a3fb7456f5091b6297f46a9cabaa7d8b05639",
+                "sha256:f2ef90ae4a97a6efa0c47a2e8740afcd378cd478e76e778115a8c0c376e9541e",
+                "sha256:b8b4283d84038495fb3bde4a868cd9377272ecf898f142d7706d6d49fc14d218"
             ],
-            "version": "==0.13.3"
+            "version": "==0.13.4"
         },
         "openapi-schema-validator": {
             "hashes": [
