@@ -6,6 +6,7 @@ from pyramid.request import Request
 from pyramid.testing import DummyRequest
 from pyramid_openapi3.wrappers import PyramidOpenAPIRequestFactory
 from pyramid_openapi3.wrappers import PyramidOpenAPIResponseFactory
+from pyramid_openapi3.wrappers import request_headers
 
 
 @dataclass
@@ -65,7 +66,7 @@ def test_relative_app_request() -> None:
     assert openapi_request.parameters == RequestParameters(
         path={"foo": "bar"},
         query={},
-        header=pyramid_request.headers,
+        header=request_headers(pyramid_request),
         cookie={"tasty-foo": "tasty-bar"},
     )
 

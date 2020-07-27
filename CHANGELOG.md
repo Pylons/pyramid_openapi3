@@ -1,5 +1,12 @@
 ## Changelog
 
+0.8.4 (Unreleased)
+------------------
+
+* Add support for openapi-core 0.13.4.
+  [sjiekak]
+
+
 0.8.3 (2020-06-21)
 ------------------
 
