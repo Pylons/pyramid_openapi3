@@ -17,10 +17,8 @@ def request_headers(request: Request):
     """
     import openapi_core
 
-    headers = request.headers.items()
-    if openapi_core.__version__ < "0.13.4":
-        headers = request.headers
-    return headers
+    use_dict = openapi_core.__version__ < "0.13.4"
+    return request.headers if use_dict else request.headers.items()
 
 
 class PyramidOpenAPIRequestFactory:
