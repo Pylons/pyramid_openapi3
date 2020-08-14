@@ -77,6 +77,19 @@ def myview(request):
 For requests, `request.openapi_validated` is available with two fields: `parameters` and `body`.
 For responses, if the payload does not match the API document, an exception is raised.
 
+## Advanced configuration
+
+If you would like to disable request / response validation, you can do so by adjusting either of the following options (you can also set them in your `.ini` if you prefer)
+
+```python
+config.registry.settings["pyramid_openapi3.enable_request_validation"] = False
+config.registry.settings["pyramid_openapi3.enable_response_validation"] = False
+```
+
+These values default to `True` if they are not present.
+
+> **Warning:**
+Disabling request validation will result in `request.openapi_validated` no longer being available to use.
 
 ## Demo / Examples
 

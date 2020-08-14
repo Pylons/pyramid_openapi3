@@ -36,8 +36,9 @@ def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]
             result = settings["response_validator"].validate(
                 request=openapi_request, response=openapi_response
             )
+            request_validated = request.environ.get("pyramid_openapi3.validate_request")
             if result.errors:
-                if request.openapi_validated.errors:
+                if request_validated and request.openapi_validated.errors:
                     warnings.warn_explicit(
                         ImproperAPISpecificationWarning(
                             "Discarding {response.status} validation error with body "

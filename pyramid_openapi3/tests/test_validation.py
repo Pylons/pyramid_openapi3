@@ -98,9 +98,9 @@ class RequestValidationBase(TestCase):
 class TestRequestValidation(RequestValidationBase):
 
     openapi_spec = (
-        b'openapi: "3.0.0"\n'
+        b"openapi: '3.0.0'\n"
         b"info:\n"
-        b'  version: "1.0.0"\n'
+        b"  version: '1.0.0'\n"
         b"  title: Foo API\n"
         b"paths:\n"
         b"  /foo:\n"
@@ -114,6 +114,13 @@ class TestRequestValidation(RequestValidationBase):
         b"      responses:\n"
         b"        200:\n"
         b"          description: A foo\n"
+        b"          content:\n"
+        b"            application/json:\n"
+        b"              schema:\n"
+        b"                type: object\n"
+        b"                properties:\n"
+        b"                  test:\n"
+        b"                    type: string\n"
         b"        400:\n"
         b"          description: Bad Request\n"
     )
@@ -138,6 +145,25 @@ class TestRequestValidation(RequestValidationBase):
         # exception response ourselves.
         response.prepare({"HTTP_ACCEPT": "application/json"})
         self.assertIn("bad foo request", response.json["message"])
+
+    def test_view_valid_request_response(self) -> None:
+        """Test openapi validated view which has correct request and response."""
+        self._add_view(lambda *arg: {"test": "correct"})
+        # run request through router
+        router = Router(self.config.registry)
+        environ = {
+            "wsgi.url_scheme": "http",
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": "8080",
+            "REQUEST_METHOD": "GET",
+            "PATH_INFO": "/foo",
+            "HTTP_ACCEPT": "application/json",
+            "QUERY_STRING": "bar=1",
+        }
+        start_response = DummyStartResponse()
+        response = router(environ, start_response)
+        self.assertEqual(start_response.status, "200 OK")
+        self.assertEqual(json.loads(response[0]), {"test": "correct"})
 
     def test_request_validation_error(self) -> None:
         """Request validation errors are rendered as 400 JSON responses."""
@@ -226,6 +252,51 @@ class TestRequestValidation(RequestValidationBase):
         response = router(environ, start_response)
         self.assertEqual(start_response.status, "200 OK")
         self.assertIn(b"foo", b"".join(response))
+
+    def test_request_validation_disabled(self) -> None:
+        """Test View with request validation disabled."""
+        self.config.registry.settings[
+            "pyramid_openapi3.enable_request_validation"
+        ] = False
+        self._add_view(lambda *arg: {"test": "correct"})
+        # run request through router
+        router = Router(self.config.registry)
+        environ = {
+            "wsgi.url_scheme": "http",
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": "8080",
+            "REQUEST_METHOD": "GET",
+            "PATH_INFO": "/foo",
+            "HTTP_ACCEPT": "application/json",
+            "QUERY_STRING": "bar=1",
+        }
+        start_response = DummyStartResponse()
+        response = router(environ, start_response)
+        self.assertEqual(start_response.status, "200 OK")
+        self.assertEqual(json.loads(response[0]), {"test": "correct"})
+
+    def test_response_validation_disabled(self) -> None:
+        """Test View with response validation disabled."""
+        self.config.registry.settings[
+            "pyramid_openapi3.enable_response_validation"
+        ] = False
+        self._add_view(lambda *arg: "not-valid")
+
+        # run request through router
+        router = Router(self.config.registry)
+        environ = {
+            "wsgi.url_scheme": "http",
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": "8080",
+            "REQUEST_METHOD": "GET",
+            "PATH_INFO": "/foo",
+            "HTTP_ACCEPT": "application/json",
+            "QUERY_STRING": "bar=1",
+        }
+        start_response = DummyStartResponse()
+        response = router(environ, start_response)
+        self.assertEqual(start_response.status, "200 OK")
+        self.assertIn(b'"not-valid"', response)
 
 
 class TestImproperAPISpecValidation(RequestValidationBase):
