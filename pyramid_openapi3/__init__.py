@@ -19,6 +19,7 @@ from pyramid.path import AssetResolver
 from pyramid.request import Request
 from pyramid.response import FileResponse
 from pyramid.response import Response
+from pyramid.settings import asbool
 from pyramid.tweens import EXCVIEW
 from string import Template
 
@@ -69,7 +70,17 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
 
         def wrapper_view(context: Context, request: Request) -> Response:
             # Validate request and attach all findings for view to introspect
-            request.environ["pyramid_openapi3.validate_response"] = True
+            validate_request = asbool(
+                request.registry.settings.get(
+                    "pyramid_openapi3.enable_request_validation", True
+                )
+            )
+            validate_response = asbool(
+                request.registry.settings.get(
+                    "pyramid_openapi3.enable_response_validation", True
+                )
+            )
+            request.environ["pyramid_openapi3.validate_response"] = validate_response
             settings = request.registry.settings["pyramid_openapi3"]
 
             # Needed to support relative `servers` entries in `openapi.yaml`,
@@ -77,12 +88,17 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
             settings["request_validator"].base_url = request.application_url
             settings["response_validator"].base_url = request.application_url
 
-            openapi_request = PyramidOpenAPIRequestFactory.create(request)
-            request.openapi_validated = settings["request_validator"].validate(
-                openapi_request
-            )
-            if request.openapi_validated.errors:
-                raise RequestValidationError(errors=request.openapi_validated.errors)
+            if validate_request:
+                request.environ["pyramid_openapi3.validate_request"] = True
+                openapi_request = PyramidOpenAPIRequestFactory.create(request)
+                request.openapi_validated = settings["request_validator"].validate(
+                    openapi_request
+                )
+                if request.openapi_validated.errors:
+                    raise RequestValidationError(
+                        errors=request.openapi_validated.errors
+                    )
+
             # Do the view
             return view(context, request)
 
