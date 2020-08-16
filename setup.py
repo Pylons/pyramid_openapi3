@@ -23,7 +23,7 @@ with open(os.path.join(here, "CHANGELOG.md"), encoding="utf-8") as f:
     long_description += "\n\n" + f.read()
 
 
-VERSION = "0.8.3"
+VERSION = "0.9.0"
 
 
 class VerifyVersionCommand(install):

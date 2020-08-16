@@ -1,10 +1,14 @@
 ## Changelog
 
-0.8.4 (Unreleased)
+0.9.0 (2020-08-16)
 ------------------
 
 * Add support for openapi-core 0.13.4.
   [sjiekak]
+
+* Add the ability to toggle request/response validation independently through
+  registry settings.
+  [damonhook]
 
 
 0.8.3 (2020-06-21)
