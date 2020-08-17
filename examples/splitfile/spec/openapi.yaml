@@ -1,0 +1,21 @@
+openapi: "3.0.0"
+
+info:
+  version: "1.0.0"
+  title: A simple Todo app API
+
+paths:
+  /:
+    $ref: "paths.yaml#/todos"
+
+components:
+  schemas:
+    Item:
+      $ref: "schemas.yaml#/Item"
+
+    Error:
+      $ref: "schemas.yaml#/Error"
+
+  responses:
+    ValidationError:
+      $ref: "responses.yaml#/ValidationError"

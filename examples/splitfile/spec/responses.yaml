@@ -1,0 +1,8 @@
+ValidationError:
+  description: OpenAPI request/response validation failed
+  content:
+    application/json:
+      schema:
+        type: array
+        items:
+          $ref: "schemas.yaml#/Error"
