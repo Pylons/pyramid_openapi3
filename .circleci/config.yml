@@ -81,6 +81,12 @@ jobs:
             cd examples/todoapp
             pipenv run python -m unittest tests.py
 
+      - store_artifacts:
+          path: htmlcov
+
+      - store_artifacts:
+          path: htmltypecov
+
   test_37:
     <<: *test-template
     docker:
