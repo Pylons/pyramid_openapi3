@@ -81,6 +81,12 @@ jobs:
             cd examples/todoapp
             pipenv run python -m unittest tests.py
 
+      - run:
+          name: run tests for the splitfile example
+          command: |
+            cd examples/splitfile
+            pipenv run python -m unittest tests.py
+
       - store_artifacts:
           path: htmlcov
 
