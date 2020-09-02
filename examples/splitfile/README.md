@@ -1,6 +1,6 @@
 # An example RESTful API app showcasing how to split YAML spec into multiple files
 
-This folder showcases how to use the [pyramid_openapi3](https://github.com/Pylons/pyramid_openapi3) Pyramid add-on for building robust RESTful APIs defined with a multi-file YAML schema.```
+This folder showcases how to use the [pyramid_openapi3](https://github.com/Pylons/pyramid_openapi3) Pyramid add-on for building robust RESTful APIs defined with a multi-file YAML schema.
 
 ## How to run
 
