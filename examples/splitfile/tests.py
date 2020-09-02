@@ -1,4 +1,4 @@
-"""A couple of functional tests to showcase pyramid_openapi3 features."""
+"""A couple of functional tests to showcase pyramid_openapi3 works with YAML spec split into multiple files."""
 
 from unittest import mock
 from webtest import TestApp

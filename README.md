@@ -114,7 +114,7 @@ Disabling request validation will result in `request.openapi_validated` no longe
 There are three examples provided with this package:
 * A fairly simple [single-file app providing a Hello World API](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/singlefile).
 * A slightly more [built-out app providing a TODO app API](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/todoapp).
-* A TODO app API [containing a multifile yaml spec](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/splitfile) (relative file `$ref`)
+* Another TODO app API, defined using a [YAML spec split into multiple files](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/splitfile).
 
 Both examples come with tests that exhibit pyramid_openapi's error handling and validation capabilities.
 
