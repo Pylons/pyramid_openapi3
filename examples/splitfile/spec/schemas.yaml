@@ -1,0 +1,20 @@
+Item:
+  type: object
+  required:
+    - title
+  properties:
+    title:
+      type: string
+      maxLength: 40
+
+Error:
+  type: object
+  required:
+    - message
+  properties:
+    field:
+      type: string
+    message:
+      type: string
+    exception:
+      type: string

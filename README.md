@@ -79,6 +79,24 @@ For responses, if the payload does not match the API document, an exception is r
 
 ## Advanced configuration
 
+### Relative File References in Spec
+
+A feature introduced in OpenApi3 is the ability to use `$ref` links to external files (https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#referenceObject).
+
+In order to use this you must ensure that you have all of your spec files in a given directory (ensure that you do not have any code in this directory as all the files in it are exposed as static files), then **replace** the `pyramid_openapi3_spec` call that you did in [Getting Started](#getting-started) with the following:
+
+```python
+config.pyramid_openapi3_spec_directory('path/to/openapi.yaml', route='/api/v1/spec')
+```
+
+Some notes:
+
+- Do not set the `route` of your `pyramid_openapi3_spec_directory` to the same value as the `route` of `pyramid_openapi3_add_explorer`.
+- The `route` that you set for `pyramid_openapi3_spec_directory` should not contain any file extensions as this becomes the root for all of the files in your specified `filepath`.
+- You cannot use `pyramid_openapi3_spec_directory` and `pyramid_openapi3_spec` in the same app.
+
+### Toggle Request / Response Validation
+
 If you would like to disable request / response validation, you can do so by adjusting either of the following options (you can also set them in your `.ini` if you prefer)
 
 ```python
@@ -93,9 +111,10 @@ Disabling request validation will result in `request.openapi_validated` no longe
 
 ## Demo / Examples
 
-There are two examples provided with this package:
+There are three examples provided with this package:
 * A fairly simple [single-file app providing a Hello World API](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/singlefile).
 * A slightly more [built-out app providing a TODO app API](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/todoapp).
+* Another TODO app API, defined using a [YAML spec split into multiple files](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/splitfile).
 
 Both examples come with tests that exhibit pyramid_openapi's error handling and validation capabilities.
 

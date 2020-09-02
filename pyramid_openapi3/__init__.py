@@ -10,6 +10,7 @@ from openapi_core.validation.request.validators import RequestValidator
 from openapi_core.validation.response.validators import ResponseValidator
 from openapi_spec_validator import validate_spec
 from openapi_spec_validator.schemas import read_yaml_file
+from pathlib import Path
 from pyramid.config import Configurator
 from pyramid.config import PHASE0_CONFIG
 from pyramid.config.views import ViewDeriverInfo
@@ -36,6 +37,7 @@ def includeme(config: Configurator) -> None:
     config.add_directive("pyramid_openapi3_add_formatter", add_formatter)
     config.add_directive("pyramid_openapi3_add_explorer", add_explorer_view)
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
+    config.add_directive("pyramid_openapi3_spec_directory", add_spec_view_directory)
     config.add_tween("pyramid_openapi3.tween.response_tween_factory", over=EXCVIEW)
 
     if not config.registry.settings.get(  # pragma: no branch
@@ -170,6 +172,13 @@ def add_spec_view(
     """
 
     def register() -> None:
+        settings = config.registry.settings.get("pyramid_openapi3")
+        if settings and settings.get("spec") is not None:
+            raise ConfigurationError(
+                "Spec has already been configured. You may only call "
+                "pyramid_openapi3_spec or pyramid_openapi3_spec_directory once"
+            )
+
         if hupper.is_active():  # pragma: no cover
             hupper.get_reloader().watch_files([filepath])
         spec_dict = read_yaml_file(filepath)
@@ -182,6 +191,60 @@ def add_spec_view(
 
         config.add_route(route_name, route)
         config.add_view(route_name=route_name, view=spec_view)
+
+        custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
+
+        config.registry.settings["pyramid_openapi3"] = {
+            "filepath": filepath,
+            "spec_route_name": route_name,
+            "spec": spec,
+            "request_validator": RequestValidator(
+                spec, custom_formatters=custom_formatters
+            ),
+            "response_validator": ResponseValidator(
+                spec, custom_formatters=custom_formatters
+            ),
+        }
+
+    config.action(("pyramid_openapi3_spec",), register, order=PHASE0_CONFIG)
+
+
+def add_spec_view_directory(
+    config: Configurator,
+    filepath: str,
+    route: str = "/spec",
+    route_name: str = "pyramid_openapi3.spec",
+) -> None:
+    """Serve and register OpenApi 3.0 specification directory.
+
+    :param filepath: absolute/relative path to the root specification file
+    :param route: URL path where to serve specification file
+    :param route_name: Route name under which specification file will be served
+    """
+
+    def register() -> None:
+        settings = config.registry.settings.get("pyramid_openapi3")
+        if settings and settings.get("spec") is not None:
+            raise ConfigurationError(
+                "Spec has already been configured. You may only call "
+                "pyramid_openapi3_spec or pyramid_openapi3_spec_directory once"
+            )
+        if route.endswith((".yaml", ".yml", ".json")):
+            raise ConfigurationError(
+                "Having route be a filename is not allowed when using a spec directory"
+            )
+
+        path = Path(filepath).resolve()
+        if hupper.is_active():  # pragma: no cover
+            hupper.get_reloader().watch_files(list(path.parent.iterdir()))
+
+        spec_dict = read_yaml_file(path)
+        spec_url = path.as_uri()
+        validate_spec(spec_dict, spec_url=spec_url)
+        spec = create_spec(spec_dict, spec_url=spec_url)
+
+        config.add_static_view(route, str(path.parent))
+        config.add_route(route_name, f"{route}/{path.name}")
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
 

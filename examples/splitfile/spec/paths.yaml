@@ -1,0 +1,36 @@
+todos:
+  get:
+    summary: List of my TODO items
+    responses:
+      '200':
+        description: A list of my TODO items
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "schemas.yaml#/Item"
+
+  post:
+    summary: Create a TODO item
+    operationId: todo.create
+    requestBody:
+      required: true
+      description: Data for creating a new TODO item
+      content:
+        application/json:
+          schema:
+            $ref: schemas.yaml#/Item
+
+    responses:
+      '200':
+        description: Success message.
+        content:
+          application/json:
+            schema:
+              type: string
+
+      '400':
+        $ref: responses.yaml#/ValidationError
+      '500':
+        $ref: responses.yaml#/ValidationError

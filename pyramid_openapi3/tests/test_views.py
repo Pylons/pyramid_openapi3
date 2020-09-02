@@ -4,17 +4,27 @@ from dataclasses import dataclass
 from openapi_core.shortcuts import RequestValidator
 from openapi_core.shortcuts import ResponseValidator
 from pyramid.exceptions import ConfigurationError
+from pyramid.interfaces import Interface
 from pyramid.interfaces import IRouteRequest
 from pyramid.interfaces import IRoutesMapper
 from pyramid.interfaces import IView
 from pyramid.interfaces import IViewClassifier
+from pyramid.router import Router
 from pyramid.testing import DummyRequest
 from pyramid.testing import testConfig
 from pyramid_openapi3.exceptions import RequestValidationError
-from zope.interface import Interface
 
+import os
 import pytest
 import tempfile
+
+
+class DummyStartResponse(object):
+    def __call__(self, status, headerlist) -> None:
+        """WSGI start_response protocol."""
+        self.status = status
+        self.headerlist = headerlist
+
 
 MINIMAL_DOCUMENT = b"""
     openapi: "3.0.0"
@@ -29,10 +39,27 @@ MINIMAL_DOCUMENT = b"""
               description: A foo
 """
 
+SPLIT_DOCUMENT = b"""
+    openapi: "3.0.0"
+    info:
+      version: "1.0.0"
+      title: Foo API
+    paths:
+      /foo:
+        $ref: "paths.yaml#/foo"
+"""
+
+SPLIT_DOCUMENT_PATHS = b"""
+    foo:
+      get:
+        responses:
+          200:
+            description: A foo
+"""
+
 
 def test_add_spec_view() -> None:
     """Test registration of a view that serves the openapi document."""
-
     with testConfig() as config:
         config.include("pyramid_openapi3")
 
@@ -64,6 +91,152 @@ def test_add_spec_view() -> None:
                 (IViewClassifier, request, Interface), IView, name=""
             )
             assert view(request=None, context=None).body == MINIMAL_DOCUMENT
+
+
+def test_add_spec_view_already_defined() -> None:
+    """Test that creating a spec more than once raises an Exception."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
+        with tempfile.TemporaryDirectory() as directory:
+            spec_name = os.path.join(directory, "openapi.yaml")
+            spec_paths_name = os.path.join(directory, "paths.yaml")
+            with open(spec_name, "wb") as f:
+                f.write(SPLIT_DOCUMENT)
+            with open(spec_paths_name, "wb") as f:
+                f.write(SPLIT_DOCUMENT_PATHS)
+
+            config.pyramid_openapi3_spec_directory(
+                spec_name, route="/foo", route_name="foo_api_spec"
+            )
+
+            with tempfile.NamedTemporaryFile() as document:
+                document.write(MINIMAL_DOCUMENT)
+                document.seek(0)
+
+                with pytest.raises(
+                    ConfigurationError,
+                    match=(
+                        "Spec has already been configured. You may only call "
+                        "pyramid_openapi3_spec or pyramid_openapi3_spec_directory once"
+                    ),
+                ):
+                    config.pyramid_openapi3_spec(
+                        document.name, route="/foo.yaml", route_name="foo_api_spec"
+                    )
+
+
+def test_add_spec_view_directory() -> None:
+    """Test registration of a view that serves the openapi document."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
+        with tempfile.TemporaryDirectory() as directory:
+            spec_name = os.path.join(directory, "openapi.yaml")
+            spec_paths_name = os.path.join(directory, "paths.yaml")
+            with open(spec_name, "wb") as f:
+                f.write(SPLIT_DOCUMENT)
+            with open(spec_paths_name, "wb") as f:
+                f.write(SPLIT_DOCUMENT_PATHS)
+
+            config.pyramid_openapi3_spec_directory(
+                spec_name, route="/foo", route_name="foo_api_spec"
+            )
+
+            # assert settings
+            openapi_settings = config.registry.settings["pyramid_openapi3"]
+            assert openapi_settings["filepath"] == spec_name
+            assert openapi_settings["spec_route_name"] == "foo_api_spec"
+            assert openapi_settings["spec"].info.title == "Foo API"
+            assert "get" in openapi_settings["spec"].paths["/foo"].operations
+            assert isinstance(openapi_settings["request_validator"], RequestValidator)
+            assert isinstance(openapi_settings["response_validator"], ResponseValidator)
+
+            # assert route
+            # routes[0] is the static view, routes[1] is the route
+            mapper = config.registry.getUtility(IRoutesMapper)
+            routes = mapper.get_routes()
+            assert routes[0].name == "__/foo/"
+            assert routes[0].path == "/foo/*subpath"
+            assert routes[1].name == "foo_api_spec"
+            assert routes[1].path == "/foo/openapi.yaml"
+
+            # assert view
+            route_request = config.registry.queryUtility(
+                IRouteRequest, name="foo_api_spec"
+            )
+            static_request = config.registry.queryUtility(IRouteRequest, name="__/foo/")
+            view = config.registry.adapters.registered(
+                (IViewClassifier, static_request, Interface), IView, name=""
+            )
+            assert route_request is not None
+            assert static_request is not None
+            assert view is not None
+
+            # assert router
+            router = Router(config.registry)
+            response = router({"PATH_INFO": "/foo/openapi.yaml"}, DummyStartResponse())
+            assert next(response) == SPLIT_DOCUMENT
+            response = router({"PATH_INFO": "/foo/paths.yaml"}, DummyStartResponse())
+            assert next(response) == SPLIT_DOCUMENT_PATHS
+
+
+def test_add_spec_view_directory_already_defined() -> None:
+    """Test that creating a spec more than once raises an Exception."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
+        with tempfile.NamedTemporaryFile() as document:
+            document.write(MINIMAL_DOCUMENT)
+            document.seek(0)
+
+            config.pyramid_openapi3_spec(
+                document.name, route="/foo", route_name="foo_api_spec"
+            )
+
+            with tempfile.TemporaryDirectory() as directory:
+                spec_name = os.path.join(directory, "openapi.yaml")
+                spec_paths_name = os.path.join(directory, "paths.yaml")
+                with open(spec_name, "wb") as f:
+                    f.write(SPLIT_DOCUMENT)
+                with open(spec_paths_name, "wb") as f:
+                    f.write(SPLIT_DOCUMENT_PATHS)
+
+                with pytest.raises(
+                    ConfigurationError,
+                    match=(
+                        "Spec has already been configured. You may only call "
+                        "pyramid_openapi3_spec or pyramid_openapi3_spec_directory once"
+                    ),
+                ):
+                    config.pyramid_openapi3_spec_directory(
+                        spec_name, route="/foo.yaml", route_name="foo_api_spec"
+                    )
+
+
+def test_add_spec_view_directory_invalid_route() -> None:
+    """Test that creating a spec directory with a filename route raises an Exception."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
+        with tempfile.TemporaryDirectory() as directory:
+            spec_name = os.path.join(directory, "openapi.yaml")
+            spec_paths_name = os.path.join(directory, "paths.yaml")
+            with open(spec_name, "wb") as f:
+                f.write(SPLIT_DOCUMENT)
+            with open(spec_paths_name, "wb") as f:
+                f.write(SPLIT_DOCUMENT_PATHS)
+
+            with pytest.raises(
+                ConfigurationError,
+                match=(
+                    "Having route be a filename is not allowed when using a "
+                    "spec directory"
+                ),
+            ):
+                config.pyramid_openapi3_spec_directory(
+                    spec_name, route="/foo.yaml", route_name="foo_api_spec"
+                )
 
 
 def test_add_explorer_view() -> None:
