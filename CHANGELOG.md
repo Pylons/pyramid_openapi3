@@ -1,5 +1,15 @@
 ## Changelog
 
+0.10.0 (2020-10-26)
+------------------
+
+* Allow relative file `$ref` links in OpenApi spec, refs #93.
+  [damonhook]
+
+* Validate that all endpoints in the spec have a registered route, refs #21.
+  [phrfpeixoto]
+
+
 0.9.0 (2020-08-16)
 ------------------
 
