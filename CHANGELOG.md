@@ -1,5 +1,12 @@
 ## Changelog
 
+0.10.1 (2020-10-26)
+------------------
+
+* Support disabling of endpoint validation via INI files.
+  [zupo]
+
+
 0.10.0 (2020-10-26)
 ------------------
 
