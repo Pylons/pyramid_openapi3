@@ -100,9 +100,7 @@ def test_disable_endpoint_validation(
 ) -> None:
     """Test case showing app creation whilst disabling endpoint validation."""
     caplog.set_level(logging.INFO)
-    app_config.registry.settings.get("pyramid_openapi3").setdefault(
-        "enable_endpoint_validation", False
-    )
+    app_config.registry.settings["pyramid_openapi3.enable_endpoint_validation"] = False
     app_config.add_route(name="foo", pattern="/foo")
     app_config.add_view(
         foo_view, route_name="foo", renderer="string", request_method="GET"

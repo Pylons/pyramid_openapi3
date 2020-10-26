@@ -309,7 +309,9 @@ def check_all_routes(event: ApplicationCreated):
         )
         return
 
-    if not openapi_settings.get("enable_endpoint_validation", True):
+    if not app.registry.settings.get(
+        "pyramid_openapi3.enable_endpoint_validation", True
+    ):
         logger.info("Endpoint validation against specification is disabled")
         return
     paths = list(openapi_settings["spec"].paths.keys())
