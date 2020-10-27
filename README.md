@@ -47,12 +47,15 @@ The reason this package exists is to give you peace of mind when providing a RES
 - **A single source of truth**. Because of the checks outlined above you can be sure that whatever your API document says is in fact what is going on in reality. You have a single source of truth to consult when asking an API related question, such as "Remind me again, which fields does the endpoint /user/info return?".
 - Based on [Pyramid](https://trypyramid.com), a **mature Python Web framework**. Companies such as Mozilla, Yelp, RollBar and SurveyMonkey [trust Pyramid](https://trypyramid.com/community-powered-by-pyramid.html), and the new [pypi.org](https://github.com/pypa/warehouse) runs on Pyramid too. Pyramid is thoroughly [tested](https://travis-ci.org/Pylons/pyramid) and [documented](http://docs.pylonsproject.org/projects/pyramid/en/latest/), providing flexibility, performance, and a large ecosystem of [high-quality add-ons](https://trypyramid.com/extending-pyramid.html).
 
+<p align="center">
+<a href="https://www.youtube.com/watch?v=P0zNxrDO0sE&amp;t=1061" title="Building Robust APIs" rel="nofollow" class="rich-diff-level-one"><img src="https://user-images.githubusercontent.com/311580/97364772-6d246a80-189c-11eb-84f2-a0ad23236003.png" alt="Building Robust APIs" style="max-width:100%;"></a>
+</p>
+
 ## Features
 
 - Validates your API document (for example, `openapi.yaml` or `openapi.json`) against the OpenAPI 3.0 specification using the [openapi-spec-validator](https://github.com/p1c2u/openapi-spec-validator).
 - Generates and serves the [Swagger try-it-out documentation](https://swagger.io/tools/swagger-ui/) for your API.
 - Validates incoming requests *and* outgoing responses against your API document using [openapi-core](https://github.com/p1c2u/openapi-core).
-
 
 ## Getting started
 
@@ -136,6 +139,7 @@ a) Both generation and validation against a document are lossy processes. The un
 b) Validation approach does sacrifice DRY-ness, one has to write the API document and then the (view) code in Pyramid. Feels a bit redundant at first. However, this provides a clear separation between the intent and the implementation.
 
 c) Generation approach has the drawback of having to write Python code even for parts of the API document that the Pyramid backend does not handle, as it might be handled by a different system, or be specific only to documentation or only to the client side of the API. This bloats your Pyramid codebase with code that does not belong there.
+
 
 ## Running tests
 
