@@ -1,5 +1,12 @@
 ## Changelog
 
+0.10.2 (2020-10-27)
+------------------
+
+* Support for endpoint validation of prefixed routes.
+  [zupo]
+
+
 0.10.1 (2020-10-26)
 ------------------
 
