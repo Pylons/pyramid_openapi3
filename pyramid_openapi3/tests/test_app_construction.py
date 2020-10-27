@@ -15,6 +15,8 @@ DOCUMENT = b"""
     info:
       version: "1.0.0"
       title: Foo API
+    servers:
+      - url: /api/v1
     paths:
       /foo:
         get:
@@ -77,6 +79,20 @@ def test_all_routes(app_config: Configurator) -> None:
     """Test case showing that an app can be created with all routes defined."""
     app_config.add_route(name="foo", pattern="/foo")
     app_config.add_route(name="bar", pattern="/bar")
+    app_config.add_view(
+        foo_view, route_name="foo", renderer="string", request_method="OPTIONS"
+    )
+    app_config.add_view(
+        bar_view, route_name="bar", renderer="string", request_method="GET"
+    )
+
+    app_config.make_wsgi_app()
+
+
+def test_prefixed_routes(app_config: Configurator) -> None:
+    """Test case for prefixed routes."""
+    app_config.add_route(name="foo", pattern="/api/v1/foo")
+    app_config.add_route(name="bar", pattern="/api/v1/bar")
     app_config.add_view(
         foo_view, route_name="foo", renderer="string", request_method="OPTIONS"
     )
