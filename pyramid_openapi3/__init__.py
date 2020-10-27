@@ -25,6 +25,7 @@ from pyramid.response import Response
 from pyramid.settings import asbool
 from pyramid.tweens import EXCVIEW
 from string import Template
+from urllib.parse import urlparse
 
 import hupper
 import logging
@@ -314,8 +315,24 @@ def check_all_routes(event: ApplicationCreated):
     ):
         logger.info("Endpoint validation against specification is disabled")
         return
+
+    # Sometimes api routes are prefixed with `/api/v1` and similar, using
+    # https://swagger.io/docs/specification/api-host-and-base-path/
+    prefixes = []
+    for server in openapi_settings["spec"].servers:
+        path = urlparse(server.url).path
+        if path != "/":
+            prefixes.append(path)
+
+    def remove_prefixes(path):
+        for prefix in prefixes:
+            path = path.replace(prefix, "")
+        return path
+
     paths = list(openapi_settings["spec"].paths.keys())
-    routes = [route.path for name, route in app.routes_mapper.routes.items()]
+    routes = [
+        remove_prefixes(route.path) for name, route in app.routes_mapper.routes.items()
+    ]
 
     missing = [r for r in paths if r not in routes]
     if missing:
