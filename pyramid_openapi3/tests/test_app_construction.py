@@ -103,6 +103,21 @@ def test_prefixed_routes(app_config: Configurator) -> None:
     app_config.make_wsgi_app()
 
 
+def test_pyramid_prefixed_context_routes(app_config: Configurator) -> None:
+    """Test case for prefixed routes using pyramid route_prefix_context."""
+    with app_config.route_prefix_context("/api/v1"):
+        app_config.add_route(name="foo", pattern="/foo")
+        app_config.add_route(name="bar", pattern="/bar")
+    app_config.add_view(
+        foo_view, route_name="foo", renderer="string", request_method="OPTIONS"
+    )
+    app_config.add_view(
+        bar_view, route_name="bar", renderer="string", request_method="GET"
+    )
+
+    app_config.make_wsgi_app()
+
+
 def test_missing_routes(app_config: Configurator) -> None:
     """Test case showing app creation fails, when defined routes are missing."""
     with pytest.raises(MissingEndpointsError) as ex:
