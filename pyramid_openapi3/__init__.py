@@ -325,6 +325,7 @@ def check_all_routes(event: ApplicationCreated):
             prefixes.append(path)
 
     def remove_prefixes(path):
+        path = f"/{path}" if not path.startswith("/") else path
         for prefix in prefixes:
             path = path.replace(prefix, "")
         return path
