@@ -103,7 +103,7 @@ Some notes:
 Provided with `pyramid_openapi3` are a few validation features:
  * incoming request validation (i.e. what a client sends to your app)
  * outgoing response validation (i.e. what your app sends to a client)
- * endpoint validation (i.e. your app registers routes for all defined API endpoints)
+ * endpoint validation (i.e. all endpoints define minimal responses and have routes registered)
 
 These features are enabled as a default, but you can disable them if you need to:
 
