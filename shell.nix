@@ -1,9 +1,8 @@
 let
   nixpkgs = builtins.fetchTarball {
-    # https://github.com/NixOS/nixpkgs/tree/nixos-19.09 on 2019-11-24
-    # TODO: make sure this matches the commit has in config.yml
-    url = "https://github.com/nixos/nixpkgs/archive/4ad6f1404a8cd69a11f16edba09cc569e5012e42.tar.gz";
-    sha256 =  "1pclh0hvma66g3yxrrh9rlzpscqk5ylypnmiczz1bwwrl8n21q3h";
+    # https://github.com/NixOS/nixpkgs/tree/nixos-20.09 on 2020-12-12
+    url = "https://github.com/nixos/nixpkgs/archive/65c9cc79f1d179713c227bf447fb0dac384cdcda.tar.gz";
+    sha256 =  "0whxlm098vas4ngq6hm3xa4mdd2yblxcl5x5ny216zajp08yp1wf";
   };
   pkgs = import nixpkgs { config = { allowUnfree = true; }; };
 in
@@ -12,7 +11,7 @@ pkgs.mkShell {
   name = "dev-shell";
   buildInputs = [
     pkgs.pipenv
-    pkgs.python37Full
+    pkgs.python38Full
     pkgs.codespell
   ];
 
@@ -27,7 +26,6 @@ pkgs.mkShell {
   # https://nixos.org/nixpkgs/manual/#python-setup.py-bdist_wheel-cannot-create-.whl
   unset SOURCE_DATE_EPOCH
 
-  # TODO: Potentially remove when Nixos 20.03 is released:
   # https://github.com/NixOS/nixpkgs/issues/73254
   unset PYTHONPATH
   '';
