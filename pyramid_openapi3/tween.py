@@ -53,9 +53,8 @@ def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]
                         registry.settings["pyramid_openapi3"]["filepath"],
                         0,
                     )
-                raise ResponseValidationError(
-                    response=response, errors=result.errors,
-                )
+                raise ResponseValidationError(response=response, errors=result.errors)
+
         # If there is no exception view, we also see request validation errors here
         except ResponseValidationError:
             return request.invoke_exception_view(reraise=True)

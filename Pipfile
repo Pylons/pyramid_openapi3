@@ -7,7 +7,7 @@ name = "pypi"
 pyramid-openapi3 = {editable = true,path = "."}
 
 [dev-packages]
-black = "==19.10b0"
+black = "==20.8b1"
 codespell = "*"
 docutils = "*"
 flake8 = "*"
