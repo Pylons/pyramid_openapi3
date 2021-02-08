@@ -6,6 +6,9 @@
 * Support for endpoint validation of prefixed routes.
   [zupo]
 
+* Allow setting permission for explorer and spec view.
+  [sweh]
+
 
 0.10.1 (2020-10-26)
 ------------------
