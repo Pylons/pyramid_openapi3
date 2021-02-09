@@ -84,7 +84,7 @@ OPENAPI_YAML = """
     ),
 )
 def test_permission_for_specs(route, permission, status) -> None:
-    """Render nice ValidationError if query parameter is missing."""
+    """Allow (200) or deny (403) access to the spec/explorer view."""
     with tempfile.NamedTemporaryFile() as document:
         document.write(OPENAPI_YAML.encode())
         document.seek(0)
