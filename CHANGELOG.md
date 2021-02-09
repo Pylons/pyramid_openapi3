@@ -9,6 +9,9 @@
 * Allow setting permission for explorer and spec view.
   [sweh]
 
+* Allow multiple OpenApis in one pyramid application.
+  [sweh]
+
 
 0.10.1 (2020-10-26)
 ------------------
