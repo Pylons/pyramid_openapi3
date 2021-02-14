@@ -22,6 +22,7 @@ from pyramid.path import AssetResolver
 from pyramid.request import Request
 from pyramid.response import FileResponse
 from pyramid.response import Response
+from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.settings import asbool
 from pyramid.tweens import EXCVIEW
 from string import Template
@@ -121,6 +122,7 @@ def add_explorer_view(
     route_name: str = "pyramid_openapi3.explorer",
     template: str = "static/index.html",
     ui_version: str = "3.17.1",
+    permission: str = NO_PERMISSION_REQUIRED,
 ) -> None:
     """Serve Swagger UI at `route` url path.
 
@@ -128,6 +130,7 @@ def add_explorer_view(
     :param route_name: Route name that's being added
     :param template: Dotted path to the html template that renders Swagger UI response
     :param ui_version: Swagger UI version string
+    :param permission: Permission for the explorer view
     """
 
     def register() -> None:
@@ -150,7 +153,9 @@ def add_explorer_view(
             return Response(html)
 
         config.add_route(route_name, route)
-        config.add_view(route_name=route_name, view=explorer_view)
+        config.add_view(
+            route_name=route_name, permission=permission, view=explorer_view
+        )
 
     config.action(("pyramid_openapi3_add_explorer",), register, order=PHASE0_CONFIG)
 
@@ -167,12 +172,14 @@ def add_spec_view(
     filepath: str,
     route: str = "/openapi.yaml",
     route_name: str = "pyramid_openapi3.spec",
+    permission: str = NO_PERMISSION_REQUIRED,
 ) -> None:
     """Serve and register OpenApi 3.0 specification file.
 
     :param filepath: absolute/relative path to the specification file
     :param route: URL path where to serve specification file
     :param route_name: Route name under which specification file will be served
+    :param permission: Permission for the spec view
     """
 
     def register() -> None:
@@ -194,7 +201,7 @@ def add_spec_view(
             return FileResponse(filepath, request=request, content_type="text/yaml")
 
         config.add_route(route_name, route)
-        config.add_view(route_name=route_name, view=spec_view)
+        config.add_view(route_name=route_name, permission=permission, view=spec_view)
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
 
