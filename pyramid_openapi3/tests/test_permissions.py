@@ -9,6 +9,7 @@ from pyramid.security import Authenticated
 from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from webtest.app import TestApp
+
 import pytest
 import tempfile
 
@@ -22,7 +23,8 @@ class DummyDefaultContext(object):
     __acl__ = DEFAULT_ACL
 
 
-def get_default_context(request):
+def get_default_context(request) -> DummyDefaultContext:
+    """Return a dummy context."""
     return DummyDefaultContext()
 
 
