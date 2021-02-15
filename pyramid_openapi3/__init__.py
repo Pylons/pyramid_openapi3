@@ -316,7 +316,7 @@ def check_all_routes(event: ApplicationCreated):
 
     app = event.app
     settings = app.registry.settings
-    for name in APIS:
+    for name in APIS:  # pragma: no branch
         openapi_settings = settings.get(name)
         if not openapi_settings:
             # pyramid_openapi3 not configured?
