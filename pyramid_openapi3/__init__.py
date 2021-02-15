@@ -161,9 +161,7 @@ def add_explorer_view(
 
         config.add_route(route_name, route)
         config.add_view(
-            route_name=route_name,
-            permission=permission,
-            view=explorer_view
+            route_name=route_name, permission=permission, view=explorer_view
         )
 
     config.action((f"{apiname}_explorer",), register, order=PHASE0_CONFIG)
@@ -211,11 +209,7 @@ def add_spec_view(
             return FileResponse(filepath, request=request, content_type="text/yaml")
 
         config.add_route(route_name, route)
-        config.add_view(
-            route_name=route_name,
-            permission=permission,
-            view=spec_view
-        )
+        config.add_view(route_name=route_name, permission=permission, view=spec_view)
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
 
