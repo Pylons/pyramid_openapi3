@@ -91,9 +91,9 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
             )
             request.environ["pyramid_openapi3.validate_response"] = validate_response
             gsettings = settings = request.registry.settings["pyramid_openapi3"]
-            if 'routes' in gsettings:
+            if "routes" in gsettings:
                 settings = request.registry.settings[
-                    gsettings['routes'][request.matched_route.name]
+                    gsettings["routes"][request.matched_route.name]
                 ]
 
             # Needed to support relative `servers` entries in `openapi.yaml`,
@@ -129,7 +129,7 @@ def add_explorer_view(
     template: str = "static/index.html",
     ui_version: str = "3.17.1",
     permission: str = NO_PERMISSION_REQUIRED,
-    apiname: str = 'pyramid_openapi3',
+    apiname: str = "pyramid_openapi3",
 ) -> None:
     """Serve Swagger UI at `route` url path.
 
@@ -153,9 +153,7 @@ def add_explorer_view(
                 template = Template(f.read())
                 html = template.safe_substitute(
                     ui_version=ui_version,
-                    spec_url=request.route_url(
-                        settings[apiname]["spec_route_name"]
-                    ),
+                    spec_url=request.route_url(settings[apiname]["spec_route_name"]),
                 )
             return Response(html)
 
@@ -180,7 +178,7 @@ def add_spec_view(
     route: str = "/openapi.yaml",
     route_name: str = "pyramid_openapi3.spec",
     permission: str = NO_PERMISSION_REQUIRED,
-    apiname: str = 'pyramid_openapi3',
+    apiname: str = "pyramid_openapi3",
 ) -> None:
     """Serve and register OpenApi 3.0 specification file.
 
@@ -226,7 +224,7 @@ def add_spec_view(
         }
         APIS.append(apiname)
 
-    config.action((f'{apiname}_spec',), register, order=PHASE0_CONFIG)
+    config.action((f"{apiname}_spec",), register, order=PHASE0_CONFIG)
 
 
 def add_spec_view_directory(
@@ -328,9 +326,7 @@ def check_all_routes(event: ApplicationCreated):
             )
             return
 
-        if not settings.get(
-            "pyramid_openapi3.enable_endpoint_validation", True
-        ):
+        if not settings.get("pyramid_openapi3.enable_endpoint_validation", True):
             logger.info("Endpoint validation against specification is disabled")
             return
 
@@ -350,10 +346,12 @@ def check_all_routes(event: ApplicationCreated):
 
         paths = list(openapi_settings["spec"].paths.keys())
         routes = [
-            remove_prefixes(route.path) for name, route in app.routes_mapper.routes.items()
+            remove_prefixes(route.path)
+            for name, route in app.routes_mapper.routes.items()
         ]
         route_names = {
-            remove_prefixes(route.path): name for name, route in app.routes_mapper.routes.items()
+            remove_prefixes(route.path): name
+            for name, route in app.routes_mapper.routes.items()
         }
 
         missing = [r for r in paths if r not in routes]
@@ -361,6 +359,6 @@ def check_all_routes(event: ApplicationCreated):
             raise MissingEndpointsError(missing)
 
         settings.setdefault("pyramid_openapi3", {})
-        settings['pyramid_openapi3'].setdefault('routes', {})
+        settings["pyramid_openapi3"].setdefault("routes", {})
         for path in paths:
             settings["pyramid_openapi3"]["routes"][route_names[path]] = name

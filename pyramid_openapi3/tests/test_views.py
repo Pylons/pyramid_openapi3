@@ -13,7 +13,6 @@ from pyramid.router import Router
 from pyramid.testing import DummyRequest
 from pyramid.testing import testConfig
 from pyramid_openapi3.exceptions import RequestValidationError
-from pyramid_openapi3 import check_all_routes
 
 import os
 import pytest
@@ -287,13 +286,15 @@ def test_add_multiple_explorer_views() -> None:
             document.seek(0)
 
             config.pyramid_openapi3_spec(
-                document.name, route="/foo.yaml", route_name="foo_api_spec",
-                apiname='foo_api'
+                document.name,
+                route="/foo.yaml",
+                route_name="foo_api_spec",
+                apiname="foo_api",
             )
             config.pyramid_openapi3_add_explorer(
-                route=f'/foo_api/v1/',
-                route_name=f'foo_api_explorer',
-                apiname='foo_api',
+                route="/foo_api/v1/",
+                route_name="foo_api_explorer",
+                apiname="foo_api",
             )
 
         with tempfile.NamedTemporaryFile() as document:
@@ -301,34 +302,32 @@ def test_add_multiple_explorer_views() -> None:
             document.seek(0)
 
             config.pyramid_openapi3_spec(
-                document.name, route="/bar.yaml", route_name="bar_api_spec",
-                apiname='bar_api'
+                document.name,
+                route="/bar.yaml",
+                route_name="bar_api_spec",
+                apiname="bar_api",
             )
             config.pyramid_openapi3_add_explorer(
-                route=f'/bar_api/v1/',
-                route_name=f'bar_api_explorer',
-                apiname='bar_api',
+                route="/bar_api/v1/",
+                route_name="bar_api_explorer",
+                apiname="bar_api",
             )
 
-        request = config.registry.queryUtility(
-            IRouteRequest, name="foo_api_explorer"
-        )
+        request = config.registry.queryUtility(IRouteRequest, name="foo_api_explorer")
         view = config.registry.adapters.registered(
             (IViewClassifier, request, Interface), IView, name=""
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
-        assert b'http://example.com/foo.yaml' in response.body
+        assert b"http://example.com/foo.yaml" in response.body
 
-        request = config.registry.queryUtility(
-            IRouteRequest, name="bar_api_explorer"
-        )
+        request = config.registry.queryUtility(IRouteRequest, name="bar_api_explorer")
         view = config.registry.adapters.registered(
             (IViewClassifier, request, Interface), IView, name=""
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
-        assert b'http://example.com/bar.yaml' in response.body
+        assert b"http://example.com/bar.yaml" in response.body
 
 
 def test_explorer_view_missing_spec() -> None:
@@ -395,8 +394,10 @@ def test_multiple_openapi_views() -> None:
             document.seek(0)
 
             config.pyramid_openapi3_spec(
-                document.name, route="/foo.yaml", route_name="foo_api_spec",
-                apiname='foo'
+                document.name,
+                route="/foo.yaml",
+                route_name="foo_api_spec",
+                apiname="foo",
             )
 
         with tempfile.NamedTemporaryFile() as document:
@@ -404,8 +405,10 @@ def test_multiple_openapi_views() -> None:
             document.seek(0)
 
             config.pyramid_openapi3_spec(
-                document.name, route="/bar.yaml", route_name="bar_api_spec",
-                apiname='bar'
+                document.name,
+                route="/bar.yaml",
+                route_name="bar_api_spec",
+                apiname="bar",
             )
 
         config.add_route("foo", "/foo")
@@ -419,9 +422,9 @@ def test_multiple_openapi_views() -> None:
         # Simulate, that `check_all_routes` was called
         settings = config.registry.settings
         settings.setdefault("pyramid_openapi3", {})
-        settings['pyramid_openapi3'].setdefault('routes', {})
-        settings["pyramid_openapi3"]["routes"]['foo'] = 'foo'
-        settings["pyramid_openapi3"]["routes"]['bar'] = 'bar'
+        settings["pyramid_openapi3"].setdefault("routes", {})
+        settings["pyramid_openapi3"]["routes"]["foo"] = "foo"
+        settings["pyramid_openapi3"]["routes"]["bar"] = "bar"
 
         request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
         view = config.registry.adapters.registered(

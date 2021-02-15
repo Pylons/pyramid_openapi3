@@ -32,10 +32,10 @@ def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]
             # validate response
             openapi_request = PyramidOpenAPIRequestFactory.create(request)
             openapi_response = PyramidOpenAPIResponseFactory.create(response)
-            settings_key = 'pyramid_openapi3'
+            settings_key = "pyramid_openapi3"
             gsettings = settings = request.registry.settings[settings_key]
-            if 'routes' in gsettings:
-                settings_key = gsettings['routes'][request.matched_route.name]
+            if "routes" in gsettings:
+                settings_key = gsettings["routes"][request.matched_route.name]
                 settings = request.registry.settings[settings_key]
             result = settings["response_validator"].validate(
                 request=openapi_request, response=openapi_response
