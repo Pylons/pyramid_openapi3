@@ -34,6 +34,8 @@ import typing as t
 
 logger = logging.getLogger(__name__)
 
+APIS = []
+
 
 def includeme(config: Configurator) -> None:
     """Pyramid knob."""
@@ -88,7 +90,11 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
                 )
             )
             request.environ["pyramid_openapi3.validate_response"] = validate_response
-            settings = request.registry.settings["pyramid_openapi3"]
+            gsettings = settings = request.registry.settings["pyramid_openapi3"]
+            if "routes" in gsettings:
+                settings = request.registry.settings[
+                    gsettings["routes"][request.matched_route.name]
+                ]
 
             # Needed to support relative `servers` entries in `openapi.yaml`,
             # see https://github.com/p1c2u/openapi-core/issues/218.
@@ -123,6 +129,7 @@ def add_explorer_view(
     template: str = "static/index.html",
     ui_version: str = "3.17.1",
     permission: str = NO_PERMISSION_REQUIRED,
+    apiname: str = "pyramid_openapi3",
 ) -> None:
     """Serve Swagger UI at `route` url path.
 
@@ -138,7 +145,7 @@ def add_explorer_view(
 
         def explorer_view(request: Request) -> Response:
             settings = config.registry.settings
-            if settings.get("pyramid_openapi3") is None:
+            if settings.get(apiname) is None:
                 raise ConfigurationError(
                     "You need to call config.pyramid_openapi3_spec for explorer to work."
                 )
@@ -146,9 +153,7 @@ def add_explorer_view(
                 template = Template(f.read())
                 html = template.safe_substitute(
                     ui_version=ui_version,
-                    spec_url=request.route_url(
-                        settings["pyramid_openapi3"]["spec_route_name"]
-                    ),
+                    spec_url=request.route_url(settings[apiname]["spec_route_name"]),
                 )
             return Response(html)
 
@@ -157,7 +162,7 @@ def add_explorer_view(
             route_name=route_name, permission=permission, view=explorer_view
         )
 
-    config.action(("pyramid_openapi3_add_explorer",), register, order=PHASE0_CONFIG)
+    config.action((f"{apiname}_add_explorer",), register, order=PHASE0_CONFIG)
 
 
 def add_formatter(config: Configurator, name: str, func: t.Callable) -> None:
@@ -173,6 +178,7 @@ def add_spec_view(
     route: str = "/openapi.yaml",
     route_name: str = "pyramid_openapi3.spec",
     permission: str = NO_PERMISSION_REQUIRED,
+    apiname: str = "pyramid_openapi3",
 ) -> None:
     """Serve and register OpenApi 3.0 specification file.
 
@@ -183,7 +189,7 @@ def add_spec_view(
     """
 
     def register() -> None:
-        settings = config.registry.settings.get("pyramid_openapi3")
+        settings = config.registry.settings.get(apiname)
         if settings and settings.get("spec") is not None:
             raise ConfigurationError(
                 "Spec has already been configured. You may only call "
@@ -205,7 +211,7 @@ def add_spec_view(
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
 
-        config.registry.settings["pyramid_openapi3"] = {
+        config.registry.settings[apiname] = {
             "filepath": filepath,
             "spec_route_name": route_name,
             "spec": spec,
@@ -216,8 +222,9 @@ def add_spec_view(
                 spec, custom_formatters=custom_formatters
             ),
         }
+        APIS.append(apiname)
 
-    config.action(("pyramid_openapi3_spec",), register, order=PHASE0_CONFIG)
+    config.action((f"{apiname}_spec",), register, order=PHASE0_CONFIG)
 
 
 def add_spec_view_directory(
@@ -308,40 +315,50 @@ def check_all_routes(event: ApplicationCreated):
     """
 
     app = event.app
-    openapi_settings = app.registry.settings.get("pyramid_openapi3")
-    if not openapi_settings:
-        # pyramid_openapi3 not configured?
-        logger.warning(
-            "pyramid_openapi3 settings not found. "
-            "Did you forget to call config.pyramid_openapi3_spec?"
-        )
-        return
+    settings = app.registry.settings
+    for name in APIS:
+        openapi_settings = settings.get(name)
+        if not openapi_settings:
+            # pyramid_openapi3 not configured?
+            logger.warning(
+                "pyramid_openapi3 settings not found. "
+                "Did you forget to call config.pyramid_openapi3_spec?"
+            )
+            return
 
-    if not app.registry.settings.get(
-        "pyramid_openapi3.enable_endpoint_validation", True
-    ):
-        logger.info("Endpoint validation against specification is disabled")
-        return
+        if not settings.get("pyramid_openapi3.enable_endpoint_validation", True):
+            logger.info("Endpoint validation against specification is disabled")
+            return
 
-    # Sometimes api routes are prefixed with `/api/v1` and similar, using
-    # https://swagger.io/docs/specification/api-host-and-base-path/
-    prefixes = []
-    for server in openapi_settings["spec"].servers:
-        path = urlparse(server.url).path
-        if path != "/":
-            prefixes.append(path)
+        # Sometimes api routes are prefixed with `/api/v1` and similar, using
+        # https://swagger.io/docs/specification/api-host-and-base-path/
+        prefixes = []
+        for server in openapi_settings["spec"].servers:
+            path = urlparse(server.url).path
+            if path != "/":
+                prefixes.append(path)
 
-    def remove_prefixes(path):
-        path = f"/{path}" if not path.startswith("/") else path
-        for prefix in prefixes:
-            path = path.replace(prefix, "")
-        return path
+        def remove_prefixes(path):
+            path = f"/{path}" if not path.startswith("/") else path
+            for prefix in prefixes:
+                path = path.replace(prefix, "")
+            return path
 
-    paths = list(openapi_settings["spec"].paths.keys())
-    routes = [
-        remove_prefixes(route.path) for name, route in app.routes_mapper.routes.items()
-    ]
+        paths = list(openapi_settings["spec"].paths.keys())
+        routes = [
+            remove_prefixes(route.path)
+            for name, route in app.routes_mapper.routes.items()
+        ]
+        route_names = {
+            remove_prefixes(route.path): name
+            for name, route in app.routes_mapper.routes.items()
+        }
 
-    missing = [r for r in paths if r not in routes]
-    if missing:
-        raise MissingEndpointsError(missing)
+        missing = [r for r in paths if r not in routes]
+        if missing:
+            raise MissingEndpointsError(missing)
+
+        settings.setdefault("pyramid_openapi3", {})
+        settings["pyramid_openapi3"].setdefault("routes", {})
+        for path in paths:
+            settings["pyramid_openapi3"]["routes"][route_names[path]] = name
