@@ -139,7 +139,7 @@ def test_disable_endpoint_validation(
 
     app_config.make_wsgi_app()
 
-    assert "Endpoint validation against specification is disabled" in caplog.text
+    assert "Endpoint validation is disabled" in caplog.text
 
 
 def test_unconfigured_app(

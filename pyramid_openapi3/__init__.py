@@ -43,7 +43,8 @@ def includeme(config: Configurator) -> None:
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
     config.add_directive("pyramid_openapi3_spec_directory", add_spec_view_directory)
     config.add_tween("pyramid_openapi3.tween.response_tween_factory", over=EXCVIEW)
-    config.add_subscriber(check_all_routes, ApplicationCreated)
+    config.add_subscriber(validate_routes, ApplicationCreated)
+    config.add_subscriber(validate_minimal_responses, ApplicationCreated)
 
     if not config.registry.settings.get(  # pragma: no branch
         "pyramid_openapi3_extract_errors"
@@ -300,11 +301,11 @@ def openapi_validation_error(
     return exception_response(status_code, json_body=errors)
 
 
-def check_all_routes(event: ApplicationCreated):
-    """Assert all endpoints in the spec are registered as routes.
+def validate_routes(event: ApplicationCreated):
+    """Assert all endpoints in the spec have a route registered for them.
 
     Listen for ApplicationCreated event and assert all endpoints defined in
-    the API spec have been registered as Pyramid routes.
+    the API spec have been assigned a Pyramid route.
     """
 
     app = event.app
@@ -320,7 +321,7 @@ def check_all_routes(event: ApplicationCreated):
     if not app.registry.settings.get(
         "pyramid_openapi3.enable_endpoint_validation", True
     ):
-        logger.info("Endpoint validation against specification is disabled")
+        logger.info("Endpoint validation is disabled")
         return
 
     # Sometimes api routes are prefixed with `/api/v1` and similar, using
@@ -345,3 +346,28 @@ def check_all_routes(event: ApplicationCreated):
     missing = [r for r in paths if r not in routes]
     if missing:
         raise MissingEndpointsError(missing)
+
+
+def validate_minimal_responses(event: ApplicationCreated):
+    """Assert all endpoints in the spec have defined at least minimal responses.
+
+    By default this makes sure that all endpoints have the minimal required
+    responses defined in the spec: 200, 400 and 500
+
+    Additionally, all endpoints with parameters need to have 404 defined in the
+    spec.
+
+    Finally, it is possible to override the minimal required responses for
+    each endpoint by setting "pyramid_openapi3.endpoint_validation_overrides"
+    to {'/endpoint/path': {'post': [202, 400, 500]}}
+    """
+    app = event.app
+    minimal_responses = app.registry.settings.get(  # noqa
+        "pyramid_openapi3.endpoint_validation_minimal_responses", [200, 400, 500]
+    )
+    minimal_responses_with_parameters = app.registry.settings.get(  # noqa
+        "pyramid_openapi3.endpoint_validation_minimal_responses_with_parameters", [404]
+    )
+    overrides = app.registry.settings.get(  # noqa
+        "pyramid_openapi3.endpoint_validation_overrides", {}
+    )

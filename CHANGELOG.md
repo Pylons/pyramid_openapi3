@@ -1,5 +1,12 @@
 ## Changelog
 
+0.11 (Unreleased)
+-----------------
+
+* Support ensuring all endpoints define at least the minimum common responses, refs #22.
+  [mandarvaze, zupo]
+
+
 0.10.2 (2020-10-27)
 ------------------
 
