@@ -164,7 +164,7 @@ def add_explorer_view(
             route_name=route_name, permission=permission, view=explorer_view
         )
 
-    config.action((f"{apiname}_explorer",), register, order=PHASE0_CONFIG)
+    config.action((f"{apiname}_add_explorer",), register, order=PHASE0_CONFIG)
 
 
 def add_formatter(config: Configurator, name: str, func: t.Callable) -> None:
