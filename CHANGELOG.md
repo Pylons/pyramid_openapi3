@@ -1,16 +1,24 @@
 ## Changelog
 
-0.10.2 (2020-10-27)
-------------------
 
-* Support for endpoint validation of prefixed routes.
-  [zupo]
+0.11 (2021-02-15)
+-----------------
 
 * Allow setting permission for explorer and spec view.
   [sweh]
 
 * Allow multiple OpenApis in one pyramid application.
   [sweh]
+
+* Fix for route validation when used with pyramid route_prefix_context.
+  [damonhook]
+
+
+0.10.2 (2020-10-27)
+------------------
+
+* Support for endpoint validation of prefixed routes.
+  [zupo]
 
 
 0.10.1 (2020-10-26)
