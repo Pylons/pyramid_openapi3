@@ -13,9 +13,9 @@ set -e
 if [[ $(python --version) =~ 3\.7 ]]; then
     echo "Replacing the openapi-core version in Pipfile.lock with the minimal supported version"
 
-    grep "==0.13.4" Pipfile.lock
-    sed -i 's/"==0.13.4"/"==0.13.1"/g' Pipfile.lock
+    grep "==0.13.7" Pipfile.lock
+    sed -i 's/"==0.13.7"/"==0.13.1"/g' Pipfile.lock
 
-    grep "b8b4283d84038495fb3bde4a868cd9377272ecf898f142d7706d6d49fc14d218" Pipfile.lock
-    sed -i s/b8b4283d84038495fb3bde4a868cd9377272ecf898f142d7706d6d49fc14d218/d61305484f8fefda78fdddaf8890af6804fae99dff94013abd9480873880bddc/g Pipfile.lock
+    grep "c19afce48fe616dbbab2a56b5d1b14b604cc0bb37d6769421acfb06243ffb6c1" Pipfile.lock
+    sed -i s/c19afce48fe616dbbab2a56b5d1b14b604cc0bb37d6769421acfb06243ffb6c1/d61305484f8fefda78fdddaf8890af6804fae99dff94013abd9480873880bddc/g Pipfile.lock
 fi
