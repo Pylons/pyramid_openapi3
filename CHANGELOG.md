@@ -1,5 +1,10 @@
 ## Changelog
 
+0.11.1 (unreleased)
+-------------------
+
+* Bugfix for same endpoint name in multiple OpenApis.
+  [sweh]
 
 0.11 (2021-02-15)
 -----------------

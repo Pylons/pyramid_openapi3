@@ -30,6 +30,7 @@ from urllib.parse import urlparse
 
 import hupper
 import logging
+import os.path
 import typing as t
 
 logger = logging.getLogger(__name__)
@@ -350,8 +351,7 @@ def check_all_routes(event: ApplicationCreated):
             for name, route in app.routes_mapper.routes.items()
         ]
         route_names = {
-            remove_prefixes(route.path): name
-            for name, route in app.routes_mapper.routes.items()
+            route.path: name for name, route in app.routes_mapper.routes.items()
         }
 
         missing = [r for r in paths if r not in routes]
@@ -360,5 +360,8 @@ def check_all_routes(event: ApplicationCreated):
 
         settings.setdefault("pyramid_openapi3", {})
         settings["pyramid_openapi3"].setdefault("routes", {})
+        base_path = path
         for path in paths:
-            settings["pyramid_openapi3"]["routes"][route_names[path]] = name
+            path = os.path.join(base_path, path)
+            if path in route_names:
+                settings["pyramid_openapi3"]["routes"][route_names[path]] = name
