@@ -64,6 +64,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     keywords="pyramid openapi3 openapi rest restful",
     packages=find_packages(exclude=["tests"]),
