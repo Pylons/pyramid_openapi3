@@ -98,67 +98,15 @@ jobs:
       - store_artifacts:
           path: htmltypecov
 
-  test_38: &test-template
-    <<: *defaults
-
-    steps:
-      - checkout
-
-      - run:
-          name: Test minimal openapi-core version on Python 3.8
-          command: ./inject_minimal_openapi-core.sh
-
-      - restore_cache:
-          keys:
-            - v2-dependencies-{{ checksum "Pipfile.lock" }}
-
-      - run:
-          name: install dependencies
-          command: |
-            sudo pip install pipenv
-            pipenv install --dev --deploy
-            touch .installed
-
-      - save_cache:
-          paths:
-            - ./.venv
-          key: v2-dependencies-{{ checksum "Pipfile.lock" }}
-
-      - run:
-          name: run tests
-          command: |
-            make lint all=true
-            make types
-            make unit
-
-      - run:
-          name: run tests for the singlefile example
-          command: |
-            cd examples/singlefile
-            pipenv run python -m unittest app.py
-
-      - run:
-          name: run tests for the todoapp example
-          command: |
-            cd examples/todoapp
-            pipenv run python -m unittest tests.py
-
-      - run:
-          name: run tests for the splitfile example
-          command: |
-            cd examples/splitfile
-            pipenv run python -m unittest tests.py
-
-      - store_artifacts:
-          path: htmlcov
-
-      - store_artifacts:
-          path: htmltypecov
+  test_38:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.8
 
   test_37:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7.5
+      - image: circleci/python:3.7
 
   release:
     <<: *defaults
