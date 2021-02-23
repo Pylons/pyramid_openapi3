@@ -53,7 +53,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "Pipfile.lock" }}
+            - v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install dependencies
@@ -65,7 +65,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v2-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run tests
@@ -101,7 +101,7 @@ jobs:
   test_38:
     <<: *test-template
     docker:
-      - image: circleci/python:3.8.0
+      - image: circleci/python:3.8
 
   test_37:
     <<: *test-template
@@ -116,7 +116,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "Pipfile.lock" }}
+            - v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install dependencies
@@ -129,7 +129,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v2-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: verify git tag vs. version
