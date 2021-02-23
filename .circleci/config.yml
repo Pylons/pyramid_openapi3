@@ -48,7 +48,7 @@ jobs:
       - checkout
 
       - run:
-          name: Test minimal openapi-core version on Python 3.9
+          name: Test minimal openapi-core version on Python 3.7
           command: ./inject_minimal_openapi-core.sh
 
       - restore_cache:
