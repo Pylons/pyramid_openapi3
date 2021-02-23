@@ -10,7 +10,7 @@ defaults: &defaults
       PIPENV_VENV_IN_PROJECT: 1
       PIPENV_IGNORE_VIRTUALENVS: 1
     docker:
-      - image: circleci/python:3.8.0
+      - image: circleci/python:3.9
 
 workflows:
   version: 2
@@ -24,10 +24,15 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test_39:
+          filters:
+            tags:
+              only: /.*/
       - release:
           requires:
             - test_37
             - test_38
+            - test_39
           filters:
             tags:
               only: /[0-9]+\.[0-9]+\.[0-9]+/
@@ -36,7 +41,7 @@ workflows:
 
 jobs:
 
-  test_38: &test-template
+  test_39: &test-template
     <<: *defaults
 
     steps:
@@ -48,7 +53,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "Pipfile.lock" }}
+            - v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install dependencies
@@ -60,7 +65,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v2-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run tests
@@ -93,10 +98,15 @@ jobs:
       - store_artifacts:
           path: htmltypecov
 
+  test_38:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.8
+
   test_37:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7.5
+      - image: circleci/python:3.7
 
   release:
     <<: *defaults
@@ -106,7 +116,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v2-dependencies-{{ checksum "Pipfile.lock" }}
+            - v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install dependencies
@@ -119,7 +129,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v2-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: verify git tag vs. version

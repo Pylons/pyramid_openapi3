@@ -11,7 +11,7 @@ pkgs.mkShell {
   name = "dev-shell";
   buildInputs = [
     pkgs.pipenv
-    pkgs.python38Full
+    pkgs.python39Full
     pkgs.codespell
   ];
 

@@ -41,11 +41,11 @@ The reason this package exists is to give you peace of mind when providing a RES
 
 - Your **API documentation is never out-of-date**, since it is generated out of the API document that you write.
 - The documentation comes with **_try-it-out_ examples** for every endpoint in your API. You don't have to provide (and maintain) `curl` commands to showcase how your API works. Users can try it themselves, right in their browsers.
-- Your **API document is always valid**, since your Pyramid app won't even start if the document is not according to OpenAPI 3.0 specification.
+- Your **API document is always valid**, since your Pyramid app won't even start if the document does not comply with the OpenAPI 3.0 specification.
 - Automatic request **payload validation and sanitization**. Your views do not require any code for validation and input sanitation. Your view code only deals with business logic. Tons of tests never need to be written since every request, and its payload, is validated against your API document before it reaches your view code.
-- Your API **responses always match your API document**. Every response from your view is validated against your document and a `500 Internal Server Error` is returned if the response does not exactly match what your document says the output of a certain API endpoint should be. This decreases the effects of the [Hyrum's Law](https://www.hyrumslaw.com).
-- **A single source of truth**. Because of the checks outlined above you can be sure that whatever your API document says is in fact what is going on in reality. You have a single source of truth to consult when asking an API related question, such as "Remind me again, which fields does the endpoint /user/info return?".
-- Based on [Pyramid](https://trypyramid.com), a **mature Python Web framework**. Companies such as Mozilla, Yelp, RollBar and SurveyMonkey [trust Pyramid](https://trypyramid.com/community-powered-by-pyramid.html), and the new [pypi.org](https://github.com/pypa/warehouse) runs on Pyramid too. Pyramid is thoroughly [tested](https://travis-ci.org/Pylons/pyramid) and [documented](http://docs.pylonsproject.org/projects/pyramid/en/latest/), providing flexibility, performance, and a large ecosystem of [high-quality add-ons](https://trypyramid.com/extending-pyramid.html).
+- Your API **responses always match your API document**. Every response from your view is validated against your document and a `500 Internal Server Error` is returned if the response does not exactly match what your document says the output of a certain API endpoint should be. This decreases the effects of [Hyrum's Law](https://www.hyrumslaw.com).
+- **A single source of truth**. Because of the checks outlined above, you can be sure that whatever your API document says is in fact what is going on in reality. You have a single source of truth to consult when asking an API related question, such as "Remind me again, which fields are returned by the endpoint `/user/info`?".
+- Based on [Pyramid](https://trypyramid.com), a **mature Python Web framework**. Companies such as Mozilla, Yelp, RollBar and SurveyMonkey [trust Pyramid](https://trypyramid.com/community-powered-by-pyramid.html), and the new [pypi.org](https://github.com/pypa/warehouse) runs on Pyramid, too. Pyramid is thoroughly [tested](https://github.com/Pylons/Pyramid/actions?query=workflow%3A%22Build+and+test%22) and [documented](https://docs.pylonsproject.org/projects/pyramid/en/latest/), providing flexibility, performance, and a large ecosystem of [high-quality add-ons](https://trypyramid.com/extending-pyramid.html).
 
 <p align="center">
 <a href="https://www.youtube.com/watch?v=P0zNxrDO0sE&amp;t=1061" title="Building Robust APIs" rel="nofollow" class="rich-diff-level-one"><img src="https://user-images.githubusercontent.com/311580/97364772-6d246a80-189c-11eb-84f2-a0ad23236003.png" alt="Building Robust APIs" style="max-width:100%;"></a>
@@ -84,9 +84,9 @@ For responses, if the payload does not match the API document, an exception is r
 
 ### Relative File References in Spec
 
-A feature introduced in OpenApi3 is the ability to use `$ref` links to external files (https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#referenceObject).
+A feature introduced in OpenAPI3 is the ability to use `$ref` links to external files (https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#referenceObject).
 
-In order to use this you must ensure that you have all of your spec files in a given directory (ensure that you do not have any code in this directory as all the files in it are exposed as static files), then **replace** the `pyramid_openapi3_spec` call that you did in [Getting Started](#getting-started) with the following:
+To use this, you must ensure that you have all of your spec files in a given directory (ensure that you do not have any code in this directory as all the files in it are exposed as static files), then **replace** the `pyramid_openapi3_spec` call that you did in [Getting Started](#getting-started) with the following:
 
 ```python
 config.pyramid_openapi3_spec_directory('path/to/openapi.yaml', route='/api/v1/spec')
@@ -95,15 +95,15 @@ config.pyramid_openapi3_spec_directory('path/to/openapi.yaml', route='/api/v1/sp
 Some notes:
 
 - Do not set the `route` of your `pyramid_openapi3_spec_directory` to the same value as the `route` of `pyramid_openapi3_add_explorer`.
-- The `route` that you set for `pyramid_openapi3_spec_directory` should not contain any file extensions as this becomes the root for all of the files in your specified `filepath`.
+- The `route` that you set for `pyramid_openapi3_spec_directory` should not contain any file extensions, as this becomes the root for all of the files in your specified `filepath`.
 - You cannot use `pyramid_openapi3_spec_directory` and `pyramid_openapi3_spec` in the same app.
 
 ### Endpoints / Request / Response Validation
 
 Provided with `pyramid_openapi3` are a few validation features:
- * incoming request validation (i.e. what a client sends to your app)
- * outgoing response validation (i.e. what your app sends to a client)
- * endpoint validation (i.e. your app registers routes for all defined API endpoints)
+ * incoming request validation (i.e., what a client sends to your app)
+ * outgoing response validation (i.e., what your app sends to a client)
+ * endpoint validation (i.e., your app registers routes for all defined API endpoints)
 
 These features are enabled as a default, but you can disable them if you need to:
 
@@ -132,18 +132,18 @@ A **fully built-out app**, with 100% test coverage, providing a [RealWorld.io](h
 
 The authors of pyramid_openapi3 believe that the approach of validating a manually-written API document is superior to the approach of generating the API document from Python code. Here are the reasons:
 
-a) Both generation and validation against a document are lossy processes. The underlying libraries running the generation/validation will always have something missing. Either a feature from the latest OpenAPI specification, or an implementation bug. Having to fork the underlying library in order to generate the part of your API document that might only be needed for the frontend is unfortunate.
+1.  Both generation and validation against a document are lossy processes. The underlying libraries running the generation/validation will always have something missing. Either a feature from the latest OpenAPI specification, or an implementation bug. Having to fork the underlying library in order to generate the part of your API document that might only be needed for the frontend is unfortunate.
 
-   Validation on the other hand allows one to skip parts of validation that are not supported yet, and not block a team from shipping the document.
+    Validation on the other hand allows one to skip parts of validation that are not supported yet, and not block a team from shipping the document.
 
-b) Validation approach does sacrifice DRY-ness, one has to write the API document and then the (view) code in Pyramid. Feels a bit redundant at first. However, this provides a clear separation between the intent and the implementation.
+2.  The validation approach does sacrifice DRY-ness, and one has to write the API document and then the (view) code in Pyramid. It feels a bit redundant at first. However, this provides a clear separation between the intent and the implementation.
 
-c) Generation approach has the drawback of having to write Python code even for parts of the API document that the Pyramid backend does not handle, as it might be handled by a different system, or be specific only to documentation or only to the client side of the API. This bloats your Pyramid codebase with code that does not belong there.
+3.  The generation approach has the drawback of having to write Python code even for parts of the API document that the Pyramid backend does not handle, as it might be handled by a different system, or be specific only to documentation or only to the client side of the API. This bloats your Pyramid codebase with code that does not belong there.
 
 
 ## Running tests
 
-You need to have [pipenv](https://pipenv.readthedocs.io/) and Python 3.7 or 3.8 installed on your machine. Then you can run:
+You need to have [pipenv](https://pipenv.readthedocs.io/) and Python 3.7, 3.8, or 3.9 installed on your machine. Then you can run:
 
     $ make tests
 
@@ -151,19 +151,19 @@ You need to have [pipenv](https://pipenv.readthedocs.io/) and Python 3.7 or 3.8 
 
 These packages tackle the same problem-space:
 
-- [pyramid_oas3](https://github.com/kazuki/pyramid-oas3) seems to do things very similarly to pyramid_openapi3, but the documentation is not in English and we sadly can't fully understand what it does just reading the code.
+- [pyramid_oas3](https://github.com/kazuki/pyramid-oas3) seems to do things very similarly to pyramid_openapi3, but the documentation is not in English and we sadly can't fully understand what it does by just reading the code.
 - [pyramid_swagger](https://github.com/striglia/pyramid_swagger) does a similar
   thing, but for Swagger 2.0 documents.
 - [connexion](https://github.com/zalando/connexion) takes the same "write spec first, code second" approach as pyramid_openapi3, but is based on Flask.
 - [bottle-swagger](https://github.com/ampedandwired/bottle-swagger) takes the same "write spec first, code second" approach too, but is based on Bottle.
 - [pyramid_apispec](https://github.com/ergo/pyramid_apispec) uses generation with
-  help of apispec and marshmallow validation library. See above [why we prefer validation instead of generation](#design-defense).
+  help of apispec and the marshmallow validation library. See above [why we prefer validation instead of generation](#design-defense).
 
 ## Deprecation policy
 
 We do our best to follow the rules below.
 
-* Support the latest two releases of Python, currently Python 3.7 and 3.8.
+* Support the latest two releases of Python, currently Python 3.7, 3.8, and 3.9.
 * Support only a single release of `openapi-core` and its sub-dependencies. See `Pipfile.lock` for a frozen-in-time known-good-set of all dependencies.
 
 ## Use in the wild
