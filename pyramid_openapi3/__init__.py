@@ -6,6 +6,7 @@ from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequestFactory
 from openapi_core import create_spec
+from openapi_core.schema.specs.models import Spec
 from openapi_core.validation.exceptions import InvalidSecurity
 from openapi_core.validation.request.validators import RequestValidator
 from openapi_core.validation.response.validators import ResponseValidator
@@ -91,9 +92,10 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
             )
             request.environ["pyramid_openapi3.validate_response"] = validate_response
             gsettings = settings = request.registry.settings["pyramid_openapi3"]
-            if "routes" in gsettings:
+            route_settings = gsettings.get("routes")
+            if route_settings and request.matched_route.name in route_settings:
                 settings = request.registry.settings[
-                    gsettings["routes"][request.matched_route.name]
+                    route_settings[request.matched_route.name]
                 ]
 
             # Needed to support relative `servers` entries in `openapi.yaml`,
@@ -147,7 +149,8 @@ def add_explorer_view(
             settings = config.registry.settings
             if settings.get(apiname) is None:
                 raise ConfigurationError(
-                    "You need to call config.pyramid_openapi3_spec for explorer to work."
+                    "You need to call config.pyramid_openapi3_spec for the explorer "
+                    "to work."
                 )
             with open(resolved_template.abspath()) as f:
                 template = Template(f.read())
@@ -232,16 +235,19 @@ def add_spec_view_directory(
     filepath: str,
     route: str = "/spec",
     route_name: str = "pyramid_openapi3.spec",
+    permission: str = NO_PERMISSION_REQUIRED,
+    apiname: str = "pyramid_openapi3",
 ) -> None:
     """Serve and register OpenApi 3.0 specification directory.
 
     :param filepath: absolute/relative path to the root specification file
     :param route: URL path where to serve specification file
     :param route_name: Route name under which specification file will be served
+    :param permission: Permission for the spec view
     """
 
     def register() -> None:
-        settings = config.registry.settings.get("pyramid_openapi3")
+        settings = config.registry.settings.get(apiname)
         if settings and settings.get("spec") is not None:
             raise ConfigurationError(
                 "Spec has already been configured. You may only call "
@@ -261,12 +267,12 @@ def add_spec_view_directory(
         validate_spec(spec_dict, spec_url=spec_url)
         spec = create_spec(spec_dict, spec_url=spec_url)
 
-        config.add_static_view(route, str(path.parent))
+        config.add_static_view(route, str(path.parent), permission=permission)
         config.add_route(route_name, f"{route}/{path.name}")
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
 
-        config.registry.settings["pyramid_openapi3"] = {
+        config.registry.settings[apiname] = {
             "filepath": filepath,
             "spec_route_name": route_name,
             "spec": spec,
@@ -277,8 +283,9 @@ def add_spec_view_directory(
                 spec, custom_formatters=custom_formatters
             ),
         }
+        APIS.append(apiname)
 
-    config.action(("pyramid_openapi3_spec",), register, order=PHASE0_CONFIG)
+    config.action((f"{apiname}_spec_directory",), register, order=PHASE0_CONFIG)
 
 
 def openapi_validation_error(
@@ -330,29 +337,20 @@ def check_all_routes(event: ApplicationCreated):
             logger.info("Endpoint validation against specification is disabled")
             return
 
-        # Sometimes api routes are prefixed with `/api/v1` and similar, using
-        # https://swagger.io/docs/specification/api-host-and-base-path/
-        prefixes = []
-        for server in openapi_settings["spec"].servers:
-            path = urlparse(server.url).path
-            if path != "/":
-                prefixes.append(path)
+        prefixes = _get_server_prefixes(openapi_settings["spec"])
 
         def remove_prefixes(path):
             path = f"/{path}" if not path.startswith("/") else path
             for prefix in prefixes:
-                path = path.replace(prefix, "")
+                if path.startswith(prefix):
+                    prefix_length = len(prefix)
+                    return path[prefix_length:]
             return path
 
         paths = list(openapi_settings["spec"].paths.keys())
         routes = [
-            remove_prefixes(route.path)
-            for name, route in app.routes_mapper.routes.items()
+            remove_prefixes(route.path) for route in app.routes_mapper.routes.values()
         ]
-        route_names = {
-            remove_prefixes(route.path): name
-            for name, route in app.routes_mapper.routes.items()
-        }
 
         missing = [r for r in paths if r not in routes]
         if missing:
@@ -360,5 +358,25 @@ def check_all_routes(event: ApplicationCreated):
 
         settings.setdefault("pyramid_openapi3", {})
         settings["pyramid_openapi3"].setdefault("routes", {})
-        for path in paths:
-            settings["pyramid_openapi3"]["routes"][route_names[path]] = name
+
+        # It is possible to have multiple `add_route` for a single path
+        # (due to request_method predicates)
+        for route_name, route in app.routes_mapper.routes.items():
+            if remove_prefixes(route.path) in paths:
+                settings["pyramid_openapi3"]["routes"][route_name] = name
+
+
+def _get_server_prefixes(spec: Spec) -> t.List[str]:
+    """
+    Build a set of possible route prefixes from the api spec.
+
+    Api routes may optionally be prefixed using servers (e.g: `/api/v1`).
+    See: https://swagger.io/docs/specification/api-host-and-base-path/
+    """
+    prefixes = []
+    for server in spec.servers:
+        path = urlparse(server.url).path
+        path = f"/{path}" if not path.startswith("/") else path
+        if path != "/":
+            prefixes.append(path)
+    return prefixes
