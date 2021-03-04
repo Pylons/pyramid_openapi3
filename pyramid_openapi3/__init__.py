@@ -6,6 +6,7 @@ from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequestFactory
 from openapi_core import create_spec
+from openapi_core.schema.specs.models import Spec
 from openapi_core.validation.exceptions import InvalidSecurity
 from openapi_core.validation.request.validators import RequestValidator
 from openapi_core.validation.response.validators import ResponseValidator
@@ -91,9 +92,10 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
             )
             request.environ["pyramid_openapi3.validate_response"] = validate_response
             gsettings = settings = request.registry.settings["pyramid_openapi3"]
-            if "routes" in gsettings:
+            route_settings = gsettings.get("routes")
+            if route_settings and request.matched_route.name in route_settings:
                 settings = request.registry.settings[
-                    gsettings["routes"][request.matched_route.name]
+                    route_settings[request.matched_route.name]
                 ]
 
             # Needed to support relative `servers` entries in `openapi.yaml`,
@@ -147,7 +149,8 @@ def add_explorer_view(
             settings = config.registry.settings
             if settings.get(apiname) is None:
                 raise ConfigurationError(
-                    "You need to call config.pyramid_openapi3_spec for explorer to work."
+                    "You need to call config.pyramid_openapi3_spec for the explorer "
+                    "to work."
                 )
             with open(resolved_template.abspath()) as f:
                 template = Template(f.read())
@@ -330,29 +333,20 @@ def check_all_routes(event: ApplicationCreated):
             logger.info("Endpoint validation against specification is disabled")
             return
 
-        # Sometimes api routes are prefixed with `/api/v1` and similar, using
-        # https://swagger.io/docs/specification/api-host-and-base-path/
-        prefixes = []
-        for server in openapi_settings["spec"].servers:
-            path = urlparse(server.url).path
-            if path != "/":
-                prefixes.append(path)
+        prefixes = _get_server_prefixes(openapi_settings["spec"])
 
         def remove_prefixes(path):
             path = f"/{path}" if not path.startswith("/") else path
             for prefix in prefixes:
-                path = path.replace(prefix, "")
+                if path.startswith(prefix):
+                    prefix_length = len(prefix)
+                    return path[prefix_length:]
             return path
 
         paths = list(openapi_settings["spec"].paths.keys())
         routes = [
-            remove_prefixes(route.path)
-            for name, route in app.routes_mapper.routes.items()
+            remove_prefixes(route.path) for route in app.routes_mapper.routes.values()
         ]
-        route_names = {
-            remove_prefixes(route.path): name
-            for name, route in app.routes_mapper.routes.items()
-        }
 
         missing = [r for r in paths if r not in routes]
         if missing:
@@ -360,5 +354,25 @@ def check_all_routes(event: ApplicationCreated):
 
         settings.setdefault("pyramid_openapi3", {})
         settings["pyramid_openapi3"].setdefault("routes", {})
-        for path in paths:
-            settings["pyramid_openapi3"]["routes"][route_names[path]] = name
+
+        # It is possible to have multiple `add_route` for a single path
+        # (due to request_method predicates). So loop through each route
+        # to create a lookup of route_name -> api_name
+        for route_name, route in app.routes_mapper.routes.items():
+            if remove_prefixes(route.path) in paths:
+                settings["pyramid_openapi3"]["routes"][route_name] = name
+
+
+def _get_server_prefixes(spec: Spec) -> t.List[str]:
+    """Build a set of possible route prefixes from the api spec.
+
+    Api routes may optionally be prefixed using servers (e.g: `/api/v1`).
+    See: https://swagger.io/docs/specification/api-host-and-base-path/
+    """
+    prefixes = []
+    for server in spec.servers:
+        path = urlparse(server.url).path
+        path = f"/{path}" if not path.startswith("/") else path
+        if path != "/":
+            prefixes.append(path)
+    return prefixes

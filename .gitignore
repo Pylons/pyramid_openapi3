@@ -118,3 +118,6 @@ typecov/
 
 # support for fast reloading direnv
 .direnv
+
+# Editors
+.vscode

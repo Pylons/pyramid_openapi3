@@ -53,7 +53,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+            - v4-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install dependencies
@@ -65,7 +65,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v4-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: run tests
@@ -116,7 +116,7 @@ jobs:
 
       - restore_cache:
           keys:
-            - v3-dependencies-{{ checksum "Pipfile.lock" }}
+            - v4-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install dependencies
@@ -129,7 +129,7 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v3-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v4-dependencies-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: verify git tag vs. version
