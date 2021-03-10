@@ -235,19 +235,16 @@ def add_spec_view_directory(
     filepath: str,
     route: str = "/spec",
     route_name: str = "pyramid_openapi3.spec",
-    permission: str = NO_PERMISSION_REQUIRED,
-    apiname: str = "pyramid_openapi3",
 ) -> None:
     """Serve and register OpenApi 3.0 specification directory.
 
     :param filepath: absolute/relative path to the root specification file
     :param route: URL path where to serve specification file
     :param route_name: Route name under which specification file will be served
-    :param permission: Permission for the spec view
     """
 
     def register() -> None:
-        settings = config.registry.settings.get(apiname)
+        settings = config.registry.settings.get("pyramid_openapi3")
         if settings and settings.get("spec") is not None:
             raise ConfigurationError(
                 "Spec has already been configured. You may only call "
@@ -267,12 +264,12 @@ def add_spec_view_directory(
         validate_spec(spec_dict, spec_url=spec_url)
         spec = create_spec(spec_dict, spec_url=spec_url)
 
-        config.add_static_view(route, str(path.parent), permission=permission)
+        config.add_static_view(route, str(path.parent))
         config.add_route(route_name, f"{route}/{path.name}")
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
 
-        config.registry.settings[apiname] = {
+        config.registry.settings["pyramid_openapi3"] = {
             "filepath": filepath,
             "spec_route_name": route_name,
             "spec": spec,
@@ -283,9 +280,8 @@ def add_spec_view_directory(
                 spec, custom_formatters=custom_formatters
             ),
         }
-        APIS.append(apiname)
 
-    config.action((f"{apiname}_spec_directory",), register, order=PHASE0_CONFIG)
+    config.action(("pyramid_openapi3_spec",), register, order=PHASE0_CONFIG)
 
 
 def openapi_validation_error(
@@ -360,7 +356,8 @@ def check_all_routes(event: ApplicationCreated):
         settings["pyramid_openapi3"].setdefault("routes", {})
 
         # It is possible to have multiple `add_route` for a single path
-        # (due to request_method predicates)
+        # (due to request_method predicates). So loop through each route
+        # to create a lookup of route_name -> api_name
         for route_name, route in app.routes_mapper.routes.items():
             if remove_prefixes(route.path) in paths:
                 settings["pyramid_openapi3"]["routes"][route_name] = name
