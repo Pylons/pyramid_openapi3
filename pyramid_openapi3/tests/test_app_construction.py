@@ -154,3 +154,36 @@ def test_unconfigured_app(
 
     simple_config.make_wsgi_app()
     assert "pyramid_openapi3 settings not found" in caplog.text
+
+
+def test_routes_setting_generation(app_config: Configurator):
+    """Test the `routes` setting is correctly created after app creation."""
+
+    # Test that having multiple routes for a single route / pattern still works
+    app_config.add_route(name="get_foo", pattern="/foo", request_method="GET")
+    app_config.add_route(name="create_foo", pattern="/foo", request_method="POST")
+
+    # Test the simple case of having no predicates on a route
+    app_config.add_route(name="bar", pattern="/bar")
+
+    # Add the views (needed for app creation)
+    app_config.add_view(
+        foo_view, route_name="get_foo", renderer="string", request_method="GET"
+    )
+    app_config.add_view(
+        foo_view, route_name="create_foo", renderer="string", request_method="POST"
+    )
+    app_config.add_view(
+        bar_view, route_name="bar", renderer="string", request_method="GET"
+    )
+
+    app_config.make_wsgi_app()
+
+    settings = app_config.registry.settings["pyramid_openapi3"]
+    # Assert that the `routes` setting object was created
+    assert settings.get("routes") is not None
+    # Assert that all 3 route names are in the `routes` setting
+    # These should all map to `pyramid_openapi3` since that it the default apiname
+    assert settings["routes"]["get_foo"] == "pyramid_openapi3"
+    assert settings["routes"]["create_foo"] == "pyramid_openapi3"
+    assert settings["routes"]["bar"] == "pyramid_openapi3"
