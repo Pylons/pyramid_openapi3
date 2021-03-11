@@ -364,8 +364,7 @@ def check_all_routes(event: ApplicationCreated):
 
 
 def _get_server_prefixes(spec: Spec) -> t.List[str]:
-    """
-    Build a set of possible route prefixes from the api spec.
+    """Build a set of possible route prefixes from the api spec.
 
     Api routes may optionally be prefixed using servers (e.g: `/api/v1`).
     See: https://swagger.io/docs/specification/api-host-and-base-path/
