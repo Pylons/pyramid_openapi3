@@ -344,7 +344,10 @@ def test_explorer_view_missing_spec() -> None:
         )
         with pytest.raises(
             ConfigurationError,
-            match="You need to call config.pyramid_openapi3_spec for explorer to work.",
+            match=(
+                "You need to call config.pyramid_openapi3_spec for the "
+                "explorer to work."
+            ),
         ):
             view(request=DummyRequest(config=config), context=None)
 
