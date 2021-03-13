@@ -15,6 +15,7 @@ from openapi_spec_validator.schemas import read_yaml_file
 from pathlib import Path
 from pyramid.config import Configurator
 from pyramid.config import PHASE0_CONFIG
+from pyramid.config import PHASE1_CONFIG
 from pyramid.config.views import ViewDeriverInfo
 from pyramid.events import ApplicationCreated
 from pyramid.exceptions import ConfigurationError
@@ -45,6 +46,7 @@ def includeme(config: Configurator) -> None:
     config.add_directive("pyramid_openapi3_add_explorer", add_explorer_view)
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
     config.add_directive("pyramid_openapi3_spec_directory", add_spec_view_directory)
+    config.add_directive("pyramid_openapi3_register_routes", register_routes)
     config.add_tween("pyramid_openapi3.tween.response_tween_factory", over=EXCVIEW)
     config.add_subscriber(check_all_routes, ApplicationCreated)
 
@@ -282,6 +284,33 @@ def add_spec_view_directory(
         }
 
     config.action(("pyramid_openapi3_spec",), register, order=PHASE0_CONFIG)
+
+
+def register_routes(
+    config: Configurator,
+    route_name_ext: str = "x-pyramid-route-name",
+    root_factory_ext: str = "x-pyramid-root-factory",
+    apiname: str = "pyramid_openapi3",
+) -> None:
+    """Register routes to app from OpenApi 3.0 specification.
+
+    :param route_name_ext: Extension's key for using a ``route_name`` argument
+    :param root_factory_ext: Extension's key for using a ``factory`` argument
+    """
+
+    def action() -> None:
+        spec = config.registry.settings[apiname]["spec"]
+        for pattern, path_item in spec.paths.items():
+            route_name = path_item.extensions.get(route_name_ext)
+            if route_name:
+                root_factory = path_item.extensions.get(root_factory_ext)
+                config.add_route(
+                    route_name.value,
+                    pattern=pattern,
+                    factory=root_factory.value if root_factory else None,
+                )
+
+    config.action(("pyramid_openapi3_register_routes",), action, order=PHASE1_CONFIG)
 
 
 def openapi_validation_error(
