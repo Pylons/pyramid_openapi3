@@ -116,6 +116,33 @@ config.registry.settings["pyramid_openapi3.enable_response_validation"] = False
 > **Warning:**
 Disabling request validation will result in `request.openapi_validated` no longer being available to use.
 
+### Register Pyramid's Routes
+
+You can register routes in your pyramid application.
+First, write the `x-pyramid-route-name` extension in the PathItem of the OpenAPI schema.
+
+```yaml
+paths:
+  /foo:
+    x-pyramid-route-name: foo_route
+    get:
+      responses:
+        200:
+          description: GET foo
+```
+
+Then put the config directive `pyramid_openapi3_register_routes` in the app_factory of your application.
+
+```python
+config.pyramid_openapi3_register_routes()
+```
+
+This means is equals to
+
+```python
+config.add_route("foo_route", pattern="/foo")
+```
+
 ## Demo / Examples
 
 There are three examples provided with this package:
