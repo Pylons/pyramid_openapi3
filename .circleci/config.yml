@@ -2,7 +2,7 @@
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
-version: 2
+version: 2.1
 
 defaults: &defaults
     working_directory: ~/repo
@@ -39,24 +39,20 @@ workflows:
             branches:
               ignore: /.*/
 
-jobs:
-
-  test_39: &test-template
-    <<: *defaults
-
+commands:
+  install_dependencies:
+    description: "Install dependencies"
+    parameters:
+      python_version:
+        type: string
+        default: "py39"
     steps:
-      - checkout
-
-      - run:
-          name: Test minimal openapi-core version on Python 3.7
-          command: ./inject_minimal_openapi-core.sh
-
       - restore_cache:
           keys:
-            - v4-dependencies-{{ checksum "Pipfile.lock" }}
+            - v1-dependencies-<< parameters.python_version >>-{{ checksum "Pipfile.lock" }}
 
       - run:
-          name: install dependencies
+          name: Install dependencies
           command: |
             sudo pip install pipenv
             pipenv install --dev --deploy
@@ -65,29 +61,26 @@ jobs:
       - save_cache:
           paths:
             - ./.venv
-          key: v4-dependencies-{{ checksum "Pipfile.lock" }}
+          key: v1-dependencies-<< parameters.python_version >>-{{ checksum "Pipfile.lock" }}
 
-      - run:
-          name: run tests
-          command: |
-            make lint all=true
-            make types
-            make unit
 
+  run_tests:
+    description: "Run tests"
+    steps:
       - run:
-          name: run tests for the singlefile example
+          name: Run tests for the singlefile example
           command: |
             cd examples/singlefile
             pipenv run python -m unittest app.py
 
       - run:
-          name: run tests for the todoapp example
+          name: Run tests for the todoapp example
           command: |
             cd examples/todoapp
             pipenv run python -m unittest tests.py
 
       - run:
-          name: run tests for the splitfile example
+          name: Run tests for the splitfile example
           command: |
             cd examples/splitfile
             pipenv run python -m unittest tests.py
@@ -98,15 +91,51 @@ jobs:
       - store_artifacts:
           path: htmltypecov
 
+jobs:
+
+  test_39:
+    <<: *defaults
+
+    steps:
+      - checkout
+
+      - install_dependencies:
+          python_version: "py39"
+
+      - run_tests
+
+
   test_38:
-    <<: *test-template
+    <<: *defaults
     docker:
       - image: circleci/python:3.8
 
+    steps:
+      - checkout
+
+      - install_dependencies:
+          python_version: "py38"
+
+      - run_tests
+
+
   test_37:
-    <<: *test-template
+    <<: *defaults
     docker:
       - image: circleci/python:3.7
+
+
+    steps:
+      - checkout
+
+      - run:
+          name: Test minimal openapi-core version on Python 3.7
+          command: ./inject_minimal_openapi-core.sh
+
+      - install_dependencies:
+          python_version: "py37"
+
+      - run_tests
 
   release:
     <<: *defaults
@@ -114,22 +143,8 @@ jobs:
     steps:
       - checkout
 
-      - restore_cache:
-          keys:
-            - v4-dependencies-{{ checksum "Pipfile.lock" }}
-
-      - run:
-          name: install dependencies
-          command: |
-            sudo pip install pipenv
-            pip install pipenv
-            pipenv install --dev --deploy
-            touch .installed
-
-      - save_cache:
-          paths:
-            - ./.venv
-          key: v4-dependencies-{{ checksum "Pipfile.lock" }}
+      - install_dependencies:
+          python_version: "py39"
 
       - run:
           name: verify git tag vs. version
