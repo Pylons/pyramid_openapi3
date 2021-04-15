@@ -100,11 +100,6 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
                     route_settings[request.matched_route.name]
                 ]
 
-            # Needed to support relative `servers` entries in `openapi.yaml`,
-            # see https://github.com/p1c2u/openapi-core/issues/218.
-            settings["request_validator"].base_url = request.application_url
-            settings["response_validator"].base_url = request.application_url
-
             if validate_request:
                 request.environ["pyramid_openapi3.validate_request"] = True
                 openapi_request = PyramidOpenAPIRequestFactory.create(request)
