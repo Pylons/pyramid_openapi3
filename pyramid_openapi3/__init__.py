@@ -93,8 +93,6 @@ def openapi_validated(request: Request) -> dict:
         request.environ["pyramid_openapi3.validate_request"] = True
         openapi_request = PyramidOpenAPIRequestFactory.create(request)
         validated = settings["request_validator"].validate(openapi_request)
-        if validated.errors:
-            raise RequestValidationError(errors=request.openapi_validated.errors)
         return validated
 
 
@@ -115,7 +113,13 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
     if info.options.get("openapi"):
 
         def wrapper_view(context: Context, request: Request) -> Response:
-            request.openapi_validated
+            validate_request = asbool(
+                request.registry.settings.get(
+                    "pyramid_openapi3.enable_request_validation", True
+                )
+            )
+            if validate_request and request.openapi_validated.errors:
+                raise RequestValidationError(errors=request.openapi_validated.errors)
 
             # Do the view
             return view(context, request)
