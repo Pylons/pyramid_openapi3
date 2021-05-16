@@ -9,18 +9,6 @@ from pyramid.response import Response
 import typing as t
 
 
-def request_headers(request: Request):
-    """
-    request_headers extract headers from a pyramid Request.
-
-    :return : a dict items from openapi_core 0.13.4, a dict in previous versions
-    """
-    import openapi_core
-
-    use_dict = openapi_core.__version__ < "0.13.4"
-    return request.headers if use_dict else request.headers.items()
-
-
 class PyramidOpenAPIRequestFactory:
     @classmethod
     def create(
@@ -41,7 +29,7 @@ class PyramidOpenAPIRequestFactory:
         parameters = RequestParameters(
             path=request.matchdict,
             query=request.GET,
-            header=request_headers(request),
+            header=request.headers.items(),
             cookie=request.cookies,
         )
 
