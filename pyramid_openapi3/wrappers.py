@@ -32,7 +32,7 @@ class PyramidOpenAPIRequestFactory:
             header=request.headers.items(),
             cookie=request.cookies,
         )
-        if 'multipart/form-data' == request.content_type:
+        if "multipart/form-data" == request.content_type:
             body = request.POST.mixed()
         else:
             body = request.body
