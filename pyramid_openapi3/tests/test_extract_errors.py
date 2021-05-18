@@ -8,6 +8,7 @@ from pyramid_openapi3.exceptions import InvalidCustomFormatterValue
 from pyramid_openapi3.exceptions import RequestValidationError
 from webtest.app import TestApp
 
+import openapi_core
 import tempfile
 import typing as t
 import unittest
@@ -531,12 +532,20 @@ class BadResponsesTests(unittest.TestCase):
             raise exception_response(409, json_body={})
 
         res = self._testapp(view=foo).get("/foo", status=500)
-        assert res.json == [
-            {
-                "exception": "InvalidResponse",
-                "message": "Unknown response http status: 409",
-            }
-        ]
+        if openapi_core.__version__ == "0.13.8":  # pragma: no cover
+            assert res.json == [
+                {
+                    "exception": "ResponseNotFound",
+                    "message": "Unknown response http status: 409",
+                }
+            ]
+        else:  # pragma: no cover
+            assert res.json == [
+                {
+                    "exception": "InvalidResponse",
+                    "message": "Unknown response http status: 409",
+                }
+            ]
 
     def test_invalid_response_schema(self) -> None:
         """Prevent responding with unmatching response schema."""

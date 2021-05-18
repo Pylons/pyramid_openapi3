@@ -84,11 +84,13 @@ def openapi_validated(request: Request) -> dict:
     if route_settings and request.matched_route.name in route_settings:
         settings = request.registry.settings[route_settings[request.matched_route.name]]
 
-    if validate_request:
+    if validate_request:  # pragma: no branch
         request.environ["pyramid_openapi3.validate_request"] = True
         openapi_request = PyramidOpenAPIRequestFactory.create(request)
         validated = settings["request_validator"].validate(openapi_request)
         return validated
+
+    return {}  # pragma: no cover
 
 
 Context = t.TypeVar("Context")

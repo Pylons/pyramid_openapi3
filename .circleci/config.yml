@@ -67,6 +67,14 @@ commands:
   run_tests:
     description: "Run tests"
     steps:
+
+      - run:
+          name: Run linters and unit tests
+          command: |
+            make lint all=true
+            make types
+            make unit
+
       - run:
           name: Run tests for the singlefile example
           command: |
