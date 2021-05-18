@@ -72,7 +72,7 @@ setup(
     install_requires=[
         "openapi-core>=0.13.4,<0.14",
         "openapi-spec-validator",
-        "pyramid<2.0",
+        "pyramid>=1.10.7,<2.0",
     ],
     cmdclass={"verify": VerifyVersionCommand},
 )
