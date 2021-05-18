@@ -6,7 +6,6 @@ from pyramid.request import Request
 from pyramid.testing import DummyRequest
 from pyramid_openapi3.wrappers import PyramidOpenAPIRequestFactory
 from pyramid_openapi3.wrappers import PyramidOpenAPIResponseFactory
-from webob.multidict import MultiDict
 
 
 @dataclass
@@ -69,21 +68,6 @@ def test_relative_app_request() -> None:
         header=pyramid_request.headers.items(),
         cookie={"tasty-foo": "tasty-bar"},
     )
-
-
-def test_form_data_request() -> None:
-    """Test that request.POST is used as the body in case of form-data."""
-    multi_dict = MultiDict()
-    multi_dict.add("key1", "value1")
-    multi_dict.add("key2", "value2.1")
-    multi_dict.add("key2", "value2.2")
-    pyramid_request = DummyRequest(path="/foo", post=multi_dict)
-    pyramid_request.matched_route = DummyRoute(name="foo", pattern="/foo")
-    pyramid_request.content_type = "multipart/form-data"
-
-    openapi_request = PyramidOpenAPIRequestFactory.create(pyramid_request)
-
-    assert openapi_request.body == {"key1": "value1", "key2": ["value2.1", "value2.2"]}
 
 
 def test_no_matched_route() -> None:
