@@ -227,7 +227,9 @@ def add_spec_view(
                 spec, custom_formatters=custom_formatters
             ),
         }
-        config.registry.settings.setdefault("pyramid_openapi3_apis", []).append(apiname)
+        config.registry.settings.setdefault("pyramid_openapi3_apinames", []).append(
+            apiname
+        )
 
     config.action((f"{apiname}_spec",), register, order=PHASE0_CONFIG)
 
@@ -348,8 +350,8 @@ def check_all_routes(event: ApplicationCreated):
 
     app = event.app
     settings = app.registry.settings
-    apis = settings.get("pyramid_openapi3_apis")
-    if not apis:
+    apinames = settings.get("pyramid_openapi3_apinames")
+    if not apinames:
         # pyramid_openapi3 not configured?
         logger.warning(
             "pyramid_openapi3 settings not found. "
@@ -357,7 +359,7 @@ def check_all_routes(event: ApplicationCreated):
         )
         return
 
-    for name in apis:  # pragma: no branch
+    for name in apinames:  # pragma: no branch
         openapi_settings = settings.get(name)
         if not openapi_settings:
             # pyramid_openapi3 not configured?
