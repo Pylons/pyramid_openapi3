@@ -360,14 +360,7 @@ def check_all_routes(event: ApplicationCreated):
         return
 
     for name in apinames:  # pragma: no branch
-        openapi_settings = settings.get(name)
-        if not openapi_settings:
-            # pyramid_openapi3 not configured?
-            logger.warning(
-                "pyramid_openapi3 settings not found. "
-                "Did you forget to call config.pyramid_openapi3_spec?"
-            )
-            return
+        openapi_settings = settings[name]
 
         if not settings.get("pyramid_openapi3.enable_endpoint_validation", True):
             logger.info("Endpoint validation against specification is disabled")
