@@ -36,8 +36,6 @@ import typing as t
 
 logger = logging.getLogger(__name__)
 
-APIS = []
-
 
 def includeme(config: Configurator) -> None:
     """Pyramid knob."""
@@ -229,7 +227,9 @@ def add_spec_view(
                 spec, custom_formatters=custom_formatters
             ),
         }
-        APIS.append(apiname)
+        config.registry.settings.setdefault("pyramid_openapi3_apinames", []).append(
+            apiname
+        )
 
     config.action((f"{apiname}_spec",), register, order=PHASE0_CONFIG)
 
@@ -350,15 +350,17 @@ def check_all_routes(event: ApplicationCreated):
 
     app = event.app
     settings = app.registry.settings
-    for name in APIS:  # pragma: no branch
-        openapi_settings = settings.get(name)
-        if not openapi_settings:
-            # pyramid_openapi3 not configured?
-            logger.warning(
-                "pyramid_openapi3 settings not found. "
-                "Did you forget to call config.pyramid_openapi3_spec?"
-            )
-            return
+    apinames = settings.get("pyramid_openapi3_apinames")
+    if not apinames:
+        # pyramid_openapi3 not configured?
+        logger.warning(
+            "pyramid_openapi3 settings not found. "
+            "Did you forget to call config.pyramid_openapi3_spec?"
+        )
+        return
+
+    for name in apinames:  # pragma: no branch
+        openapi_settings = settings[name]
 
         if not settings.get("pyramid_openapi3.enable_endpoint_validation", True):
             logger.info("Endpoint validation against specification is disabled")
