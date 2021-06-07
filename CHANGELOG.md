@@ -1,6 +1,26 @@
 ## Changelog
 
 
+0.12 (2021-06-07)
+-----------------
+
+* Basic support for multipart requests, refs #122.
+  [Wim-De-Clercq]
+
+* Automatic route registration via `x-pyramid-route-name` extension, refs #46.
+  [gjo]
+
+* Support for Python 3.9, refs #115.
+  [stevepiercy, zupo]
+
+* Cleanup old relative OpenAPI server URL workaround. Drop support for
+  `openapi-core 0.13.1`, refs #127, #129, #131.
+  [sevanteri, zupo]
+
+* Fix `KeyError` when having multiple routes for a single path, refs #118.
+  [damonhook]
+
+
 0.11 (2021-02-15)
 -----------------
 
