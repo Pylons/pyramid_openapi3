@@ -23,9 +23,9 @@ fi
 if [[ $(python --version) =~ 3\.7 ]]; then
     echo "Replacing the Pyramid version in Pipfile.lock with the minimal supported version"
 
-    grep "==1.10.8" Pipfile.lock
-    sed -i 's/"==1.10.8"/"==1.10.7"/g' Pipfile.lock
+    grep '"==2.0"' Pipfile.lock
+    sed -i 's/"==2.0"/"==1.10.7"/g' Pipfile.lock
 
-    grep "06e99d3174586921490203288e2cc9cd43d12992306f924ca32a2c59233386a9" Pipfile.lock
-    sed -i s/06e99d3174586921490203288e2cc9cd43d12992306f924ca32a2c59233386a9/9ad975d336cfe315ab80b3c9b9f4b3af3bc08fe05f7e057265eb1eb1dcdfc48e/g Pipfile.lock
+    grep "45431b387587ed0fac6213b54d6e9f0936f0cc85238a8f5af7852fc9484c5c77" Pipfile.lock
+    sed -i s/45431b387587ed0fac6213b54d6e9f0936f0cc85238a8f5af7852fc9484c5c77/9ad975d336cfe315ab80b3c9b9f4b3af3bc08fe05f7e057265eb1eb1dcdfc48e/g Pipfile.lock
 fi

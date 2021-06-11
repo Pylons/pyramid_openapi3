@@ -7,7 +7,7 @@ from pyramid.router import Router
 from pyramid.security import Allow
 from pyramid.security import Authenticated
 from pyramid.security import NO_PERMISSION_REQUIRED
-from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid.session import SignedCookieSessionFactory
 from webtest.app import TestApp
 
 import pytest
@@ -35,9 +35,7 @@ def app(spec: str, permission: str) -> Router:
 
         # Setup security
         config.set_default_permission("view")
-        config.set_session_factory(
-            UnencryptedCookieSessionFactoryConfig("itsaseekreet")
-        )
+        config.set_session_factory(SignedCookieSessionFactory("itsaseekreet"))
         config.set_authentication_policy(SessionAuthenticationPolicy())
         config.set_authorization_policy(ACLAuthorizationPolicy())
         config.set_root_factory(get_default_context)
