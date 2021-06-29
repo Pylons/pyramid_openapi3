@@ -1,0 +1,37 @@
+openapi: "3.0.0"
+
+servers:
+  - url: '/v'
+
+info:
+  version: "1.0.0"
+  title: A simple Todo app API
+
+paths:
+  /version:
+    get:
+      summary: version
+      description: version
+      tags:
+        - version
+      responses:
+        "200":
+          description: version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+
+
+components:
+
+  schemas:
+
+    Item:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          maxLength: 40
