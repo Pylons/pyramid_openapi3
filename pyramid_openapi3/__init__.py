@@ -239,6 +239,8 @@ def add_spec_view_directory(
     filepath: str,
     route: str = "/spec",
     route_name: str = "pyramid_openapi3.spec",
+    permission: str = NO_PERMISSION_REQUIRED,
+    apiname: str = "pyramid_openapi3",
 ) -> None:
     """Serve and register OpenApi 3.0 specification directory.
 
@@ -248,7 +250,7 @@ def add_spec_view_directory(
     """
 
     def register() -> None:
-        settings = config.registry.settings.get("pyramid_openapi3")
+        settings = config.registry.settings.get(apiname)
         if settings and settings.get("spec") is not None:
             raise ConfigurationError(
                 "Spec has already been configured. You may only call "
@@ -268,12 +270,12 @@ def add_spec_view_directory(
         validate_spec(spec_dict, spec_url=spec_url)
         spec = create_spec(spec_dict, spec_url=spec_url)
 
-        config.add_static_view(route, str(path.parent))
+        config.add_static_view(route, str(path.parent), permission=permission)
         config.add_route(route_name, f"{route}/{path.name}")
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
 
-        config.registry.settings["pyramid_openapi3"] = {
+        config.registry.settings[apiname] = {
             "filepath": filepath,
             "spec_route_name": route_name,
             "spec": spec,
@@ -284,8 +286,11 @@ def add_spec_view_directory(
                 spec, custom_formatters=custom_formatters
             ),
         }
+        config.registry.settings.setdefault("pyramid_openapi3_apinames", []).append(
+            apiname
+        )
 
-    config.action(("pyramid_openapi3_spec",), register, order=PHASE0_CONFIG)
+    config.action((f"{apiname}_spec",), register, order=PHASE0_CONFIG)
 
 
 def register_routes(

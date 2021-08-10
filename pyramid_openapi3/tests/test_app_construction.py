@@ -6,6 +6,7 @@ from pyramid.testing import testConfig
 from pyramid_openapi3 import MissingEndpointsError
 
 import logging
+import os
 import pytest
 import tempfile
 import typing as t
@@ -34,6 +35,37 @@ DOCUMENT = b"""
               description: A bar
 """
 
+SPLIT_DOCUMENT = b"""
+    openapi: "3.0.0"
+    info:
+      version: "1.0.0"
+      title: Foo API
+    servers:
+      - url: /api/v1
+    paths:
+      /foo:
+        $ref: "paths.yaml#/foo"
+      /bar:
+        $ref: "paths.yaml#/bar"
+"""
+
+SPLIT_DOCUMENT_PATHS = b"""
+    foo:
+      get:
+        responses:
+          200:
+            description: A foo
+      post:
+        responses:
+          200:
+            description: A POST foo
+    bar:
+      get:
+        responses:
+          200:
+            description: A bar
+"""
+
 
 def foo_view(request: Request) -> str:
     """Return a dummy string."""
@@ -56,6 +88,20 @@ def document() -> t.Generator[t.IO, None, None]:
 
 
 @pytest.fixture
+def directory_document() -> t.Generator[str, None, None]:
+    """Load the DOCUMENT into a temp file."""
+    with tempfile.TemporaryDirectory() as directory:
+        spec_name = os.path.join(directory, "openapi.yaml")
+        spec_paths_name = os.path.join(directory, "paths.yaml")
+        with open(spec_name, "wb") as f:
+            f.write(SPLIT_DOCUMENT)
+        with open(spec_paths_name, "wb") as f:
+            f.write(SPLIT_DOCUMENT_PATHS)
+
+        yield spec_name
+
+
+@pytest.fixture
 def simple_config() -> Configurator:
     """Config fixture."""
     with testConfig() as config:
@@ -65,7 +111,7 @@ def simple_config() -> Configurator:
 
 
 @pytest.fixture
-def app_config(
+def simple_app_config(
     simple_config: Configurator, document: t.IO
 ) -> t.Generator[Configurator, None, None]:
     """Incremented fixture that loads the DOCUMENT above into the config."""
@@ -73,6 +119,28 @@ def app_config(
         document.name, route="/foo.yaml", route_name="foo_api_spec"
     )
     yield simple_config
+
+
+@pytest.fixture
+def split_file_app_config(
+    simple_config: Configurator, directory_document: str
+) -> t.Generator[Configurator, None, None]:
+    """Incremented fixture that loads the SPLIT_DOCUMENT above into the config."""
+    simple_config.pyramid_openapi3_spec_directory(
+        directory_document, route="/foo", route_name="foo_api_spec"
+    )
+    yield simple_config
+
+
+@pytest.fixture(
+    params=(
+        pytest.lazy_fixture("simple_app_config"),
+        pytest.lazy_fixture("split_file_app_config"),
+    )
+)
+def app_config(request: pytest.FixtureRequest) -> Configurator:
+    """Parametrized fixture containing various app configs to test."""
+    return request.param
 
 
 def test_all_routes(app_config: Configurator) -> None:
