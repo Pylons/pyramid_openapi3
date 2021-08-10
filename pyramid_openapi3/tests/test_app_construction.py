@@ -1,9 +1,11 @@
 """Tests for app creation when using pyramid_openapi3."""
+from _pytest.fixtures import SubRequest
 from _pytest.logging import LogCaptureFixture
 from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.testing import testConfig
 from pyramid_openapi3 import MissingEndpointsError
+from pytest_lazyfixture import lazy_fixture
 
 import logging
 import os
@@ -134,11 +136,11 @@ def split_file_app_config(
 
 @pytest.fixture(
     params=(
-        pytest.lazy_fixture("simple_app_config"),
-        pytest.lazy_fixture("split_file_app_config"),
+        lazy_fixture("simple_app_config"),
+        lazy_fixture("split_file_app_config"),
     )
 )
-def app_config(request: pytest.FixtureRequest) -> Configurator:
+def app_config(request: SubRequest) -> Configurator:
     """Parametrized fixture containing various app configs to test."""
     return request.param
 
