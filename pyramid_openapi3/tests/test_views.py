@@ -71,6 +71,24 @@ SPLIT_DOCUMENT_PATHS = b"""
             description: A foo
 """
 
+ALTERNATE_SPLIT_DOCUMENT = b"""
+    openapi: "3.0.0"
+    info:
+      version: "1.0.0"
+      title: Bar API
+    paths:
+      /bar:
+        $ref: "paths.yaml#/bar"
+"""
+
+ALTERNATE_SPLIT_DOCUMENT_PATHS = b"""
+    bar:
+      get:
+        responses:
+          200:
+            description: A bar
+"""
+
 
 def test_add_spec_view() -> None:
     """Test registration of a view that serves the openapi document."""
@@ -278,7 +296,59 @@ def test_add_explorer_view() -> None:
 
 
 def test_add_multiple_explorer_views() -> None:
-    """Test registration of multiple viewa serving different Swagger UI."""
+    """Test registration of multiple views serving different Swagger UI."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
+        with tempfile.TemporaryDirectory() as directory:
+            spec_name = os.path.join(directory, "openapi.yaml")
+            spec_paths_name = os.path.join(directory, "paths.yaml")
+            with open(spec_name, "wb") as f:
+                f.write(SPLIT_DOCUMENT)
+            with open(spec_paths_name, "wb") as f:
+                f.write(SPLIT_DOCUMENT_PATHS)
+
+            config.pyramid_openapi3_spec_directory(
+                spec_name, route="/foo", route_name="foo_api_spec", apiname="foo_api"
+            )
+            config.pyramid_openapi3_add_explorer(
+                route="/foo_api/v1/", route_name="foo_api_explorer", apiname="foo_api"
+            )
+
+        with tempfile.TemporaryDirectory() as directory:
+            spec_name = os.path.join(directory, "openapi.yaml")
+            spec_paths_name = os.path.join(directory, "paths.yaml")
+            with open(spec_name, "wb") as f:
+                f.write(ALTERNATE_SPLIT_DOCUMENT)
+            with open(spec_paths_name, "wb") as f:
+                f.write(ALTERNATE_SPLIT_DOCUMENT_PATHS)
+
+            config.pyramid_openapi3_spec_directory(
+                spec_name, route="/bar", route_name="bar_api_spec", apiname="bar_api"
+            )
+            config.pyramid_openapi3_add_explorer(
+                route="/bar_api/v1/", route_name="bar_api_explorer", apiname="bar_api"
+            )
+
+        request = config.registry.queryUtility(IRouteRequest, name="foo_api_explorer")
+        view = config.registry.adapters.registered(
+            (IViewClassifier, request, Interface), IView, name=""
+        )
+        response = view(request=DummyRequest(config=config), context=None)
+        assert b"<title>Swagger UI</title>" in response.body
+        assert b"http://example.com/foo/openapi.yaml" in response.body
+
+        request = config.registry.queryUtility(IRouteRequest, name="bar_api_explorer")
+        view = config.registry.adapters.registered(
+            (IViewClassifier, request, Interface), IView, name=""
+        )
+        response = view(request=DummyRequest(config=config), context=None)
+        assert b"<title>Swagger UI</title>" in response.body
+        assert b"http://example.com/bar/openapi.yaml" in response.body
+
+
+def test_add_multiple_explorer_views_using_directory() -> None:
+    """Test registration of multiple views serving different Swagger UI."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
 
