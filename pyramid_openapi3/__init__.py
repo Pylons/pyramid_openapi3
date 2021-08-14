@@ -177,11 +177,13 @@ def add_formatter(config: Configurator, name: str, func: t.Callable) -> None:
     reg = config.registry.settings["pyramid_openapi3_formatters"]
     reg[name] = func
 
+
 def add_deserializer(config: Configurator, name: str, func: t.Callable) -> None:
     """Add support for configuring deserializers."""
     config.registry.settings.setdefault("pyramid_openapi3_deserializers", {})
     reg = config.registry.settings["pyramid_openapi3_deserializers"]
     reg[name] = func
+
 
 def add_spec_view(
     config: Configurator,
