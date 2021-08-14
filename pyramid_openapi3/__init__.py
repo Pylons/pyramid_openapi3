@@ -230,12 +230,12 @@ def add_spec_view(
             "spec_route_name": route_name,
             "spec": spec,
             "request_validator": RequestValidator(
-                spec, 
+                spec,
                 custom_formatters=custom_formatters,
                 custom_media_type_deserializers=custom_deserializers
             ),
             "response_validator": ResponseValidator(
-                spec, 
+                spec,
                 custom_formatters=custom_formatters,
                 custom_media_type_deserializers=custom_deserializers
             ),
@@ -299,7 +299,7 @@ def add_spec_view_directory(
                 custom_media_type_deserializers=custom_deserializers
             ),
             "response_validator": ResponseValidator(
-                spec, 
+                spec,
                 custom_formatters=custom_formatters,
                 custom_media_type_deserializers=custom_deserializers
             ),
