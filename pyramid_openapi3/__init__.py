@@ -223,7 +223,9 @@ def add_spec_view(
         config.add_view(route_name=route_name, permission=permission, view=spec_view)
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
-        custom_deserializers = config.registry.settings.get("pyramid_openapi3_deserializers")
+        custom_deserializers = config.registry.settings.get(
+            "pyramid_openapi3_deserializers"
+        )
 
         config.registry.settings[apiname] = {
             "filepath": filepath,
@@ -287,7 +289,9 @@ def add_spec_view_directory(
         config.add_route(route_name, f"{route}/{path.name}")
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
-        custom_deserializers = config.registry.settings.get("pyramid_openapi3_deserializers")
+        custom_deserializers = config.registry.settings.get(
+            "pyramid_openapi3_deserializers"
+        )
 
         config.registry.settings[apiname] = {
             "filepath": filepath,
