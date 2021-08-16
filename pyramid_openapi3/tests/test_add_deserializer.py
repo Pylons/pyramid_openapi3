@@ -13,7 +13,7 @@ def test_add_deserializer() -> None:
         config.include("pyramid_openapi3")
         config.pyramid_openapi3_add_deserializer("deserializer", lambda x: x)
 
-        deserializer = request.registry.settings["pyramid_openapi3_deserializer"].get(
+        deserializer = request.registry.settings["pyramid_openapi3_deserializers"].get(
             "deserializer", None
         )
         assert deserializer("foo") == "foo"
