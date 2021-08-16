@@ -232,12 +232,12 @@ def add_spec_view(
             "request_validator": RequestValidator(
                 spec,
                 custom_formatters=custom_formatters,
-                custom_media_type_deserializers=custom_deserializers
+                custom_media_type_deserializers=custom_deserializers,
             ),
             "response_validator": ResponseValidator(
                 spec,
                 custom_formatters=custom_formatters,
-                custom_media_type_deserializers=custom_deserializers
+                custom_media_type_deserializers=custom_deserializers,
             ),
         }
         config.registry.settings.setdefault("pyramid_openapi3_apinames", []).append(
@@ -296,12 +296,12 @@ def add_spec_view_directory(
             "request_validator": RequestValidator(
                 spec,
                 custom_formatters=custom_formatters,
-                custom_media_type_deserializers=custom_deserializers
+                custom_media_type_deserializers=custom_deserializers,
             ),
             "response_validator": ResponseValidator(
                 spec,
                 custom_formatters=custom_formatters,
-                custom_media_type_deserializers=custom_deserializers
+                custom_media_type_deserializers=custom_deserializers,
             ),
         }
         config.registry.settings.setdefault("pyramid_openapi3_apinames", []).append(
