@@ -42,6 +42,7 @@ def includeme(config: Configurator) -> None:
     config.add_request_method(openapi_validated, name="openapi_validated", reify=True)
     config.add_view_deriver(openapi_view)
     config.add_directive("pyramid_openapi3_add_formatter", add_formatter)
+    config.add_directive("pyramid_openapi3_add_deserializer", add_deserializer)
     config.add_directive("pyramid_openapi3_add_explorer", add_explorer_view)
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
     config.add_directive("pyramid_openapi3_spec_directory", add_spec_view_directory)
@@ -177,6 +178,13 @@ def add_formatter(config: Configurator, name: str, func: t.Callable) -> None:
     reg[name] = func
 
 
+def add_deserializer(config: Configurator, name: str, func: t.Callable) -> None:
+    """Add support for configuring deserializers."""
+    config.registry.settings.setdefault("pyramid_openapi3_deserializers", {})
+    reg = config.registry.settings["pyramid_openapi3_deserializers"]
+    reg[name] = func
+
+
 def add_spec_view(
     config: Configurator,
     filepath: str,
@@ -215,16 +223,23 @@ def add_spec_view(
         config.add_view(route_name=route_name, permission=permission, view=spec_view)
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
+        custom_deserializers = config.registry.settings.get(
+            "pyramid_openapi3_deserializers"
+        )
 
         config.registry.settings[apiname] = {
             "filepath": filepath,
             "spec_route_name": route_name,
             "spec": spec,
             "request_validator": RequestValidator(
-                spec, custom_formatters=custom_formatters
+                spec,
+                custom_formatters=custom_formatters,
+                custom_media_type_deserializers=custom_deserializers,
             ),
             "response_validator": ResponseValidator(
-                spec, custom_formatters=custom_formatters
+                spec,
+                custom_formatters=custom_formatters,
+                custom_media_type_deserializers=custom_deserializers,
             ),
         }
         config.registry.settings.setdefault("pyramid_openapi3_apinames", []).append(
@@ -274,16 +289,23 @@ def add_spec_view_directory(
         config.add_route(route_name, f"{route}/{path.name}")
 
         custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
+        custom_deserializers = config.registry.settings.get(
+            "pyramid_openapi3_deserializers"
+        )
 
         config.registry.settings[apiname] = {
             "filepath": filepath,
             "spec_route_name": route_name,
             "spec": spec,
             "request_validator": RequestValidator(
-                spec, custom_formatters=custom_formatters
+                spec,
+                custom_formatters=custom_formatters,
+                custom_media_type_deserializers=custom_deserializers,
             ),
             "response_validator": ResponseValidator(
-                spec, custom_formatters=custom_formatters
+                spec,
+                custom_formatters=custom_formatters,
+                custom_media_type_deserializers=custom_deserializers,
             ),
         }
         config.registry.settings.setdefault("pyramid_openapi3_apinames", []).append(

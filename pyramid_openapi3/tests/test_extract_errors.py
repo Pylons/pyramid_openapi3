@@ -8,6 +8,7 @@ from pyramid_openapi3.exceptions import InvalidCustomFormatterValue
 from pyramid_openapi3.exceptions import RequestValidationError
 from webtest.app import TestApp
 
+import json
 import openapi_core
 import tempfile
 import typing as t
@@ -673,3 +674,78 @@ class CustomFormattersTests(unittest.TestCase):
                 "field": "name",
             }
         ]
+
+
+class CustomDeserializerTests(unittest.TestCase):
+    """A suite of tests that showcase how custom deserializers can be used."""
+
+    def hello(self, context, request) -> str:
+        """Say hello."""
+        result = self.reverse(f"Hello {request.openapi_validated.body['name']}")
+        request.response.content_type = "application/backwards+json"
+        return result
+
+    @staticmethod
+    def reverse(s: str) -> str:
+        """Reverse a string."""
+        return s[::-1]
+
+    OPENAPI_YAML = """
+        openapi: "3.0.0"
+        info:
+          version: "1.0.0"
+          title: Foo
+        paths:
+          /hello:
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/backwards+json:
+                    schema:
+                      type: object
+                      required:
+                        - name
+                      properties:
+                        name:
+                          type: string
+              responses:
+                200:
+                  description: Say hello
+                  content:
+                    application/backwards+json:
+                      schema:
+                        type: string
+                400:
+                  description: Bad Request
+    """
+
+    def _testapp(self) -> TestApp:
+        """Start up the app so that tests can send requests to it."""
+        from webtest import TestApp
+
+        with tempfile.NamedTemporaryFile() as document:
+            document.write(self.OPENAPI_YAML.encode())
+            document.seek(0)
+
+            with Configurator() as config:
+                config.include("pyramid_openapi3")
+                config.pyramid_openapi3_spec(document.name)
+                config.pyramid_openapi3_add_deserializer(
+                    "application/backwards+json", lambda x: json.loads(self.reverse(x))
+                )
+                config.add_route("hello", "/hello")
+                config.add_view(
+                    openapi=True, renderer="json", view=self.hello, route_name="hello"
+                )
+                app = config.make_wsgi_app()
+
+            return TestApp(app)
+
+    def test_say_hello(self) -> None:
+        """Test happy path."""
+
+        headers = {"Content-Type": "application/backwards+json"}
+        body = self.reverse(json.dumps({"name": "zupo"}))
+        res = self._testapp().post("/hello", body, headers, status=200)
+        assert res.json == self.reverse("Hello zupo")
