@@ -199,5 +199,5 @@ We do our best to follow the rules below.
 
 A couple of projects that use pyramid_openapi3 in production:
 
-- [WooCart API](https://app.woocart.com/api/v1/) - User control panel for WooCart Managed WooCommerce service.
+- [WooCart API](https://app.woocart.com/api/v1) - User control panel for WooCart Managed WooCommerce service.
 - [Kafkai API](https://app.kafkai.com/api/v1) - User control panel for Kafkai text generation service.
