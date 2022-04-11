@@ -55,13 +55,19 @@ def includeme(config: Configurator) -> None:
     ):
         config.registry.settings["pyramid_openapi3_extract_errors"] = extract_errors
 
-    config.add_exception_view(
-        view=openapi_validation_error, context=RequestValidationError, renderer="json"
-    )
-
-    config.add_exception_view(
-        view=openapi_validation_error, context=ResponseValidationError, renderer="json"
-    )
+    if asbool(
+        config.registry.settings.get("pyramid_openapi3.add_exception_views", True)
+    ):
+        config.add_exception_view(
+            view=openapi_validation_error,
+            context=RequestValidationError,
+            renderer="json",
+        )
+        config.add_exception_view(
+            view=openapi_validation_error,
+            context=ResponseValidationError,
+            renderer="json",
+        )
 
 
 def openapi_validated(request: Request) -> dict:
