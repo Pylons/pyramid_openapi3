@@ -202,4 +202,4 @@ A couple of projects that use pyramid_openapi3 in production:
 - [WooCart API](https://app.woocart.com/api/v1) - User control panel for WooCart Managed WooCommerce service.
 - [Kafkai API](https://app.kafkai.com/api/v1) - User control panel for Kafkai text generation service.
 - [Open on-chain data API](https://tradingstrategy.ai/api/explorer/) - Decentralised exchange and blockchain trading data open API
-- [Pareto Security Team Dashboard API](https://dash.paretosecurity.app/api/v1) - Team Dashboard for Pareto Security macOS security app 
+- [Pareto Security Team Dashboard API](https://dash.paretosecurity.app/api/v1) - Team Dashboard for Pareto Security macOS security app
