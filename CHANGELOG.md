@@ -1,5 +1,13 @@
 ## Changelog
 
+0.14 (2022-05-05)
+-----------------
+
+* Upgrade Swagger UI to latest version to get security fixes missing in
+  the old release.
+  [am-on]
+
+
 0.13 (2021-06-13)
 -----------------
 
