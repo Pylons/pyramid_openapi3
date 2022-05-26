@@ -56,11 +56,11 @@ def includeme(config: Configurator) -> None:
         config.registry.settings["pyramid_openapi3_extract_errors"] = extract_errors
 
     config.add_exception_view(
-        view=openapi_validation_error, context=RequestValidationError, renderer="json"
+        view=openapi_validation_error, context=RequestValidationError
     )
 
     config.add_exception_view(
-        view=openapi_validation_error, context=ResponseValidationError, renderer="json"
+        view=openapi_validation_error, context=ResponseValidationError
     )
 
 
