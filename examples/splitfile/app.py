@@ -67,6 +67,6 @@ def app() -> Router:
 
 if __name__ == "__main__":
     """If app.py is called directly, start up the app."""
-    print("Swagger UI available at http://0.0.0.0:6543/docs/")  # noqa: T001
+    print("Swagger UI available at http://0.0.0.0:6543/docs/")  # noqa: T201
     server = make_server("0.0.0.0", 6543, app())
     server.serve_forever()

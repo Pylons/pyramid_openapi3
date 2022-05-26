@@ -63,7 +63,7 @@ if __name__ == "__main__":
         document.write(OPENAPI_DOCUMENT)
         document.seek(0)
 
-        print("visit api explorer at http://0.0.0.0:6543/docs/")  # noqa: T001
+        print("visit api explorer at http://0.0.0.0:6543/docs/")  # noqa: T201
         server = make_server("0.0.0.0", 6543, app(document.name))
         server.serve_forever()
 

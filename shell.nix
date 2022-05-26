@@ -1,8 +1,8 @@
 let
   nixpkgs = builtins.fetchTarball {
-    # https://github.com/NixOS/nixpkgs/tree/nixos-20.09 on 2021-02-17
-    url = "https://github.com/nixos/nixpkgs/archive/95ce0f52ec10cbfa2b72a2d8623e6a363e77e4dd.tar.gz";
-    sha256 =  "0r1pm0yrxf6ygmgaq9g5ha2kg0wik4yyaj2idjwsh7aar9mqzfjy";
+    # https://github.com/NixOS/nixpkgs/tree/nixos-21.11 on 2022-05-25
+    url = "https://github.com/nixos/nixpkgs/archive/cbd40c72b2603ab54e7208f99f9b35fc158bc009.tar.gz";
+    sha256 =  "09ffmjs9lwm97p8v8977p319kc8ys2fjnyv08gb99kgbr7gfiyfd";
   };
   pkgs = import nixpkgs { config = { allowUnfree = true; }; };
 in
@@ -13,6 +13,9 @@ pkgs.mkShell {
     pkgs.pipenv
     pkgs.python39Full
     pkgs.codespell
+
+    # C dependencies that python packages need
+    pkgs.libffi
   ];
 
   shellHook = ''
