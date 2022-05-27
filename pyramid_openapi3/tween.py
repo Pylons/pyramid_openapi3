@@ -30,8 +30,8 @@ def response_tween_factory(
         try:
             response = handler(request)
             if not request.environ.get("pyramid_openapi3.validate_response"):
-                # not an openapi view or response validation not requested
                 return response
+
             # validate response
             openapi_request = PyramidOpenAPIRequestFactory.create(request)
             openapi_response = PyramidOpenAPIResponseFactory.create(response)

@@ -267,12 +267,13 @@ class TestRequestValidation(RequestValidationBase):
         self.assertEqual(start_response.status, "200 OK")
         self.assertIn(b"foo", b"".join(response))
 
-    def test_request_validation_disabled(self) -> None:
-        """Test View with request validation disabled."""
-        self.config.registry.settings[
-            "pyramid_openapi3.enable_request_validation"
-        ] = False
-        self._add_view(lambda *arg: {"test": "correct"})
+    def test_nonapi_view_raises_AttributeError(self) -> None:
+        """Test non-openapi view that accesses request.openapi_validated."""
+
+        def should_raise_error(request: Request) -> None:
+            request.openapi_validated
+
+        self._add_view(openapi=False, view_func=should_raise_error)
         # run request through router
         router = Router(self.config.registry)
         environ = {
@@ -281,9 +282,39 @@ class TestRequestValidation(RequestValidationBase):
             "SERVER_PORT": "8080",
             "REQUEST_METHOD": "GET",
             "PATH_INFO": "/foo",
-            "HTTP_ACCEPT": "application/json",
-            "QUERY_STRING": "bar=1",
         }
+        start_response = DummyStartResponse()
+        with self.assertRaises(AttributeError) as cm:
+            router(environ, start_response)
+
+        self.assertEqual(
+            str(cm.exception),
+            "Cannot do openapi request validation on a view marked with openapi=False",
+        )
+
+    def test_request_validation_disabled(self) -> None:
+        """Test View with request validation disabled."""
+        self._add_view(lambda *arg: {"test": "correct"})
+
+        # by default validation is enabled
+        router = Router(self.config.registry)
+        environ = {
+            "wsgi.url_scheme": "http",
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": "8080",
+            "REQUEST_METHOD": "GET",
+            "PATH_INFO": "/foo",
+            "HTTP_ACCEPT": "application/json",
+            "QUERY_STRING": "bad=parameter",
+        }
+        start_response = DummyStartResponse()
+        response = router(environ, start_response)
+        self.assertEqual(start_response.status, "400 Bad Request")
+
+        # now let's disable it
+        self.config.registry.settings[
+            "pyramid_openapi3.enable_request_validation"
+        ] = False
         start_response = DummyStartResponse()
         response = router(environ, start_response)
         self.assertEqual(start_response.status, "200 OK")
@@ -291,12 +322,9 @@ class TestRequestValidation(RequestValidationBase):
 
     def test_response_validation_disabled(self) -> None:
         """Test View with response validation disabled."""
-        self.config.registry.settings[
-            "pyramid_openapi3.enable_response_validation"
-        ] = False
         self._add_view(lambda *arg: "not-valid")
 
-        # run request through router
+        # by default validation is enabled
         router = Router(self.config.registry)
         environ = {
             "wsgi.url_scheme": "http",
@@ -309,8 +337,39 @@ class TestRequestValidation(RequestValidationBase):
         }
         start_response = DummyStartResponse()
         response = router(environ, start_response)
+        self.assertEqual(start_response.status, "500 Internal Server Error")
+
+        # now let's disable it
+        self.config.registry.settings[
+            "pyramid_openapi3.enable_response_validation"
+        ] = False
+        start_response = DummyStartResponse()
+        response = router(environ, start_response)
         self.assertEqual(start_response.status, "200 OK")
-        self.assertIn(b'"not-valid"', response)
+        self.assertEqual(json.loads(response[0]), "not-valid")
+
+    def test_request_validation_disabled_response_validation_enabled(self) -> None:
+        """Test response validation still works if request validation is disabled."""
+        self._add_view(lambda *arg: "not-valid")
+
+        self.config.registry.settings[
+            "pyramid_openapi3.enable_request_validation"
+        ] = False
+
+        # by default validation is enabled
+        router = Router(self.config.registry)
+        environ = {
+            "wsgi.url_scheme": "http",
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": "8080",
+            "REQUEST_METHOD": "GET",
+            "PATH_INFO": "/foo",
+            "HTTP_ACCEPT": "application/json",
+            "QUERY_STRING": "bar=1",
+        }
+        start_response = DummyStartResponse()
+        router(environ, start_response)
+        self.assertEqual(start_response.status, "500 Internal Server Error")
 
 
 class TestImproperAPISpecValidation(RequestValidationBase):
