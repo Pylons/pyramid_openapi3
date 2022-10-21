@@ -1,13 +1,13 @@
 """Exceptions used in pyramid_openapi3."""
 
-from openapi_core.schema.exceptions import OpenAPIError
+from dataclasses import dataclass
+from openapi_core.exceptions import OpenAPIError
 from openapi_core.unmarshalling.schemas.exceptions import InvalidSchemaFormatValue
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.request import Request
 from pyramid.response import Response
 
-import attr
 import typing as t
 
 
@@ -48,11 +48,11 @@ class ResponseValidationError(HTTPInternalServerError):
         return str(self.detail) if self.detail else self.explanation
 
 
-@attr.s(hash=True)
+@dataclass
 class InvalidCustomFormatterValue(InvalidSchemaFormatValue):
     """Value failed to format with a custom formatter."""
 
-    field: t.Any = attr.ib()
+    field: str
 
     def __str__(self) -> str:
         """Provide more control over error message."""
@@ -107,32 +107,28 @@ def extract_errors(
     ```
     """
     for err in errors:
-        if getattr(err, "schema_errors", None) is not None:
-            yield from extract_errors(request, err.schema_errors)
+        schema_errors = getattr(err, "schema_errors", None)
+        if schema_errors is not None:
+            yield from extract_errors(request, schema_errors)
             continue
 
         output = {"exception": err.__class__.__name__}
 
-        if getattr(err, "message", None) is not None:
-            message = err.message
-        else:
+        message = getattr(err, "message", None)
+        if message is None:
             message = str(err)
 
         output.update({"message": message})
 
-        field = None
-        if getattr(err, "field", None) is not None:
-            field = err.field
-        elif getattr(err, "name", None) is not None:
-            field = err.name
-        elif (
-            getattr(err, "validator", None) is not None and err.validator == "required"
-        ):
-            field = "/".join(err.validator_value)
-        elif (
-            getattr(err, "path", None) and err.path[0] and isinstance(err.path[0], str)
-        ):
-            field = "/".join([str(part) for part in err.path])
+        field = getattr(err, "field", None)
+        if field is None:
+            field = getattr(err, "name", None)
+        if field is None and getattr(err, "validator", None) == "required":
+            field = "/".join(getattr(err, "validator_value", []))
+        if field is None:
+            path = getattr(err, "path", None)
+            if path and path[0] and isinstance(path[0], str):
+                field = "/".join([str(part) for part in path])
 
         if field:
             output.update({"field": field})

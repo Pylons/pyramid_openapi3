@@ -7,7 +7,7 @@ from webtest.app import TestApp
 
 
 def _foo_view(request: Request) -> int:
-    return request.openapi_validated.parameters["path"]["foo_id"]
+    return request.openapi_validated.parameters.path["foo_id"]
 
 
 def test_path_parameter_validation() -> None:

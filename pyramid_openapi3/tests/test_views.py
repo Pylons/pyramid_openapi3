@@ -1,8 +1,9 @@
 """Tests views."""
 
 from dataclasses import dataclass
-from openapi_core.shortcuts import RequestValidator
-from openapi_core.shortcuts import ResponseValidator
+from openapi_core.templating.paths.finders import PathFinder
+from openapi_core.validation.request.validators import RequestValidator
+from openapi_core.validation.response.validators import ResponseValidator
 from pyramid.exceptions import ConfigurationError
 from pyramid.interfaces import Interface
 from pyramid.interfaces import IRouteRequest
@@ -108,7 +109,7 @@ def test_add_spec_view() -> None:
             openapi_settings = config.registry.settings["pyramid_openapi3"]
             assert openapi_settings["filepath"] == document.name
             assert openapi_settings["spec_route_name"] == "foo_api_spec"
-            assert openapi_settings["spec"].info.title == "Foo API"
+            assert openapi_settings["spec"]["info"]["title"] == "Foo API"
             assert isinstance(openapi_settings["request_validator"], RequestValidator)
             assert isinstance(openapi_settings["response_validator"], ResponseValidator)
 
@@ -180,8 +181,14 @@ def test_add_spec_view_directory() -> None:
             openapi_settings = config.registry.settings["pyramid_openapi3"]
             assert openapi_settings["filepath"] == spec_name
             assert openapi_settings["spec_route_name"] == "foo_api_spec"
-            assert openapi_settings["spec"].info.title == "Foo API"
-            assert "get" in openapi_settings["spec"].paths["/foo"].operations
+            assert openapi_settings["spec"]["info"]["title"] == "Foo API"
+
+            # Make sure that the path (located in a different file) resolves correctly
+            path = PathFinder(spec=openapi_settings["spec"]).find(
+                "get", "http://example.com", path="/foo"
+            )
+            assert path is not None
+
             assert isinstance(openapi_settings["request_validator"], RequestValidator)
             assert isinstance(openapi_settings["response_validator"], ResponseValidator)
 

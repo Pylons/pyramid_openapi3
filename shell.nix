@@ -36,6 +36,11 @@ let
       pyramid_openapi3 = ./.;
     };
     overrides = ((poetry2nix.defaultPoetryOverrides.overrideOverlay preDefaults).extend postDefaults).extend (self: super: {
+      openapi-core = super.openapi-core.overridePythonAttrs (
+        old: {
+          buildInputs = (old.buildInputs or [ ]) ++ [ self.poetry ];
+        }
+      );
       pastedeploy = super.pastedeploy.overridePythonAttrs (
         old: {
           buildInputs = (old.buildInputs or [ ]) ++ [ self.setuptools ];
