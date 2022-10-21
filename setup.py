@@ -70,7 +70,7 @@ setup(
     packages=find_packages(exclude=["tests"]),
     include_package_data=True,
     install_requires=[
-        "openapi-core>=0.13.4,<0.14",
+        "openapi-core>=0.16,<0.17",
         "openapi-spec-validator",
         "pyramid>=1.10.7",
     ],

@@ -5,13 +5,14 @@ info:
   title: A simple Todo app API
 
 paths:
-
-  /:
-
+  /todos:
     get:
       summary: List of my TODO items
+      operationId: todo.list
+      parameters:
+        - $ref: "#/components/parameters/limit"
       responses:
-        '200':
+        "200":
           description: A list of my TODO items
           content:
             application/json:
@@ -19,36 +20,95 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Item"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ValidationError"
 
     post:
       summary: Create a TODO item
       operationId: todo.create
       requestBody:
-        required: true
-        description: Data for creating a new TODO item
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Item'
-
+        $ref: "#/components/requestBodies/ItemBody"
       responses:
-        '200':
+        "200":
           description: Success message.
           content:
             application/json:
               schema:
                 type: string
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ValidationError"
 
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/ValidationError'
+  /todos/{todo_id}:
+    delete:
+      summary: Delete a TODO item
+      operationId: todo.delete
+      parameters:
+        - $ref: "#/components/parameters/todo_id"
+      responses:
+        "200":
+          description: Success message.
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ValidationError"
 
+    put:
+      summary: Update a TODO item
+      operationId: todo.update
+      parameters:
+        - $ref: "#/components/parameters/todo_id"
+      requestBody:
+        $ref: "#/components/requestBodies/ItemBody"
+      responses:
+        "200":
+          description: Success message.
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ValidationError"
 
 components:
+  parameters:
+    limit:
+      name: limit
+      in: query
+      description: The maximum number of TODO items to return
+      schema:
+        type: integer
+        minimum: 1
+      required: false
+
+    todo_id:
+      name: todo_id
+      in: path
+      description: The index of the TODO item to edit
+      schema:
+        type: integer
+        minimum: 0
+      required: true
+
+  requestBodies:
+    ItemBody:
+      required: true
+      description: Data for creating a new TODO item
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Item"
 
   schemas:
-
     Item:
       type: object
       required:
@@ -71,7 +131,6 @@ components:
           type: string
 
   responses:
-
     ValidationError:
       description: OpenAPI request/response validation failed
       content:

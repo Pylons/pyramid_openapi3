@@ -15,7 +15,6 @@ from unittest import TestCase
 from zope.interface import Interface
 
 import json
-import openapi_core
 import tempfile
 import typing as t
 import warnings
@@ -226,26 +225,15 @@ class TestRequestValidation(RequestValidationBase):
         with self.assertLogs(level="ERROR") as cm:
             response = router(environ, start_response)
         self.assertEqual(start_response.status, "500 Internal Server Error")
-        if openapi_core.__version__ == "0.13.8":  # pragma: no cover
-            self.assertEqual(
-                json.loads(response[0]),
-                [
-                    {
-                        "exception": "ResponseNotFound",
-                        "message": "Unknown response http status: 412",
-                    }
-                ],
-            )
-        else:  # pragma: no cover
-            self.assertEqual(
-                json.loads(response[0]),
-                [
-                    {
-                        "exception": "InvalidResponse",
-                        "message": "Unknown response http status: 412",
-                    }
-                ],
-            )
+        self.assertEqual(
+            json.loads(response[0]),
+            [
+                {
+                    "exception": "ResponseNotFound",
+                    "message": "Unknown response http status: 412",
+                }
+            ],
+        )
         self.assertEqual(
             cm.output, ["ERROR:pyramid_openapi3:Unknown response http status: 412"]
         )
@@ -371,23 +359,12 @@ class TestImproperAPISpecValidation(RequestValidationBase):
         )
 
         self.assertEqual(start_response.status, "500 Internal Server Error")
-        if openapi_core.__version__ == "0.13.8":  # pragma: no cover
-            self.assertEqual(
-                json.loads(response[0]),
-                [
-                    {
-                        "exception": "ResponseNotFound",
-                        "message": "Unknown response http status: 400",
-                    }
-                ],
-            )
-        else:  # pragma: no cover
-            self.assertEqual(
-                json.loads(response[0]),
-                [
-                    {
-                        "exception": "InvalidResponse",
-                        "message": "Unknown response http status: 400",
-                    }
-                ],
-            )
+        self.assertEqual(
+            json.loads(response[0]),
+            [
+                {
+                    "exception": "ResponseNotFound",
+                    "message": "Unknown response http status: 400",
+                }
+            ],
+        )

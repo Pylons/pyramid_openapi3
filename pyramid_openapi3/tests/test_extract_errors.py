@@ -9,7 +9,6 @@ from pyramid_openapi3.exceptions import RequestValidationError
 from webtest.app import TestApp
 
 import json
-import openapi_core
 import tempfile
 import typing as t
 import unittest
@@ -128,7 +127,7 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "CastError",
-                "message": "Failed to cast value bar to type integer",
+                "message": "Failed to cast value to integer type: bar",
             }
         ]
 
@@ -313,7 +312,7 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "ValidationError",
-                "message": "1 is not of type string",
+                "message": "1 is not of type 'string'",
                 "field": "foo",
             }
         ]
@@ -396,7 +395,7 @@ class BadRequestsTests(unittest.TestCase):
             },
             {
                 "exception": "CastError",
-                "message": "Failed to cast value abc to type integer",
+                "message": "Failed to cast value to integer type: abc",
             },
             {
                 "exception": "ValidationError",
@@ -478,7 +477,7 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "ValidationError",
-                "message": "'not a number' is not of type number",
+                "message": "'not a number' is not of type 'number'",
                 "field": "foo/0/bam",
             }
         ]
@@ -533,20 +532,12 @@ class BadResponsesTests(unittest.TestCase):
             raise exception_response(409, json_body={})
 
         res = self._testapp(view=foo).get("/foo", status=500)
-        if openapi_core.__version__ == "0.13.8":  # pragma: no cover
-            assert res.json == [
-                {
-                    "exception": "ResponseNotFound",
-                    "message": "Unknown response http status: 409",
-                }
-            ]
-        else:  # pragma: no cover
-            assert res.json == [
-                {
-                    "exception": "InvalidResponse",
-                    "message": "Unknown response http status: 409",
-                }
-            ]
+        assert res.json == [
+            {
+                "exception": "ResponseNotFound",
+                "message": "Unknown response http status: 409",
+            }
+        ]
 
     def test_invalid_response_schema(self) -> None:
         """Prevent responding with unmatching response schema."""
@@ -559,7 +550,7 @@ class BadResponsesTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "ValidationError",
-                "message": "{'foo': 'bar'} is not of type string",
+                "message": "{'foo': 'bar'} is not of type 'string'",
             }
         ]
 
@@ -661,7 +652,7 @@ class CustomFormattersTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "ValidationError",
-                "message": "12 is not of type string",
+                "message": "12 is not of type 'string'",
                 "field": "name",
             }
         ]

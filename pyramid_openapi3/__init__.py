@@ -4,14 +4,20 @@ from .exceptions import extract_errors
 from .exceptions import MissingEndpointsError
 from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
-from .wrappers import PyramidOpenAPIRequestFactory
-from openapi_core import create_spec
-from openapi_core.schema.specs.models import Spec
+from .wrappers import PyramidOpenAPIRequest
+from dataclasses import asdict
+from dataclasses import is_dataclass
+from openapi_core import Spec
+from openapi_core.deserializing.media_types.factories import (
+    MediaTypeDeserializersFactory,
+)
+from openapi_core.unmarshalling.schemas.factories import SchemaUnmarshallersFactory
 from openapi_core.validation.exceptions import InvalidSecurity
 from openapi_core.validation.request.validators import RequestValidator
 from openapi_core.validation.response.validators import ResponseValidator
+from openapi_schema_validator import OAS30Validator
 from openapi_spec_validator import validate_spec
-from openapi_spec_validator.schemas import read_yaml_file
+from openapi_spec_validator.readers import read_from_filename
 from pathlib import Path
 from pyramid.config import Configurator
 from pyramid.config import PHASE0_CONFIG
@@ -85,8 +91,19 @@ def openapi_validated(request: Request) -> dict:
 
     if validate_request:  # pragma: no branch
         request.environ["pyramid_openapi3.validate_request"] = True
-        openapi_request = PyramidOpenAPIRequestFactory.create(request)
-        validated = settings["request_validator"].validate(openapi_request)
+        openapi_request = PyramidOpenAPIRequest(request)
+        validated = settings["request_validator"].validate(
+            settings["spec"], openapi_request
+        )
+        # OpenAPI Core 0.16.0 has `validated.body` as a dataclass, however
+        # 0.16.1 does not (and is just a dictionary)
+        if is_dataclass(validated.body) and not isinstance(
+            validated.body, type
+        ):  # pragma: no cover
+            validated.body = asdict(validated.body)
+        # TODO: Come Back - Backwards Compatibility
+        if validated.parameters:  # pragma: no cover
+            validated.parameters = asdict(validated.parameters)
         return validated
 
     return {}  # pragma: no cover
@@ -211,10 +228,10 @@ def add_spec_view(
 
         if hupper.is_active():  # pragma: no cover
             hupper.get_reloader().watch_files([filepath])
-        spec_dict = read_yaml_file(filepath)
+        spec_dict, _ = read_from_filename(filepath)
 
         validate_spec(spec_dict)
-        spec = create_spec(spec_dict)
+        spec = Spec.create(spec_dict)
 
         def spec_view(request: Request) -> FileResponse:
             return FileResponse(filepath, request=request, content_type="text/yaml")
@@ -222,26 +239,9 @@ def add_spec_view(
         config.add_route(route_name, route)
         config.add_view(route_name=route_name, permission=permission, view=spec_view)
 
-        custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
-        custom_deserializers = config.registry.settings.get(
-            "pyramid_openapi3_deserializers"
+        config.registry.settings[apiname] = _create_api_settings(
+            config, filepath, route_name, spec
         )
-
-        config.registry.settings[apiname] = {
-            "filepath": filepath,
-            "spec_route_name": route_name,
-            "spec": spec,
-            "request_validator": RequestValidator(
-                spec,
-                custom_formatters=custom_formatters,
-                custom_media_type_deserializers=custom_deserializers,
-            ),
-            "response_validator": ResponseValidator(
-                spec,
-                custom_formatters=custom_formatters,
-                custom_media_type_deserializers=custom_deserializers,
-            ),
-        }
         config.registry.settings.setdefault("pyramid_openapi3_apinames", []).append(
             apiname
         )
@@ -280,39 +280,50 @@ def add_spec_view_directory(
         if hupper.is_active():  # pragma: no cover
             hupper.get_reloader().watch_files(list(path.parent.iterdir()))
 
-        spec_dict = read_yaml_file(path)
+        spec_dict, _ = read_from_filename(str(path))
         spec_url = path.as_uri()
         validate_spec(spec_dict, spec_url=spec_url)
-        spec = create_spec(spec_dict, spec_url=spec_url)
+        spec = Spec.create(spec_dict, url=spec_url)
 
         config.add_static_view(route, str(path.parent), permission=permission)
         config.add_route(route_name, f"{route}/{path.name}")
 
-        custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
-        custom_deserializers = config.registry.settings.get(
-            "pyramid_openapi3_deserializers"
+        config.registry.settings[apiname] = _create_api_settings(
+            config, filepath, route_name, spec
         )
-
-        config.registry.settings[apiname] = {
-            "filepath": filepath,
-            "spec_route_name": route_name,
-            "spec": spec,
-            "request_validator": RequestValidator(
-                spec,
-                custom_formatters=custom_formatters,
-                custom_media_type_deserializers=custom_deserializers,
-            ),
-            "response_validator": ResponseValidator(
-                spec,
-                custom_formatters=custom_formatters,
-                custom_media_type_deserializers=custom_deserializers,
-            ),
-        }
         config.registry.settings.setdefault("pyramid_openapi3_apinames", []).append(
             apiname
         )
 
     config.action((f"{apiname}_spec",), register, order=PHASE0_CONFIG)
+
+
+def _create_api_settings(config: Configurator, filepath, route_name, spec) -> t.Dict:
+    custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
+    custom_deserializers = config.registry.settings.get(
+        "pyramid_openapi3_deserializers"
+    )
+
+    media_type_deserializers_factory = MediaTypeDeserializersFactory(
+        custom_deserializers=custom_deserializers
+    )
+    schema_unmarshallers_factory = SchemaUnmarshallersFactory(
+        OAS30Validator, custom_formatters=custom_formatters
+    )
+
+    return {
+        "filepath": filepath,
+        "spec_route_name": route_name,
+        "spec": spec,
+        "request_validator": RequestValidator(
+            schema_unmarshallers_factory,
+            media_type_deserializers_factory=media_type_deserializers_factory,
+        ),
+        "response_validator": ResponseValidator(
+            schema_unmarshallers_factory,
+            media_type_deserializers_factory=media_type_deserializers_factory,
+        ),
+    }
 
 
 def register_routes(
@@ -329,14 +340,14 @@ def register_routes(
 
     def action() -> None:
         spec = config.registry.settings[apiname]["spec"]
-        for pattern, path_item in spec.paths.items():
-            route_name = path_item.extensions.get(route_name_ext)
+        for pattern, path_item in spec["paths"].items():
+            route_name = path_item.get(route_name_ext)
             if route_name:
-                root_factory = path_item.extensions.get(root_factory_ext)
+                root_factory = path_item.get(root_factory_ext)
                 config.add_route(
-                    route_name.value,
+                    route_name,
                     pattern=pattern,
-                    factory=root_factory.value if root_factory else None,
+                    factory=root_factory or None,
                 )
 
     config.action(("pyramid_openapi3_register_routes",), action, order=PHASE1_CONFIG)
@@ -375,6 +386,14 @@ def check_all_routes(event: ApplicationCreated):
     the API spec have been registered as Pyramid routes.
     """
 
+    def remove_prefixes(path):
+        path = f"/{path}" if not path.startswith("/") else path
+        for prefix in prefixes:
+            if path.startswith(prefix):
+                prefix_length = len(prefix)
+                return path[prefix_length:]
+        return path
+
     app = event.app
     settings = app.registry.settings
     apinames = settings.get("pyramid_openapi3_apinames")
@@ -395,15 +414,7 @@ def check_all_routes(event: ApplicationCreated):
 
         prefixes = _get_server_prefixes(openapi_settings["spec"])
 
-        def remove_prefixes(path):
-            path = f"/{path}" if not path.startswith("/") else path
-            for prefix in prefixes:
-                if path.startswith(prefix):
-                    prefix_length = len(prefix)
-                    return path[prefix_length:]
-            return path
-
-        paths = list(openapi_settings["spec"].paths.keys())
+        paths = list(openapi_settings["spec"]["paths"].keys())
         routes = [
             remove_prefixes(route.path) for route in app.routes_mapper.routes.values()
         ]
@@ -429,10 +440,15 @@ def _get_server_prefixes(spec: Spec) -> t.List[str]:
     Api routes may optionally be prefixed using servers (e.g: `/api/v1`).
     See: https://swagger.io/docs/specification/api-host-and-base-path/
     """
+    servers = spec.get("servers")
+    if not servers:
+        return []
+
     prefixes = []
-    for server in spec.servers:
-        path = urlparse(server.url).path
+    for server in servers:
+        path = urlparse(server["url"]).path
         path = f"/{path}" if not path.startswith("/") else path
-        if path != "/":
+        # TODO: Come Back
+        if path != "/":  # pragma: no cover
             prefixes.append(path)
     return prefixes

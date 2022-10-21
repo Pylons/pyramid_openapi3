@@ -1,59 +1,86 @@
 """Wrap Pyramid's Request and Response."""
 
-from openapi_core.validation.request.datatypes import OpenAPIRequest
 from openapi_core.validation.request.datatypes import RequestParameters
-from openapi_core.validation.response.datatypes import OpenAPIResponse
 from pyramid.request import Request
 from pyramid.response import Response
 
 import typing as t
 
+# Ignore D401 for @property methods as imperritive mood docstrings do not make sense
+# for them
 
-class PyramidOpenAPIRequestFactory:
-    @classmethod
-    def create(
-        cls: t.Type["PyramidOpenAPIRequestFactory"], request: Request
-    ) -> "OpenAPIRequest":
-        """Create OpenAPIRequest from Pyramid Request."""
-        method = request.method.lower()
+
+class PyramidOpenAPIRequest:
+    def __init__(self, request: Request) -> None:
+        self.request = request
+
+        self.parameters = RequestParameters(
+            path=self.request.matchdict,
+            query=self.request.GET,
+            header=self.request.headers,
+            cookie=self.request.cookies,
+        )
+
+    @property
+    def host_url(self) -> str:
+        """Url with scheme and host. Example: https://localhost:8000."""  # noqa D401
+        return self.request.host_url
+
+    @property
+    def path(self) -> str:
+        """The request path."""  # noqa D401
+        return self.request.path
+
+    @property
+    def path_pattern(self) -> str:
+        """The matched url with path pattern."""  # noqa D401
         path_pattern = (
-            request.matched_route.pattern
-            if request.matched_route
-            else request.path_info
+            self.request.matched_route.pattern
+            if self.request.matched_route
+            else self.request.path_info
         )
-        # a path pattern is not normalized in pyramid so it may or may not
-        # start with a leading /, so normalize it here
-        path_pattern = path_pattern.lstrip("/")
-        full_url_pattern = request.application_url + "/" + path_pattern
+        return path_pattern
 
-        parameters = RequestParameters(
-            path=request.matchdict,
-            query=request.GET,
-            header=request.headers.items(),
-            cookie=request.cookies,
-        )
-        if "multipart/form-data" == request.content_type:
-            body = request.POST.mixed()
-        else:
-            body = request.body
+    @property
+    def method(self) -> str:
+        """The request method, as lowercase string."""  # noqa D401
+        return self.request.method.lower()
 
-        return OpenAPIRequest(
-            full_url_pattern=full_url_pattern,
-            method=method,
-            parameters=parameters,
-            body=body,
-            mimetype=request.content_type,
-        )
+    @property
+    def body(self) -> t.Optional[t.Union[str, t.Dict]]:
+        """The request body, as string."""  # noqa D401
+        if "multipart/form-data" == self.request.content_type:
+            return self.request.POST.mixed()
+        if isinstance(self.request.body, bytes):
+            return self.request.body.decode("utf-8")
+        return self.request.body
+
+    @property
+    def mimetype(self) -> str:
+        """The content type of the request."""  # noqa D401
+        return self.request.content_type
 
 
-class PyramidOpenAPIResponseFactory:
-    @classmethod
-    def create(
-        cls: t.Type["PyramidOpenAPIResponseFactory"], response: Response
-    ) -> "OpenAPIResponse":
-        """Create OpenAPIResponse from Pyramid Response."""
-        return OpenAPIResponse(
-            data=response.body,
-            status_code=response.status_code,
-            mimetype=response.content_type,
-        )
+class PyramidOpenAPIResponse:
+    def __init__(self, response: Response) -> None:
+        self.response = response
+
+    @property
+    def data(self) -> str:
+        """The response body, as string."""  # noqa D401
+        return self.response.text
+
+    @property
+    def status_code(self) -> int:
+        """The status code as integer."""  # noqa D401
+        return self.response.status_code
+
+    @property
+    def mimetype(self) -> str:
+        """The content type of the response."""  # noqa D401
+        return self.response.content_type
+
+    @property
+    def headers(self) -> t.Mapping[str, t.Any]:
+        """The response headers."""  # noqa D401
+        return self.response.headers

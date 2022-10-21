@@ -6,6 +6,7 @@ https://github.com/Pylons/pyramid_openapi3/tree/master/examples/todoapp
 
 from dataclasses import dataclass
 from pyramid.config import Configurator
+from pyramid.exceptions import HTTPBadRequest
 from pyramid.request import Request
 from pyramid.router import Router
 from pyramid.view import view_config
@@ -36,18 +37,45 @@ ITEMS = [
 # fmt: on
 
 
-@view_config(route_name="todo", renderer="json", request_method="GET", openapi=True)
+@view_config(route_name="todos", renderer="json", request_method="GET", openapi=True)
 def get(request: Request) -> t.List[Item]:
     """Serve the list of TODO items for GET requests."""
+    parameters = request.openapi_validated.parameters
+    limit = parameters["query"].get("limit")
+    if limit:
+        return ITEMS[:limit]
     return ITEMS
 
 
-@view_config(route_name="todo", renderer="json", request_method="POST", openapi=True)
+@view_config(route_name="todos", renderer="json", request_method="POST", openapi=True)
 def post(request: Request) -> str:
     """Handle POST requests and create TODO items."""
     item = Item(title=request.openapi_validated.body["title"])
     ITEMS.append(item)
     return "Item added."
+
+
+@view_config(route_name="todo", renderer="json", request_method="DELETE", openapi=True)
+def delete(request: Request) -> str:
+    """Handle DELETE requests and delete a TODO item."""
+    parameters = request.openapi_validated.parameters
+    try:
+        del ITEMS[parameters["path"]["todo_id"]]
+    except IndexError:
+        raise HTTPBadRequest()
+    return "Item Deleted."
+
+
+@view_config(route_name="todo", renderer="json", request_method="PUT", openapi=True)
+def put(request: Request) -> str:
+    """Handle PUT requests and update a TODO item."""
+    parameters = request.openapi_validated.parameters
+    try:
+        item = ITEMS[parameters["path"]["todo_id"]]
+    except IndexError:
+        raise HTTPBadRequest()
+    item.title = request.openapi_validated.body["title"]
+    return "Item updated."
 
 
 def app() -> Router:
@@ -58,7 +86,8 @@ def app() -> Router:
             os.path.join(os.path.dirname(__file__), "openapi.yaml")
         )
         config.pyramid_openapi3_add_explorer()
-        config.add_route("todo", "/")
+        config.add_route("todos", "/todos")
+        config.add_route("todo", "/todos/{todo_id}")
         config.scan(".")
 
         return config.make_wsgi_app()

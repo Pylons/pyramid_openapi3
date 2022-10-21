@@ -4,7 +4,7 @@ repos:
     -   id: isort
         name: isort
         description: A Python utility that sorts imports alphabetically
-        entry: pipenv run isort -rc --atomic
+        entry: pipenv run isort --atomic
         language: system
         types: [python]
 
