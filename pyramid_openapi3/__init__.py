@@ -101,8 +101,19 @@ def openapi_validated(request: Request) -> dict:
             validated.body, type
         ):  # pragma: no cover
             validated.body = asdict(validated.body)
-        # TODO: Come Back - Backwards Compatibility
-        if validated.parameters:  # pragma: no cover
+
+        # TODO: Needs discussion, this is here for backwards compatibility
+        # Prior to 0.16+, parameters was a dictionary, however, now it is a dataclass.
+        # Do we want to:
+        # a) Convert it to a dict to keep compatibility with code written with previous
+        #    versions of pyramid_openapi3
+        # b) Return it as a dataclass like openapi-core (but people upgrading their
+        #    pyramid_openapi3 dependency will have breaking changes to resolve)
+        # c) Do option a while printing a warning, but with a config setting to do b
+        #    (deprecation, so that in a future release of pyramid_openapi3 we force b)
+        if is_dataclass(validated.parameters) and not isinstance(
+            validated.parameters, type
+        ):  # pragma: no cover
             validated.parameters = asdict(validated.parameters)
         return validated
 
@@ -307,6 +318,12 @@ def _create_api_settings(config: Configurator, filepath, route_name, spec) -> t.
     media_type_deserializers_factory = MediaTypeDeserializersFactory(
         custom_deserializers=custom_deserializers
     )
+
+    # TODO: Openapi-core 0.16+ supports OpenAPI 3.1 through the `OAS30Validator`
+    # Do we want to:
+    # a) Just use OAS30Validator for now
+    # b) Move to OAS31Validator
+    # c) Allow the user to pick via a config variable (or function parameter)
     schema_unmarshallers_factory = SchemaUnmarshallersFactory(
         OAS30Validator, custom_formatters=custom_formatters
     )
@@ -448,7 +465,6 @@ def _get_server_prefixes(spec: Spec) -> t.List[str]:
     for server in servers:
         path = urlparse(server["url"]).path
         path = f"/{path}" if not path.startswith("/") else path
-        # TODO: Come Back
-        if path != "/":  # pragma: no cover
+        if path != "/":
             prefixes.append(path)
     return prefixes

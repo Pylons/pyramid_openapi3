@@ -39,7 +39,7 @@ class ResponseValidationError(HTTPInternalServerError):
         return str(self.detail) if self.detail else self.explanation
 
 
-@dataclass(unsafe_hash=True)  # TODO come back to this
+@dataclass
 class InvalidCustomFormatterValue(InvalidSchemaFormatValue):
     """Value failed to format with a custom formatter."""
 

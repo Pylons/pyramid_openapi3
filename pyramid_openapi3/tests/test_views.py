@@ -1,6 +1,7 @@
 """Tests views."""
 
 from dataclasses import dataclass
+from openapi_core.templating.paths.finders import PathFinder
 from openapi_core.validation.request.validators import RequestValidator
 from openapi_core.validation.response.validators import ResponseValidator
 from pyramid.exceptions import ConfigurationError
@@ -181,8 +182,12 @@ def test_add_spec_view_directory() -> None:
             assert openapi_settings["spec_route_name"] == "foo_api_spec"
             assert openapi_settings["spec"]["info"]["title"] == "Foo API"
 
-            # TODO Complete
-            # assert "get" in openapi_settings["spec"]["paths"]["/foo"]["operations"]
+            # Make sure that the path (located in a different file) resolves correctly
+            path = PathFinder(spec=openapi_settings["spec"]).find(
+                "get", "http://example.com", path="/foo"
+            )
+            assert path is not None
+
             assert isinstance(openapi_settings["request_validator"], RequestValidator)
             assert isinstance(openapi_settings["response_validator"], ResponseValidator)
 

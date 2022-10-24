@@ -68,6 +68,31 @@ SPLIT_DOCUMENT_PATHS = b"""
             description: A bar
 """
 
+# A test for when someone defines a `server.url` to just be `/`
+ROOT_SERVER_DOCUMENT = b"""
+    openapi: "3.0.0"
+    info:
+      version: "1.0.0"
+      title: Foo API
+    servers:
+      - url: /
+    paths:
+      /foo:
+        get:
+          responses:
+            200:
+              description: A foo
+        post:
+          responses:
+            200:
+              description: A POST foo
+      /bar:
+        get:
+          responses:
+            200:
+              description: A bar
+"""
+
 
 def foo_view(request: Request) -> str:
     """Return a dummy string."""
@@ -104,6 +129,16 @@ def directory_document() -> t.Generator[str, None, None]:
 
 
 @pytest.fixture
+def root_server_document() -> t.Generator[t.IO, None, None]:
+    """Load the ROOT_SERVER_DOCUMENT into a temp file."""
+    with tempfile.NamedTemporaryFile() as document:
+        document.write(ROOT_SERVER_DOCUMENT)
+        document.seek(0)
+
+        yield document
+
+
+@pytest.fixture
 def simple_config() -> Configurator:
     """Config fixture."""
     with testConfig() as config:
@@ -130,6 +165,17 @@ def split_file_app_config(
     """Incremented fixture that loads the SPLIT_DOCUMENT above into the config."""
     simple_config.pyramid_openapi3_spec_directory(
         directory_document, route="/foo", route_name="foo_api_spec"
+    )
+    yield simple_config
+
+
+@pytest.fixture
+def root_server_app_config(
+    simple_config: Configurator, root_server_document: t.IO
+) -> t.Generator[Configurator, None, None]:
+    """Incremented fixture that loads the ROOT_SERVER_DOCUMENT above into the config."""
+    simple_config.pyramid_openapi3_spec(
+        root_server_document.name, route="/foo.yaml", route_name="foo_api_spec"
     )
     yield simple_config
 
@@ -257,3 +303,17 @@ def test_routes_setting_generation(app_config: Configurator):
     assert settings["routes"]["get_foo"] == "pyramid_openapi3"
     assert settings["routes"]["create_foo"] == "pyramid_openapi3"
     assert settings["routes"]["bar"] == "pyramid_openapi3"
+
+
+def test_root_server_routes(root_server_app_config: Configurator) -> None:
+    """Test case for when you have a server, but with url of /."""
+    root_server_app_config.add_route(name="foo", pattern="/foo")
+    root_server_app_config.add_route(name="bar", pattern="/bar")
+    root_server_app_config.add_view(
+        foo_view, route_name="foo", renderer="string", request_method="OPTIONS"
+    )
+    root_server_app_config.add_view(
+        bar_view, route_name="bar", renderer="string", request_method="GET"
+    )
+
+    root_server_app_config.make_wsgi_app()
