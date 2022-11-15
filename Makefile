@@ -1,84 +1,82 @@
 # Convenience makefile to build the dev env and run common commands
 # Based on https://github.com/niteoweb/Makefile
-.EXPORT_ALL_VARIABLES:
-PIPENV_VENV_IN_PROJECT = 1
-PIPENV_IGNORE_VIRTUALENVS=1
 
 .PHONY: all
-all: .installed
+all: tests
 
-.PHONY: install
-install:
-	@rm -f .installed  # force re-install
-	@make .installed
-
-.installed: Pipfile Pipfile.lock
-	@echo "Pipfile(.lock) is newer than .installed, (re)installing"
-	@pipenv install --dev
-	@pipenv run pre-commit install -f --hook-type pre-commit
-	@pipenv run pre-commit install -f --hook-type pre-push
-	@echo "This file is used by 'make' for keeping track of last install time. If Pipfile or Pipfile.lock are newer then this file (.installed) then all 'make *' commands that depend on '.installed' know they need to run pipenv install first." \
-		> .installed
+# Lock version pins for Python dependencies
+.PHONY: lock
+lock:
+	@rm -rf .venv/
+	@poetry lock --no-update
+	@rm -rf .venv/
+	@nix-shell --run true
 
 # Testing and linting targets
 all = false
 
-# Testing and linting targets
 .PHONY: lint
-lint: .installed
+lint:
 # 1. get all unstaged modified files
 # 2. get all staged modified files
 # 3. get all untracked files
 # 4. run pre-commit checks on them
 ifeq ($(all),true)
-	@pipenv run pre-commit run --hook-stage push --all-files
+	@poetry run pre-commit run --hook-stage push --all-files
 else
 	@{ git diff --name-only ./; git diff --name-only --staged ./;git ls-files --other --exclude-standard; } \
-		| sort -u | uniq | xargs pipenv run pre-commit run --hook-stage push --files
+		| sort -u | uniq | poetry run xargs pre-commit run --hook-stage push --files
 endif
 
 .PHONY: type
 type: types
 
 .PHONY: types
-types: .installed
-	@pipenv run mypy examples/todoapp
+types: .
+	@poetry run mypy examples/todoapp
 	@cat ./typecov/linecount.txt
-	@pipenv run typecov 100 ./typecov/linecount.txt
-	@pipenv run mypy pyramid_openapi3
+	@poetry run typecov 100 ./typecov/linecount.txt
+	@poetry run mypy pyramid_openapi3
 	@cat ./typecov/linecount.txt
-	@pipenv run typecov 100 ./typecov/linecount.txt
+	@poetry run typecov 100 ./typecov/linecount.txt
 
 
 # anything, in regex-speak
 filter = "."
 
 # additional arguments for pytest
-unit_test_all = "false"
+full_suite = "false"
 ifeq ($(filter),".")
-	unit_test_all = "true"
+	full_suite = "true"
+endif
+ifdef path
+	full_suite = "false"
 endif
 args = ""
 pytest_args = -k $(filter) $(args)
-coverage_args = ""
-ifeq ($(unit_test_all),"true")
-	coverage_args = --cov=pyramid_openapi3 --cov-branch --cov-report html --cov-report xml:cov.xml --cov-report term-missing --cov-fail-under=100
+ifeq ($(args),"")
+	pytest_args = -k $(filter)
+endif
+verbosity = ""
+ifeq ($(full_suite),"false")
+	verbosity = -vv
+endif
+full_suite_args = ""
+ifeq ($(full_suite),"true")
+	full_suite_args = --junitxml junit.xml --durations 10 --cov=pyramid_openapi3 --cov-branch --cov-report html --cov-report xml:cov.xml --cov-report term-missing --cov-fail-under=100
 endif
 
+
 .PHONY: unit
-unit: .installed
-	@pipenv run pytest pyramid_openapi3 $(coverage_args) $(pytest_args)
+unit:
+ifndef path
+	@poetry run pytest pyramid_openapi3 $(verbosity) $(full_suite_args) $(pytest_args)
+else
+	@poetry run pytest $(path)
+endif
 
 .PHONY: test
 test: tests
 
 .PHONY: tests
 tests: lint types unit
-
-.PHONY: clean
-clean:
-	@if [ -d ".venv/" ]; then pipenv --rm; fi
-	@rm -rf .coverage htmlcov/ pyramid_openapi3.egg-info xunit.xml \
-		htmltypecov typecov \
-		.git/hooks/pre-commit .git/hooks/pre-push
-	@rm -f .installed

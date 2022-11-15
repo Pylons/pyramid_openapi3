@@ -17,12 +17,17 @@ let
   };
 
   devEnv = poetry2nix.mkPoetryEnv ({
-    python = pkgs.python310;
+    python = pkgs.python37;
     projectDir = ./.;
     editablePackageSources = {
       pyramid_openapi3 = ./.;
     };
     overrides = poetry2nix.defaultPoetryOverrides.extend ( self: super: {
+    flake8-bugbear = super.flake8-bugbear.overridePythonAttrs (
+      old: {
+        buildInputs = (old.buildInputs or [ ]) ++ [ self.hatchling ];
+      }
+    );
     autoflake = super.autoflake.overridePythonAttrs (
       old: {
         buildInputs = (old.buildInputs or [ ]) ++ [ self.hatchling ];
