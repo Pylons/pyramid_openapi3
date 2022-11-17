@@ -159,7 +159,7 @@ class BadRequestsTests(unittest.TestCase):
                 "exception": "ValidationError",
                 "message": "'not-a-valid-uuid' does not match '^[0-9]{2}-[A-F]{4}$'",
                 # TODO: ideally, this response would include "field"
-                # but I don't know how I can achieve this ATM ¯\_(ツ)_/¯
+                # but I don't know how I can achieve this ATM ¯\_(ツ)_/¯  # noqa: ENC100
             }
         ]
 
@@ -190,7 +190,7 @@ class BadRequestsTests(unittest.TestCase):
                 "exception": "ValidationError",
                 "message": "'not-a-valid-uuid' is not a 'uuid'",
                 # TODO: ideally, this response would include "field"
-                # but I don't know how I can achieve this ATM ¯\_(ツ)_/¯
+                # but I don't know how I can achieve this ATM ¯\_(ツ)_/¯  # noqa: ENC100
             }
         ]
 

@@ -396,8 +396,9 @@ def check_all_routes(event: ApplicationCreated):
         prefixes = _get_server_prefixes(openapi_settings["spec"])
 
         def remove_prefixes(path):
+            # TODO: make this not rely on global "prefixes" var
             path = f"/{path}" if not path.startswith("/") else path
-            for prefix in prefixes:
+            for prefix in prefixes:  # noqa: B023
                 if path.startswith(prefix):
                     prefix_length = len(prefix)
                     return path[prefix_length:]

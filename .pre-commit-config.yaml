@@ -1,57 +1,65 @@
+default_stages: [commit,push]
 repos:
 -   repo: local
     hooks:
     -   id: isort
         name: isort
-        description: A Python utility that sorts imports alphabetically
-        entry: pipenv run isort -rc --atomic
+        description: A Python utility that sorts imports alphabetically.
+        entry: poetry run isort
+        language: system
+        types: [python]
+
+    -   id: autoflake
+        name: autoflake
+        description: Removes unused imports and unused variables from Python code.
+        entry: poetry run autoflake
         language: system
         types: [python]
 
     -   id: flake8
         name: Flake8
-        description: Python Style Guide Enforcement
-        entry: pipenv run flake8
+        description: Python Style Guide Enforcement.
+        entry: poetry run flake8 --config .flake8
         language: system
         types: [python]
 
     -   id: black
         name: Black
-        description: Uncompromising Python code formatter
-        entry: pipenv run black
+        description: Uncompromising Python code formatter.
+        entry: poetry run black
         language: system
         types: [python]
 
     -   id: trailing-whitespace
-        name: Trailing Space
-        entry: pipenv run trailing-whitespace-fixer
+        name: Trim Trailing Space
+        entry: poetry run trailing-whitespace-fixer
         language: system
-        types: [non-executable, file, text]
+        types: [file, text]
 
     -   id: end-of-file-fixer
-        name: End of Files
+        name: Fix end of Files
         description: Ensures that a file is either empty, or ends with one newline.
-        entry: pipenv run end-of-file-fixer
+        entry: poetry run end-of-file-fixer
         language: system
-        types: [non-executable, file, text]
+        types: [file, text]
 
     -   id: check-merge-conflict
-        name: Merge Conflicts
+        name: Check for merge conflicts
         description: Check for files that contain merge conflict strings.
-        entry: pipenv run check-merge-conflict
+        entry: poetry run check-merge-conflict
         language: system
-        types: [non-executable, file, text]
+        types: [file, text]
 
     -   id: codespell
-        name: Spelling
+        name: Check Spelling
         description: Checks for common misspellings in text files.
-        entry: pipenv run codespell --ignore-words .aspell.en.pws
+        entry: poetry run codespell --ignore-words .aspell.en.pws
         language: system
-        types: [non-executable, file, text]
+        types: [file, text]
 
-    -   id: debug-statements
-        name: Debug Statements
-        description: Checks that debug statements (pdb, ipdb, pudb) are not imported on commit.
-        entry: pipenv run debug-statement-hook
+    -   id: yamllint
+        name: yamllint
+        description: Lint YAML files.
+        entry: poetry run yamllint
         language: system
-        types: [python]
+        types: [yaml]

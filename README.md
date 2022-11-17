@@ -170,9 +170,15 @@ The authors of pyramid_openapi3 believe that the approach of validating a manual
 
 ## Running tests
 
-You need to have [pipenv](https://pipenv.readthedocs.io/) and Python 3.7, 3.8, or 3.9 installed on your machine. Then you can run:
+You need to have [poetry](https://python-poetry.org/) and Python 3.7 through 3.11 installed on your machine.
 
-    $ make tests
+Alternatively, if you use [nix](https://nix.dev/tutorials/declarative-and-reproducible-developer-environments), run `nix-shell` to drop into a shell that has everything prepared for development.
+
+Then you can run:
+
+```shell
+make tests
+```
 
 ## Related packages
 
@@ -190,10 +196,10 @@ These packages tackle the same problem-space:
 
 We do our best to follow the rules below.
 
-* Support the latest few releases of Python, currently Python 3.7, 3.8, and 3.9.
+* Support the latest few releases of Python, currently Python 3.7 through 3.11.
 * Support the latest few releases of Pyramid, currently 1.10.7 through 2.0.
 * Support the latest few releases of `openapi-core`, currently 0.13.4 through 0.13.8.
-* See `Pipfile.lock` for a frozen-in-time known-good-set of all dependencies.
+* See `poetry.lock` for a frozen-in-time known-good-set of all dependencies.
 
 ## Use in the wild
 

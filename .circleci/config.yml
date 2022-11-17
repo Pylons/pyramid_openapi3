@@ -2,15 +2,13 @@
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
+# yamllint disable rule:line-length
 version: 2.1
 
 defaults: &defaults
     working_directory: ~/repo
-    environment:
-      PIPENV_VENV_IN_PROJECT: 1
-      PIPENV_IGNORE_VIRTUALENVS: 1
     docker:
-      - image: circleci/python:3.9
+      - image: cimg/python:3.11
 
 workflows:
   version: 2
@@ -28,11 +26,21 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test_310:
+          filters:
+            tags:
+              only: /.*/
+      - test_311:
+          filters:
+            tags:
+              only: /.*/
       - release:
           requires:
             - test_37
             - test_38
             - test_39
+            - test_310
+            - test_311
           filters:
             tags:
               only: /[0-9]+\.[0-9]+(\.[0-9]+)?/
@@ -45,23 +53,21 @@ commands:
     parameters:
       python_version:
         type: string
-        default: "py39"
+        default: "py311"
     steps:
       - restore_cache:
           keys:
-            - v1-dependencies-<< parameters.python_version >>-{{ checksum "Pipfile.lock" }}
+            - v1-dependencies-<< parameters.python_version >>-{{ checksum "poetry.lock" }}
 
       - run:
           name: Install dependencies
           command: |
-            sudo pip install pipenv
-            pipenv install --dev --deploy
-            touch .installed
+            poetry install
 
       - save_cache:
           paths:
             - ./.venv
-          key: v1-dependencies-<< parameters.python_version >>-{{ checksum "Pipfile.lock" }}
+          key: v1-dependencies-<< parameters.python_version >>-{{ checksum "poetry.lock" }}
 
 
   run_tests:
@@ -79,19 +85,19 @@ commands:
           name: Run tests for the singlefile example
           command: |
             cd examples/singlefile
-            pipenv run python -m unittest app.py
+            poetry run python -m unittest app.py
 
       - run:
           name: Run tests for the todoapp example
           command: |
             cd examples/todoapp
-            pipenv run python -m unittest tests.py
+            poetry run python -m unittest tests.py
 
       - run:
           name: Run tests for the splitfile example
           command: |
             cd examples/splitfile
-            pipenv run python -m unittest tests.py
+            poetry run python -m unittest tests.py
 
       - store_artifacts:
           path: htmlcov
@@ -101,8 +107,34 @@ commands:
 
 jobs:
 
+  test_311:
+    <<: *defaults
+
+    steps:
+      - checkout
+
+      - install_dependencies:
+          python_version: "py311"
+
+      - run_tests
+
+  test_310:
+    <<: *defaults
+    docker:
+      - image: cimg/python:3.10
+
+    steps:
+      - checkout
+
+      - install_dependencies:
+          python_version: "py310"
+
+      - run_tests
+
   test_39:
     <<: *defaults
+    docker:
+      - image: cimg/python:3.9
 
     steps:
       - checkout
@@ -116,7 +148,7 @@ jobs:
   test_38:
     <<: *defaults
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8
 
     steps:
       - checkout
@@ -130,21 +162,24 @@ jobs:
   test_37:
     <<: *defaults
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.7
 
 
     steps:
       - checkout
 
       - run:
-          name: Test minimal openapi-core version on Python 3.7
-          command: ./inject_minimal_openapi-core.sh
+          name: Test oldest supported openapi-core and pyramid versions on Python 3.7
+          command: |
+            mv pyproject_py37.toml pyproject.toml
+            mv poetry_py37.lock poetry.lock
 
       - install_dependencies:
           python_version: "py37"
 
       - run_tests
 
+  # TODO: after this is merged to master, fix the release step as well
   release:
     <<: *defaults
 
@@ -152,7 +187,7 @@ jobs:
       - checkout
 
       - install_dependencies:
-          python_version: "py39"
+          python_version: "py311"
 
       - run:
           name: verify git tag vs. version
