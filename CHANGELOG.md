@@ -1,5 +1,13 @@
 ## Changelog
 
+0.14.2 (2022-11-17)
+-------------------
+
+* Remove openapi-schema-validator as a dependency, as it is already pulled in
+  by openapi-core.
+  [zupo]
+
+
 0.14.1 (2022-11-17)
 -------------------
 
