@@ -179,9 +179,16 @@ jobs:
 
       - run_tests
 
-  # TODO: after this is merged to master, fix the release step as well
   release:
     <<: *defaults
+
+    # To test publishing to testpypi:
+    # * comment out `branches: ignore: /.*/` in workflows at the top of this file
+    # * comment out "verify git tag matches pyproject.toml version" below
+    # * uncomment POETRY_REPOSITORIES_TESTPYPI_URL
+    # * append `-r testpypi` to poetry publish command
+    environment:
+      POETRY_REPOSITORIES_TESTPYPI_URL: https://test.pypi.org/legacy/
 
     steps:
       - checkout
@@ -190,24 +197,14 @@ jobs:
           python_version: "py311"
 
       - run:
-          name: verify git tag vs. version
+          name: verify git tag matches pyproject.toml version
           command: |
-            pipenv run python setup.py verify
+            echo "$CIRCLE_TAG"
+            echo `poetry version --short`
+            [[ "$CIRCLE_TAG" == `poetry version --short` ]] && exit 0 || exit 1
 
+      # POETRY_PYPI_TOKEN_PYPI secret is set in CircleCI Project Settings
       - run:
-          name: init .pypirc
+          name: publish to pypi
           command: |
-            echo -e "[pypi]" >> ~/.pypirc
-            echo -e "username = zupo" >> ~/.pypirc
-            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
-
-      - run:
-          name: create packages
-          command: |
-            pipenv run python setup.py sdist
-            pipenv run python setup.py bdist_wheel
-
-      - run:
-          name: upload to pypi
-          command: |
-            pipenv run twine upload dist/*
+            poetry publish --build
