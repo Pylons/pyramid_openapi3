@@ -3,6 +3,7 @@
 from pyramid.authentication import SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
+from pyramid.request import Request
 from pyramid.security import Allow
 from pyramid.security import Authenticated
 from pyramid.security import NO_PERMISSION_REQUIRED
@@ -23,7 +24,7 @@ class DummyDefaultContext(object):
     __acl__ = DEFAULT_ACL
 
 
-def get_default_context(request) -> DummyDefaultContext:
+def get_default_context(request: Request) -> DummyDefaultContext:
     """Return a dummy context."""
     return DummyDefaultContext()
 
@@ -72,8 +73,11 @@ OPENAPI_YAML = """
         ("/api/v1/", NO_PERMISSION_REQUIRED, 200),
     ),
 )
-def test_permission_for_specs(simple_config, route, permission, status) -> None:
+def test_permission_for_specs(
+    simple_config: Configurator, route: str, permission: str, status: int
+) -> None:
     """Allow (200) or deny (403) access to the spec/explorer view."""
+
     with tempfile.NamedTemporaryFile() as document:
         document.write(OPENAPI_YAML.encode())
         document.seek(0)
@@ -132,7 +136,7 @@ SPLIT_PATHS_YAML = b"""
     ),
 )
 def test_permission_for_spec_directories(
-    simple_config, route, permission, status
+    simple_config: Configurator, route: str, permission: str, status: int
 ) -> None:
     """Allow (200) or deny (403) access to the spec/explorer view."""
     with tempfile.TemporaryDirectory() as directory:

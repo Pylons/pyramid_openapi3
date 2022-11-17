@@ -368,7 +368,7 @@ def openapi_validation_error(
     return exception_response(status_code, json_body=errors)
 
 
-def check_all_routes(event: ApplicationCreated):
+def check_all_routes(event: ApplicationCreated) -> None:
     """Assert all endpoints in the spec are registered as routes.
 
     Listen for ApplicationCreated event and assert all endpoints defined in
@@ -395,7 +395,7 @@ def check_all_routes(event: ApplicationCreated):
 
         prefixes = _get_server_prefixes(openapi_settings["spec"])
 
-        def remove_prefixes(path):
+        def remove_prefixes(path: str) -> str:
             # TODO: make this not rely on global "prefixes" var
             path = f"/{path}" if not path.startswith("/") else path
             for prefix in prefixes:  # noqa: B023
