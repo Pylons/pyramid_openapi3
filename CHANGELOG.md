@@ -1,5 +1,12 @@
 ## Changelog
 
+0.14.1 (2022-11-17)
+-------------------
+
+* Cleanup and modernization of dev env, added support for Python 3.10 and 3.11.
+  [zupo]
+
+
 0.14 (2022-05-05)
 -----------------
 

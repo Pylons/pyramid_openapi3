@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyramid_openapi3"
-version = "0.14"
+version = "0.14.1"
 description = "Pyramid addon for OpenAPI3 validation of requests and responses."
 readme = "README.md"
 authors = [
