@@ -3,6 +3,7 @@
 from openapi_core.unmarshalling.schemas.formatters import Formatter
 from pyramid.config import Configurator
 from pyramid.httpexceptions import exception_response
+from pyramid.request import Request
 from pyramid.router import Router
 from pyramid_openapi3.exceptions import InvalidCustomFormatterValue
 from pyramid_openapi3.exceptions import RequestValidationError
@@ -40,7 +41,9 @@ class BadRequestsTests(unittest.TestCase):
           {endpoints}
     """
 
-    def _testapp(self, view: t.Callable, endpoints: str, route="/foo") -> TestApp:
+    def _testapp(
+        self, view: t.Callable, endpoints: str, route: str = "/foo"
+    ) -> TestApp:
         """Start up the app so that tests can send requests to it."""
         from webtest import TestApp
 
@@ -519,7 +522,7 @@ class BadResponsesTests(unittest.TestCase):
     def test_foo(self) -> None:
         """Say foo."""
 
-        def foo(*args):
+        def foo(*args: t.Any) -> t.Dict[str, str]:
             """Say foobar."""
             return {"foo": "bar"}
 
@@ -529,7 +532,7 @@ class BadResponsesTests(unittest.TestCase):
     def test_invalid_response_code(self) -> None:
         """Prevent responding with undefined response code."""
 
-        def foo(*args):
+        def foo(*args: t.Any) -> Exception:
             raise exception_response(409, json_body={})
 
         res = self._testapp(view=foo).get("/foo", status=500)
@@ -552,7 +555,7 @@ class BadResponsesTests(unittest.TestCase):
         """Prevent responding with unmatching response schema."""
         from pyramid.httpexceptions import exception_response
 
-        def foo(*args):
+        def foo(*args: t.Any) -> Exception:
             raise exception_response(400, json_body={"foo": "bar"})
 
         res = self._testapp(view=foo).get("/foo", status=500)
@@ -567,7 +570,7 @@ class BadResponsesTests(unittest.TestCase):
 class CustomFormattersTests(unittest.TestCase):
     """A suite of tests that showcase how custom formatters can be used."""
 
-    def hello(self, context, request) -> str:
+    def hello(self, context: t.Any, request: Request) -> str:
         """Say hello."""
         return f"Hello {request.openapi_validated.body['name']}"
 
@@ -679,7 +682,7 @@ class CustomFormattersTests(unittest.TestCase):
 class CustomDeserializerTests(unittest.TestCase):
     """A suite of tests that showcase how custom deserializers can be used."""
 
-    def hello(self, context, request) -> str:
+    def hello(self, context: t.Any, request: Request) -> str:
         """Say hello."""
         result = self.reverse(f"Hello {request.openapi_validated.body['name']}")
         request.response.content_type = "application/backwards+json"

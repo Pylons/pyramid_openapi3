@@ -5,6 +5,7 @@ from openapi_core.unmarshalling.schemas.exceptions import InvalidSchemaFormatVal
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.request import Request
+from pyramid.response import Response
 
 import attr
 import typing as t
@@ -14,7 +15,9 @@ class RequestValidationError(HTTPBadRequest):
 
     explanation = "Request validation failed."
 
-    def __init__(self, *args, errors: t.List[Exception], **kwargs) -> None:
+    def __init__(
+        self, *args: t.Any, errors: t.List[Exception], **kwargs: t.Any
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.errors = errors
         self.detail = self.message = "\n".join(str(e) for e in errors)
@@ -28,7 +31,13 @@ class ResponseValidationError(HTTPInternalServerError):
 
     explanation = "Response validation failed."
 
-    def __init__(self, *args, response, errors, **kwargs) -> None:
+    def __init__(
+        self,
+        *args: t.Any,
+        response: Response,
+        errors: t.List[Exception],
+        **kwargs: t.Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.response = response
         self.errors = errors
@@ -43,7 +52,7 @@ class ResponseValidationError(HTTPInternalServerError):
 class InvalidCustomFormatterValue(InvalidSchemaFormatValue):
     """Value failed to format with a custom formatter."""
 
-    field = attr.ib()
+    field: t.Any = attr.ib()
 
     def __str__(self) -> str:
         """Provide more control over error message."""

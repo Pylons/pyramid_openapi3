@@ -3,6 +3,7 @@ from .exceptions import ImproperAPISpecificationWarning
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequestFactory
 from .wrappers import PyramidOpenAPIResponseFactory
+from pyramid.registry import Registry
 from pyramid.request import Request
 from pyramid.response import Response
 
@@ -10,7 +11,9 @@ import typing as t
 import warnings
 
 
-def response_tween_factory(handler, registry) -> t.Callable[[Request], Response]:
+def response_tween_factory(
+    handler: t.Callable[[Request], Response], registry: Registry
+) -> t.Callable[[Request], Response]:
     """Create response validation tween.
 
     This tween should run after pyramid exception renderer view, so that

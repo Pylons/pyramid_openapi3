@@ -30,7 +30,7 @@ class DummyRoute:
 
 
 class DummyStartResponse(object):
-    def __call__(self, status, headerlist) -> None:
+    def __call__(self, status: str, headerlist: t.List[t.Tuple[str, str]]) -> None:
         """WSGI start_response protocol."""
         self.status = status
         self.headerlist = headerlist
@@ -135,7 +135,7 @@ class TestRequestValidation(RequestValidationBase):
         """
         from pyramid.httpexceptions import HTTPBadRequest
 
-        def view_func(*args):
+        def view_func(*args: t.Any) -> Exception:
             raise HTTPBadRequest("bad foo request")
 
         self._add_view(view_func)

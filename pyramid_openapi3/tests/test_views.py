@@ -18,10 +18,11 @@ from pyramid_openapi3.exceptions import RequestValidationError
 import os
 import pytest
 import tempfile
+import typing as t
 
 
 class DummyStartResponse(object):
-    def __call__(self, status, headerlist) -> None:
+    def __call__(self, status: str, headerlist: t.List[t.Tuple[str, str]]) -> None:
         """WSGI start_response protocol."""
         self.status = status
         self.headerlist = headerlist

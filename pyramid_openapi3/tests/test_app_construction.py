@@ -1,4 +1,5 @@
 """Tests for app creation when using pyramid_openapi3."""
+
 from _pytest.fixtures import SubRequest
 from _pytest.logging import LogCaptureFixture
 from pyramid.config import Configurator
@@ -226,7 +227,7 @@ def test_unconfigured_app(
     assert "pyramid_openapi3 settings not found" in caplog.text
 
 
-def test_routes_setting_generation(app_config: Configurator):
+def test_routes_setting_generation(app_config: Configurator) -> None:
     """Test the `routes` setting is correctly created after app creation."""
 
     # Test that having multiple routes for a single route / pattern still works

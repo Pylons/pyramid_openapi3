@@ -101,9 +101,11 @@ not_skip="__init__.py"
 
 
 [tool.mypy]
-# TODO: make stricter
 follow_imports = "silent"
 check_untyped_defs = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
 linecount_report = "./typecov"
 
 [[tool.mypy.overrides]]
