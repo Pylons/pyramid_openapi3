@@ -16,13 +16,6 @@ classifiers = [
     "Framework :: Pyramid",
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
 ]
 packages = [
   { include = "pyramid_openapi3", from = "." },
@@ -34,7 +27,6 @@ exclude = ["pyramid_openapi3/tests/"]
 python = "^3.7"
 
 openapi-core = ">=0.13.4,<0.14"
-openapi-schema-validator = "*"
 pyramid = ">=1.10.7"
 
 
