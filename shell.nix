@@ -23,16 +23,15 @@ let
       pyramid_openapi3 = ./.;
     };
     overrides = poetry2nix.defaultPoetryOverrides.extend ( self: super: {
-    autoflake = super.autoflake.overridePythonAttrs (
-      old: {
-        buildInputs = (old.buildInputs or [ ]) ++ [ self.hatchling ];
-        postInstall = ''
-        rm -f $out/lib/python3*/site-packages/LICENSE
-      '';
-      }
-    );
-
-  });
+      autoflake = super.autoflake.overridePythonAttrs (
+        old: {
+          buildInputs = (old.buildInputs or [ ]) ++ [ self.hatchling ];
+          postInstall = ''
+          rm -f $out/lib/python3*/site-packages/LICENSE
+        '';
+        }
+      );
+    });
   });
 
 in
