@@ -1,7 +1,7 @@
 """A Todo-app implementation using pyramid_openapi3 and YAML spec split into multiple files.
 
 See README.md at
-https://github.com/Pylons/pyramid_openapi3/tree/master/examples/splitfile
+https://github.com/Pylons/pyramid_openapi3/tree/main/examples/splitfile
 """
 
 from dataclasses import dataclass

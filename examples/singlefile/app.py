@@ -1,7 +1,7 @@
 """A single-file demo of pyramid_openapi3.
 
 See README.md at
-https://github.com/Pylons/pyramid_openapi3/tree/master/examples/singlefile
+https://github.com/Pylons/pyramid_openapi3/tree/main/examples/singlefile
 """
 
 from pyramid.config import Configurator

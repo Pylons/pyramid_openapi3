@@ -1,17 +1,17 @@
 ## Validate [Pyramid](https://trypyramid.com) views against an [OpenAPI 3.0](https://swagger.io/specification/) document
 
 <p align="center">
-  <img height="200" src="https://github.com/Pylons/pyramid_openapi3/blob/master/header.jpg?raw=true" />
+  <img height="200" src="https://github.com/Pylons/pyramid_openapi3/blob/main/header.jpg?raw=true" />
 </p>
 
 <p align="center">
   <a href="https://circleci.com/gh/Pylons/pyramid_openapi3">
-    <img alt="CircleCI for pyramid_openapi3 (master branch)"
+    <img alt="CircleCI for pyramid_openapi3 (main branch)"
          src="https://circleci.com/gh/Pylons/pyramid_openapi3.svg?style=shield">
   </a>
-  <img alt="Test coverage (master branch)"
+  <img alt="Test coverage (main branch)"
        src="https://img.shields.io/badge/tests_coverage-100%25-brightgreen.svg">
-  <img alt="Test coverage (master branch)"
+  <img alt="Test coverage (main branch)"
        src="https://img.shields.io/badge/types_coverage-100%25-brightgreen.svg">
   <a href="https://pypi.org/project/pyramid_openapi3/">
     <img alt="latest version of pyramid_openapi3 on PyPI"
@@ -21,17 +21,13 @@
     <img alt="Supported Python versions"
          src="https://img.shields.io/pypi/pyversions/pyramid_openapi3.svg">
   </a>
-  <a href="https://github.com/Pylons/pyramid_openapi3/blob/master/LICENSE">
+  <a href="https://github.com/Pylons/pyramid_openapi3/blob/main/LICENSE">
     <img alt="License: MIT"
          src="https://img.shields.io/badge/License-MIT-yellow.svg">
   </a>
   <a href="https://github.com/Pylons/pyramid_openapi3/graphs/contributors">
     <img alt="Built by these great folks!"
          src="https://img.shields.io/github/contributors/Pylons/pyramid_openapi3.svg">
-  </a>
-  <a href="https://webchat.freenode.net/?channels=pyramid">
-    <img alt="Talk to us in #pyramid on Freenode IRC"
-         src="https://img.shields.io/badge/irc-freenode-blue.svg">
   </a>
 </p>
 
@@ -84,7 +80,7 @@ For responses, if the payload does not match the API document, an exception is r
 
 ### Relative File References in Spec
 
-A feature introduced in OpenAPI3 is the ability to use `$ref` links to external files (https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#referenceObject).
+A feature introduced in OpenAPI3 is the ability to use `$ref` links to external files (https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.0.md#referenceObject).
 
 To use this, you must ensure that you have all of your spec files in a given directory (ensure that you do not have any code in this directory as all the files in it are exposed as static files), then **replace** the `pyramid_openapi3_spec` call that you did in [Getting Started](#getting-started) with the following:
 
@@ -146,9 +142,9 @@ config.add_route("foo_route", pattern="/foo")
 ## Demo / Examples
 
 There are three examples provided with this package:
-* A fairly simple [single-file app providing a Hello World API](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/singlefile).
-* A slightly more [built-out app providing a TODO app API](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/todoapp).
-* Another TODO app API, defined using a [YAML spec split into multiple files](https://github.com/Pylons/pyramid_openapi3/tree/master/examples/splitfile).
+* A fairly simple [single-file app providing a Hello World API](https://github.com/Pylons/pyramid_openapi3/tree/main/examples/singlefile).
+* A slightly more [built-out app providing a TODO app API](https://github.com/Pylons/pyramid_openapi3/tree/main/examples/todoapp).
+* Another TODO app API, defined using a [YAML spec split into multiple files](https://github.com/Pylons/pyramid_openapi3/tree/main/examples/splitfile).
 
 Both examples come with tests that exhibit pyramid_openapi's error handling and validation capabilities.
 
