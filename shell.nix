@@ -1,8 +1,8 @@
 let
   nixpkgs = builtins.fetchTarball {
-    # https://github.com/NixOS/nixpkgs/tree/nixos-22.05 on 2022-11-15
-    url = "https://github.com/nixos/nixpkgs/archive/b82ccafb54163ab9024e893e578d840577785fea.tar.gz";
-    sha256 =  "0jr9gjpxrmgxc12y2883rcdlkhbv1qwghgcqz2w7mjnpp11l36b4";
+    # https://github.com/NixOS/nixpkgs/tree/nixos-22.05 on 2022-11-28
+    url = "https://github.com/nixos/nixpkgs/archive/fecf05d4861f3985e8dee73f08bc82668ef75125.tar.gz";
+    sha256 =  "0f55nj4x8splycfy32p4sjv1if2kg5wp90m9h90wpwrkm3sn9yqs";
   };
   poetry2nixsrc = builtins.fetchTarball {
     # https://github.com/nix-community/poetry2nix/commits/master on 2022-11-15
@@ -29,6 +29,11 @@ let
           postInstall = ''
           rm -f $out/lib/python3*/site-packages/LICENSE
         '';
+        }
+      );
+      exceptiongroup = super.exceptiongroup.overridePythonAttrs (
+        old: {
+          buildInputs = (old.buildInputs or [ ]) ++ [ self.flit_scm ];
         }
       );
     });
