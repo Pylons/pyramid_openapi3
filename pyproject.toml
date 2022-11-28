@@ -60,7 +60,7 @@ mypy = "==0.971"  # remove dependency after upgrading to nixpkgs-22.11
 pdbpp = "*"
 pre-commit = "*"
 pre-commit-hooks = "*"
-pytest = "==7.1.2"  # remove pin after upgrading to nixpkgs-22.11
+pytest = "*"
 pytest-cov = "*"
 pytest-instafail = "*"
 pytest-lazy-fixture = "*"
