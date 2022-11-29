@@ -34,6 +34,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test_nix_shell:
+          filters:
+            tags:
+              only: /.*/
       - release:
           requires:
             - test_37
@@ -183,6 +187,38 @@ jobs:
           python_version: "py37"
 
       - run_tests
+
+  test_nix_shell:
+    resource_class: large
+    working_directory: ~/pyramid_openapi3
+    docker:
+      - image: niteo/nixpkgs-nixos-22.11:ce5fe99df1f15a09a91a86be9738d68fadfbad82
+
+    environment:
+      CACHIX_NAME: pyramid-openapi3
+
+    steps:
+
+      - checkout:
+          path: ~/pyramid_openapi3
+
+      - run:
+          name: Configure Nix and Cachix
+          no_output_timeout: 30m
+          command: |
+            mkdir -p /etc/nix
+            echo "sandbox = false" >> /etc/nix/nix.conf
+            cachix use "$CACHIX_NAME"
+            cachix watch-exec "$CACHIX_NAME" nix-shell -- --run "echo 'nix-shell successfully entered'"
+
+      - run:
+          name: Upload Linux dependencies
+          command: |
+            cachix watch-exec "$CACHIX_NAME" nix-build -- shell.nix -A inputDerivation
+
+      - run:
+          name: Run tests
+          command: nix-shell --run "make tests"
 
   release:
     <<: *defaults

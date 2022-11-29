@@ -4,8 +4,8 @@ version = "0.14.2"
 description = "Pyramid addon for OpenAPI3 validation of requests and responses."
 readme = "README.md"
 authors = [
-  "Niteo <info@niteo.co>",
-  "Domen Kozar <domen@dev.si>"
+  "Neyts Zupan",
+  "Domen Kozar"
 ]
 license = "MIT"
 repository = "https://github.com/Pylons/pyramid_openapi3"
@@ -32,8 +32,8 @@ pyramid = ">=1.10.7"
 
 [tool.poetry.dev-dependencies]
 autoflake = "*"
-black = "==22.6.0"  # remove pin after upgrading to nixpkgs-22.11
-codespell = "==2.1.0"  # remove pin after upgrading to nixpkgs-22.11
+black = "*"
+codespell = "*"
 coverage = "*"
 docutils = "*"
 flake8 = "*"
@@ -53,10 +53,10 @@ flake8-self = "*"
 flake8-super-call = "*"
 flake8-tuple = "*"
 isort = "*"
-jsonschema = "==3.2.0"  # remove dependency after upgrading to nixpkgs-22.11
+jsonschema = "==3.2.0"  # remove after upgrading to openapi-core 0.16.0
 mccabe = "*"
 more-itertools = "*"
-mypy = "==0.971"  # remove dependency after upgrading to nixpkgs-22.11
+mypy = "==0.982"
 pdbpp = "*"
 pre-commit = "*"
 pre-commit-hooks = "*"
