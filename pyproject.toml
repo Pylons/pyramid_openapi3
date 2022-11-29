@@ -2,7 +2,7 @@
 name = "pyramid_openapi3"
 version = "0.14.2"
 description = "Pyramid addon for OpenAPI3 validation of requests and responses."
-readme = "README.md"
+readme = ["README.md", "CHANGELOG.md"]
 authors = [
   "Neyts Zupan",
   "Domen Kozar"
