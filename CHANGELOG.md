@@ -1,5 +1,12 @@
 ## Changelog
 
+0.14.3 (2022-11-29)
+-------------------
+
+* `request.openapi_validated` no longer breaks non-opeanpi views, refs #172.
+  [grinspins, zupo]
+
+
 0.14.2 (2022-11-17)
 -------------------
 
