@@ -220,6 +220,12 @@ jobs:
           name: Run tests
           command: nix-shell --run "make tests"
 
+      - run:
+          name: Run tests for one example
+          command: |
+            nix-shell --run "poetry install --only-root"
+            nix-shell --run "cd examples/todoapp && poetry run python -m unittest tests.py"
+
   release:
     <<: *defaults
 
