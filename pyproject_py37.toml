@@ -4,8 +4,8 @@ version = "0.14.3"
 description = "Pyramid addon for OpenAPI3 validation of requests and responses."
 readme = "README.md"
 authors = [
-  "Niteo <info@niteo.co>",
-  "Domen Kozar <domen@dev.si>"
+  "Neyts Zupan",
+  "Domen Kozar"
 ]
 license = "MIT"
 repository = "https://github.com/Pylons/pyramid_openapi3"
@@ -26,14 +26,14 @@ exclude = ["pyramid_openapi3/tests/"]
 [tool.poetry.dependencies]
 python = "^3.7"
 
-openapi-core = "==0.13.4"
+openapi-core = "==0.16.1"
 pyramid = "==1.10.7"
 
 
 [tool.poetry.dev-dependencies]
 autoflake = "*"
-black = "==22.6.0"  # remove pin after upgrading to nixpkgs-22.11
-codespell = "==2.1.0"  # remove pin after upgrading to nixpkgs-22.11
+black = "*"
+codespell = "*"
 coverage = "*"
 docutils = "*"
 flake8 = "*"
@@ -53,14 +53,13 @@ flake8-self = "*"
 flake8-super-call = "*"
 flake8-tuple = "*"
 isort = "*"
-jsonschema = "==3.2.0"  # remove dependency after upgrading to nixpkgs-22.11
 mccabe = "*"
 more-itertools = "*"
-mypy = "==0.971"  # remove dependency after upgrading to nixpkgs-22.11
+mypy = "==0.982"
 pdbpp = "*"
 pre-commit = "*"
 pre-commit-hooks = "*"
-pytest = "==7.1.2"  # remove pin after upgrading to nixpkgs-22.11
+pytest = "*"
 pytest-cov = "*"
 pytest-instafail = "*"
 pytest-lazy-fixture = "*"
@@ -89,7 +88,7 @@ atomic=true
 force_alphabetical_sort=true
 force_single_line=true
 line_length=88
-
+profile="black"
 
 [tool.mypy]
 follow_imports = "silent"
@@ -104,6 +103,7 @@ ignore_missing_imports = true
 module = [
   "openapi_core.*",
   "openapi_spec_validator.*",
+  "openapi_schema_validator.*",
   "hupper.*",
   "pyramid.*",
   "pytest",

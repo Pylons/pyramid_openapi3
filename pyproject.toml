@@ -26,7 +26,7 @@ exclude = ["pyramid_openapi3/tests/"]
 [tool.poetry.dependencies]
 python = "^3.7"
 
-openapi-core = ">=0.13.4,<0.14"
+openapi-core = ">=0.16.1"
 pyramid = ">=1.10.7"
 
 
@@ -53,7 +53,6 @@ flake8-self = "*"
 flake8-super-call = "*"
 flake8-tuple = "*"
 isort = "*"
-jsonschema = "==3.2.0"  # remove after upgrading to openapi-core 0.16.0
 mccabe = "*"
 more-itertools = "*"
 mypy = "==0.982"
@@ -89,7 +88,7 @@ atomic=true
 force_alphabetical_sort=true
 force_single_line=true
 line_length=88
-
+profile="black"
 
 [tool.mypy]
 follow_imports = "silent"
@@ -104,6 +103,7 @@ ignore_missing_imports = true
 module = [
   "openapi_core.*",
   "openapi_spec_validator.*",
+  "openapi_schema_validator.*",
   "hupper.*",
   "pyramid.*",
   "pytest",

@@ -41,9 +41,9 @@ OPENAPI_DOCUMENT = b"""
 @view_config(route_name="hello", renderer="json", request_method="GET", openapi=True)
 def hello(request):
     """Say hello."""
-    if request.openapi_validated.parameters["query"]["name"] == "admin":
+    if request.openapi_validated.parameters.query["name"] == "admin":
         raise HTTPForbidden()
-    return {"hello": request.openapi_validated.parameters["query"]["name"]}
+    return {"hello": request.openapi_validated.parameters.query["name"]}
 
 
 def app(spec):

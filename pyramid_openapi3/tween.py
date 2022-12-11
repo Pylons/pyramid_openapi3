@@ -1,8 +1,9 @@
 """A tween to validate openapi responses."""
+
 from .exceptions import ImproperAPISpecificationWarning
 from .exceptions import ResponseValidationError
-from .wrappers import PyramidOpenAPIRequestFactory
-from .wrappers import PyramidOpenAPIResponseFactory
+from .wrappers import PyramidOpenAPIRequest
+from .wrappers import PyramidOpenAPIResponse
 from pyramid.registry import Registry
 from pyramid.request import Request
 from pyramid.response import Response
@@ -33,15 +34,15 @@ def response_tween_factory(
                 return response
 
             # validate response
-            openapi_request = PyramidOpenAPIRequestFactory.create(request)
-            openapi_response = PyramidOpenAPIResponseFactory.create(response)
+            openapi_request = PyramidOpenAPIRequest(request)
+            openapi_response = PyramidOpenAPIResponse(response)
             settings_key = "pyramid_openapi3"
             gsettings = settings = request.registry.settings[settings_key]
             if "routes" in gsettings:
                 settings_key = gsettings["routes"][request.matched_route.name]
                 settings = request.registry.settings[settings_key]
             result = settings["response_validator"].validate(
-                request=openapi_request, response=openapi_response
+                settings["spec"], request=openapi_request, response=openapi_response
             )
             request_validated = request.environ.get("pyramid_openapi3.validate_request")
             if result.errors:
