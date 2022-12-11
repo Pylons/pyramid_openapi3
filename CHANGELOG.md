@@ -1,5 +1,22 @@
 ## Changelog
 
+
+0.15.0 (2022-12-11)
+-------------------
+
+* Update Swagger UI version to 4.15.3, refs #185.
+  [kskarthik]
+
+* Upgrade `openapi-core dependency` to `0.16`, refs #173.
+
+  [BREAKING CHANGE] `request.openapi_validated.parameters` will now be
+  a dataclass instead of a dict. For example: if you wanted to get a
+  query parameter called `limit`:
+   * before: `request.openapi_validated.parameters["query"]["limit"]`
+   * after: `request.openapi_validated.parameters.query["limit"]`
+  [damonhook]
+
+
 0.14.3 (2022-11-29)
 -------------------
 

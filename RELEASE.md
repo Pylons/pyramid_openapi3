@@ -4,7 +4,8 @@
 1. Set the same version in `pyproject.toml`.
 1. Set the same version in `pyproject_py37.toml`.
 1. `make tests`
-1. `git add -p && git ci -m "release VERSION"`
+1. `export VERSION=<new version>`
+1. `git add -p && git ci -m "release $VERSION"`
 1. `git push origin main` and wait for CircleCI to pass the build.
-1. `git tag VERSION`
+1. `git tag $VERSION`
 1. `git push --tags`
