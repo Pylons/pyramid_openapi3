@@ -1,5 +1,13 @@
 ## Changelog
 
+
+0.15.0-pre0 (2022-12-11)
+------------------------
+
+* Upgrade `openapi-core dependency` to `0.16.1+`, refs #173.
+  [damonhook]
+
+
 0.14.3 (2022-11-29)
 -------------------
 
