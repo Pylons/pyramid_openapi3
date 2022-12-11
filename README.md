@@ -133,7 +133,7 @@ Then put the config directive `pyramid_openapi3_register_routes` in the app_fact
 config.pyramid_openapi3_register_routes()
 ```
 
-This means is equals to
+This is equal to manually writing the following:
 
 ```python
 config.add_route("foo_route", pattern="/foo")
@@ -146,7 +146,7 @@ There are three examples provided with this package:
 * A slightly more [built-out app providing a TODO app API](https://github.com/Pylons/pyramid_openapi3/tree/main/examples/todoapp).
 * Another TODO app API, defined using a [YAML spec split into multiple files](https://github.com/Pylons/pyramid_openapi3/tree/main/examples/splitfile).
 
-Both examples come with tests that exhibit pyramid_openapi's error handling and validation capabilities.
+All examples come with tests that exhibit pyramid_openapi's error handling and validation capabilities.
 
 A **fully built-out app**, with 100% test coverage, providing a [RealWorld.io](https://realworld.io) API is available at [niteoweb/pyramid-realworld-example-app](https://github.com/niteoweb/pyramid-realworld-example-app). It is a Heroku-deployable Pyramid app that provides an API for a Medium.com-like social app. You are encouraged to use it as a scaffold for your next project.
 
