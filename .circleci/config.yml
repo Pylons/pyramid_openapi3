@@ -61,7 +61,7 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v1-dependencies-<< parameters.python_version >>-{{ checksum "poetry.lock" }}
+            - v2-dependencies-<< parameters.python_version >>-{{ checksum "poetry.lock" }}
 
       - run:
           name: Install dependencies
@@ -71,7 +71,7 @@ commands:
       - save_cache:
           paths:
             - ./.venv
-          key: v1-dependencies-<< parameters.python_version >>-{{ checksum "poetry.lock" }}
+          key: v2-dependencies-<< parameters.python_version >>-{{ checksum "poetry.lock" }}
 
 
   run_tests:
