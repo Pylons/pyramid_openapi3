@@ -90,6 +90,12 @@ force_single_line=true
 line_length=88
 profile="black"
 
+
+[tool.pytest.ini_options]
+# for more accurate BlueRacer.io test duration reports
+junit_duration_report = "call"
+
+
 [tool.mypy]
 follow_imports = "silent"
 check_untyped_defs = true
