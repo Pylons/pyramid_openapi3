@@ -43,9 +43,14 @@ OPENAPI_YAML = """
               application/x-www-form-urlencoded:
                 schema:
                   $ref: "#/components/schemas/ObjectWithName"
+              multipart/form-data:
+                schema:
+                  $ref: "#/components/schemas/ObjectWithName"
           responses:
             200:
               description: OK
+            400:
+              description: Bad Request
 """
 
 
@@ -76,4 +81,15 @@ class TestContentTypes(unittest.TestCase):
         """Post with `application/x-www-form-urlencoded`."""
 
         res = self._testapp().post("/foo", params={"bar": "baz"}, status=200)
+        self.assertEqual(res.json, {"bar": "zab"})
+
+    def test_post_form_multipart(self) -> None:
+        """Post with `multipart/form-data`."""
+
+        res = self._testapp().post(
+            "/foo",
+            params={"bar": "baz"},
+            content_type="multipart/form-data",
+            status=200,
+        )
         self.assertEqual(res.json, {"bar": "zab"})
