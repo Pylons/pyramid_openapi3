@@ -111,7 +111,6 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
     if info.options.get("openapi"):
 
         def wrapper_view(context: Context, request: Request) -> Response:
-
             # We need this to be able to raise AttributeError if view code
             # accesses request.openapi_validated on a view that is marked
             # with openapi=False
@@ -154,6 +153,7 @@ def add_explorer_view(
     ui_version: str = "4.15.5",
     permission: str = NO_PERMISSION_REQUIRED,
     apiname: str = "pyramid_openapi3",
+    proto_port: t.Optional[t.Tuple[str, int]] = None,
 ) -> None:
     """Serve Swagger UI at `route` url path.
 
@@ -162,6 +162,7 @@ def add_explorer_view(
     :param template: Dotted path to the html template that renders Swagger UI response
     :param ui_version: Swagger UI version string
     :param permission: Permission for the explorer view
+    :proto_port: Internet protocol and port for the specification URL
     """
 
     def register() -> None:
@@ -175,10 +176,19 @@ def add_explorer_view(
                     "to work."
                 )
             with open(resolved_template.abspath()) as f:
+                if proto_port:
+                    spec_url = request.route_url(
+                        settings[apiname]["spec_route_name"],
+                        _scheme=proto_port[0],
+                        _port=proto_port[1],
+                    )
+                else:
+                    spec_url = request.route_url(settings[apiname]["spec_route_name"])
+
                 template = Template(f.read())
                 html = template.safe_substitute(
                     ui_version=ui_version,
-                    spec_url=request.route_url(settings[apiname]["spec_route_name"]),
+                    spec_url=spec_url,
                 )
             return Response(html)
 
