@@ -155,6 +155,7 @@ def add_explorer_view(
     permission: str = NO_PERMISSION_REQUIRED,
     apiname: str = "pyramid_openapi3",
     proto_port: t.Tuple[str, int] = None,
+    host: str = None,
 ) -> None:
     """Serve Swagger UI at `route` url path.
 
@@ -164,6 +165,7 @@ def add_explorer_view(
     :param ui_version: Swagger UI version string
     :param permission: Permission for the explorer view
     :proto_port: Internet protocol and port for the specification URL
+    :host: Host of the specification URL
     """
 
     def register() -> None:
@@ -179,10 +181,16 @@ def add_explorer_view(
             with open(resolved_template.abspath()) as f:
                 template = Template(f.read())
                 if proto_port:
-                    html = template.safe_substitute(
-                        ui_version=ui_version,
-                        spec_url=request.route_url(settings[apiname]["spec_route_name"], _scheme=proto_port[0], _port=proto_port[1]),
-                    )
+                    if host:
+                        html = template.safe_substitute(
+                            ui_version=ui_version,
+                            spec_url=request.route_url(settings[apiname]["spec_route_name"], _scheme=proto_port[0], _port=proto_port[1], _host=host),
+                        )
+                    else:
+                        html = template.safe_substitute(
+                            ui_version=ui_version,
+                            spec_url=request.route_url(settings[apiname]["spec_route_name"], _scheme=proto_port[0], _port=proto_port[1]),
+                        )
                 else:
                     html = template.safe_substitute(
                         ui_version=ui_version,
