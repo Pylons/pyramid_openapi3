@@ -139,6 +139,8 @@ This is equal to manually writing the following:
 config.add_route("foo_route", pattern="/foo")
 ```
 
+The `pyramid_openapi3_register_routes()` method supports setting a factory and route prefix as well. See the source for details.
+
 ## Demo / Examples
 
 There are three examples provided with this package:

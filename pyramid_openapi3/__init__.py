@@ -342,6 +342,7 @@ def register_routes(
     route_name_ext: str = "x-pyramid-route-name",
     root_factory_ext: str = "x-pyramid-root-factory",
     apiname: str = "pyramid_openapi3",
+    route_prefix: t.Optional[str] = None,
 ) -> None:
     """Register routes to app from OpenApi 3.0 specification.
 
@@ -357,7 +358,9 @@ def register_routes(
                 root_factory = path_item.get(root_factory_ext)
                 config.add_route(
                     route_name,
-                    pattern=pattern,
+                    pattern=route_prefix + pattern
+                    if route_prefix is not None
+                    else pattern,
                     factory=root_factory or None,
                 )
 
