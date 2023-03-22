@@ -1,6 +1,13 @@
 ## Changelog
 
 
+0.16.0 (2023-03-22)
+-------------------
+
+* Add support for setting a prefix for auto-generated routes.
+  [zupo]
+
+
 0.15.0 (2022-12-11)
 -------------------
 
