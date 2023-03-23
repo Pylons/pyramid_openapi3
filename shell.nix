@@ -2,12 +2,12 @@ let
   nixpkgs = builtins.fetchTarball {
     # https://github.com/NixOS/nixpkgs/tree/nixos-22.11 on 2022-11-29
     url = "https://github.com/nixos/nixpkgs/archive/ce5fe99df1f15a09a91a86be9738d68fadfbad82.tar.gz";
-    sha256 =  "1zqyq7v1gxrg2b7zizf4npask4vqbs4s7khwffxafgm20gxngb6a";
+    sha256 = "1zqyq7v1gxrg2b7zizf4npask4vqbs4s7khwffxafgm20gxngb6a";
   };
   poetry2nixsrc = builtins.fetchTarball {
     # https://github.com/nix-community/poetry2nix/commits/master on 2022-11-29
     url = "https://github.com/nix-community/poetry2nix/archive/ce8425ccc2884c1065927a38d1700024f431cf0f.tar.gz";
-    sha256 =  "07x48abw18qfxdmsz8hdd762vj8n5l2syh9xm40v851bhidbjswc";
+    sha256 = "07x48abw18qfxdmsz8hdd762vj8n5l2syh9xm40v851bhidbjswc";
   };
 
   # Fix for installing PasteDeploy from https://github.com/nix-community/poetry2nix/issues/750
@@ -19,9 +19,9 @@ let
     pastedeploy_ = super.pastedeploy;
   };
   postDefaults = self: super: {
-      # Avoid infinite recursion
-      pastedeploy = super.pastedeploy_;
-    };
+    # Avoid infinite recursion
+    pastedeploy = super.pastedeploy_;
+  };
 
   pkgs = import nixpkgs { };
   poetry2nix = import poetry2nixsrc {
@@ -125,8 +125,8 @@ let
         old: {
           buildInputs = (old.buildInputs or [ ]) ++ [ self.hatchling ];
           postInstall = ''
-          rm -f $out/lib/python3*/site-packages/LICENSE
-        '';
+            rm -f $out/lib/python3*/site-packages/LICENSE
+          '';
         }
       );
     });
@@ -138,8 +138,9 @@ pkgs.mkShell {
   name = "dev-shell";
 
   buildInputs = with pkgs; [
-      devEnv
-      poetry
-      gitAndTools.pre-commit
-    ];
+    devEnv
+    poetry
+    gitAndTools.pre-commit
+    nixpkgs-fmt
+  ];
 }

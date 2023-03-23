@@ -1,0 +1,62 @@
+# Run all tests, linters, code analysis and other QA tasks on
+# every push to master and PRs.
+
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# To SSH into the runner to debug a failure, add the following step before
+# the failing step
+#    - uses: lhotari/action-upterm@v1
+#      with:
+#        limit-access-to-actor: true
+
+# Prevent multiple jobs running after fast subsequent pushes
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+
+  test_310:
+    name: "Python 3.10 Tests"
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/nix-shell
+        with:
+          cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: Run linters and unit tests
+        run: |
+          nix-shell --run "make lint all=true"
+          nix-shell --run "make types"
+          nix-shell --run "make unit"
+
+      - name: Run tests for the singlefile example
+        run: |
+          cd examples/singlefile
+          nix-shell --run "python -m unittest app.py"
+
+      - name: Run tests for the todoapp example
+        run: |
+          cd examples/todoapp
+          nix-shell --run "python -m unittest tests.py"
+
+      - name: Run tests for the splitfile example
+        run: |
+          cd examples/splitfile
+          nix-shell --run "python -m unittest tests.py"
+
+      - name: Save coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: htmlcov
+          path: htmlcov
