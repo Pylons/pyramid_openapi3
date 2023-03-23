@@ -46,7 +46,6 @@ flake8-debugger = "*"
 flake8-deprecated = "*"
 flake8-docstrings = "*"
 flake8-ensure-ascii = "*"
-flake8-mutable = "*"
 flake8-plone-hasattr = "*"
 flake8-print = "*"
 flake8-self = "*"
@@ -89,6 +88,12 @@ force_alphabetical_sort=true
 force_single_line=true
 line_length=88
 profile="black"
+
+
+[tool.pytest.ini_options]
+# for more accurate BlueRacer.io test duration reports
+junit_duration_report = "call"
+
 
 [tool.mypy]
 follow_imports = "silent"
