@@ -23,8 +23,8 @@ concurrency:
 
 jobs:
 
-  test_310:
-    name: "Python 3.10 Tests"
+  test_311:
+    name: "Python 3.11 Tests"
 
     runs-on: ubuntu-22.04
 
