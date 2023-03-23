@@ -9,6 +9,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - '*'
 
 # To SSH into the runner to debug a failure, add the following step before
 # the failing step
@@ -62,6 +64,9 @@ jobs:
           path: htmlcov
 
       - name: Upload test durations to BlueRacer.io
+        if: |
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'push' && !contains(github.ref, 'refs/tags/'))
         env:
           BLUERACER_TOKEN: ${{ secrets.BLUERACER_TOKEN }}
         run: bash <(curl -s https://app.blueracer.io/upload)
@@ -101,3 +106,40 @@ jobs:
         with:
           name: htmlcov
           path: htmlcov
+
+
+  release:
+    name: "Release to PyPI"
+
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+    needs: [test_311, test_38]
+    runs-on: ubuntu-22.04
+
+    # To test publishing to testpypi:
+    # * change version in pyproject.toml to 0.16.1-alpha.1 or similar
+    # * uncomment POETRY_REPOSITORIES_TESTPYPI_URL and POETRY_PYPI_TOKEN_TESTPYPI
+    # * append `-r testpypi` to poetry publish command
+    # * `git ci && git tag 0.16.1-alpha.1 && git push --tags`
+
+    env:
+      POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
+
+      # POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.POETRY_PYPI_TOKEN_TESTPYPI }}
+      # POETRY_REPOSITORIES_TESTPYPI_URL: https://test.pypi.org/legacy/
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/nix-shell
+        with:
+          cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: verify git tag matches pyproject.toml version
+        run: |
+          echo "$GITHUB_REF_NAME"
+          POETRY_VERSION=$(nix-shell --run "poetry version --short")
+          echo $POETRY_VERSION
+
+          nix-shell --run "echo `poetry version --short`"
+          [[ "$GITHUB_REF_NAME" == "$POETRY_VERSION" ]] && exit 0 || exit 1
+
+      - run: nix-shell --run "poetry publish --build"
