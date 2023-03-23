@@ -9,11 +9,12 @@ from openapi_core import Spec
 from openapi_core.deserializing.media_types.factories import (
     MediaTypeDeserializersFactory,
 )
-from openapi_core.unmarshalling.schemas.enums import UnmarshalContext
+from openapi_core.unmarshalling.request import V31RequestUnmarshaller
+from openapi_core.unmarshalling.response import V31ResponseUnmarshaller
 from openapi_core.unmarshalling.schemas.factories import SchemaUnmarshallersFactory
-from openapi_core.validation.exceptions import InvalidSecurity
-from openapi_core.validation.request.validators import RequestValidator
-from openapi_core.validation.response.validators import ResponseValidator
+from openapi_core.validation.request.exceptions import InvalidSecurity
+from openapi_core import RequestValidator
+from openapi_core import ResponseValidator
 from openapi_schema_validator import OAS30Validator
 from openapi_spec_validator import validate_spec
 from openapi_spec_validator.readers import read_from_filename
@@ -34,6 +35,8 @@ from pyramid.settings import asbool
 from pyramid.tweens import EXCVIEW
 from string import Template
 from urllib.parse import urlparse
+from openapi_core.validation.schemas import oas31_schema_validators_factory
+from openapi_core.unmarshalling.schemas import oas31_types_unmarshaller
 
 import hupper
 import logging
@@ -86,9 +89,7 @@ def openapi_validated(request: Request) -> dict:
 
     if request.environ.get("pyramid_openapi3.validate_request"):
         openapi_request = PyramidOpenAPIRequest(request)
-        validated = settings["request_validator"].validate(
-            settings["spec"], openapi_request
-        )
+        validated = settings["request_validator"].unmarshal(openapi_request)
         return validated
 
     return {}  # pragma: no cover
@@ -311,29 +312,24 @@ def _create_api_settings(
     media_type_deserializers_factory = MediaTypeDeserializersFactory(
         custom_deserializers=custom_deserializers
     )
-    schema_unmarshallers_request_factory = SchemaUnmarshallersFactory(
-        OAS30Validator,
+    schema_unmarshallers_factory = SchemaUnmarshallersFactory(
+        oas31_schema_validators_factory,
+        oas31_types_unmarshaller,
         custom_formatters=custom_formatters,
-        context=UnmarshalContext.REQUEST,
-    )
-    schema_unmarshallers_response_factory = SchemaUnmarshallersFactory(
-        OAS30Validator,
-        custom_formatters=custom_formatters,
-        context=UnmarshalContext.RESPONSE,
     )
 
     return {
         "filepath": filepath,
         "spec_route_name": route_name,
         "spec": spec,
-        "request_validator": RequestValidator(
-            schema_unmarshallers_request_factory,
-            media_type_deserializers_factory=media_type_deserializers_factory,
-        ),
-        "response_validator": ResponseValidator(
-            schema_unmarshallers_response_factory,
-            media_type_deserializers_factory=media_type_deserializers_factory,
-        ),
+        "request_validator": V31RequestUnmarshaller(spec),
+        #     schema_unmarshallers_factory,
+        #     media_type_deserializers_factory=media_type_deserializers_factory,
+        # ),
+        "response_validator": V31ResponseUnmarshaller(spec),
+        #     schema_unmarshallers_factory,
+        #     media_type_deserializers_factory=media_type_deserializers_factory,
+        # ),
     }
 
 

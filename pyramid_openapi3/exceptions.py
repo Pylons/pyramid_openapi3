@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from openapi_core.exceptions import OpenAPIError
-from openapi_core.unmarshalling.schemas.exceptions import InvalidSchemaFormatValue
+from openapi_core.unmarshalling.schemas.exceptions import FormatUnmarshalError
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.request import Request
@@ -49,7 +49,7 @@ class ResponseValidationError(HTTPInternalServerError):
 
 
 @dataclass
-class InvalidCustomFormatterValue(InvalidSchemaFormatValue):
+class InvalidCustomFormatterValue(FormatUnmarshalError):
     """Value failed to format with a custom formatter."""
 
     field: str
@@ -64,7 +64,7 @@ class ImproperAPISpecificationWarning(UserWarning):
 
 
 def extract_errors(
-    request: Request, errors: t.List[OpenAPIError]
+    request: Request, errors: t.List[OpenAPIError], field=None
 ) -> t.Iterator[t.Dict[str, str]]:
     """Extract errors for JSON response.
 
@@ -107,20 +107,24 @@ def extract_errors(
     ```
     """
     for err in errors:
-        schema_errors = getattr(err, "schema_errors", None)
+        schema_errors = getattr(err.__cause__, "schema_errors", None)
         if schema_errors is not None:
-            yield from extract_errors(request, schema_errors)
+            yield from extract_errors(
+                request, schema_errors, getattr(err, "name", None)
+            )
             continue
 
         output = {"exception": err.__class__.__name__}
 
         message = getattr(err, "message", None)
+        if getattr(err, "__cause__", None):
+            message = str(err.__cause__)
         if message is None:
             message = str(err)
 
         output.update({"message": message})
 
-        field = getattr(err, "field", None)
+        field = getattr(err, "field", field)
         if field is None:
             field = getattr(err, "name", None)
         if field is None and getattr(err, "validator", None) == "required":

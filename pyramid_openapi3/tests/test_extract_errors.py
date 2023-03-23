@@ -1,10 +1,11 @@
 """Test rendering errors as JSON responses."""
 
-from openapi_core.unmarshalling.schemas.formatters import Formatter
+from openapi_core.validation.schemas.formatters import Formatter
 from pyramid.config import Configurator
 from pyramid.httpexceptions import exception_response
 from pyramid.request import Request
 from pyramid.router import Router
+
 from pyramid_openapi3.exceptions import InvalidCustomFormatterValue
 from pyramid_openapi3.exceptions import RequestValidationError
 from webtest.app import TestApp
@@ -74,7 +75,7 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
-                "message": "Missing required parameter: bar",
+                "message": "Missing required query parameter: bar",
                 "field": "bar",
             }
         ]
@@ -97,11 +98,13 @@ class BadRequestsTests(unittest.TestCase):
                   description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
+        res = self._testapp(view=self.foo, endpoints=endpoints).post(
+            "/foo?bar=not_a_number", status=400
+        )
         assert res.json == [
             {
-                "exception": "MissingRequiredParameter",
-                "message": "Missing required parameter: bar",
+                "exception": "ParameterValidationError",
+                "message": "Failed to cast value to integer type: not_a_number",
                 "field": "bar",
             }
         ]
@@ -126,11 +129,12 @@ class BadRequestsTests(unittest.TestCase):
 
         res = self._testapp(
             view=self.foo, endpoints=endpoints, route="/foo/{bar}"
-        ).post("/foo/bar", status=400)
+        ).post("/foo/not_a_number", status=400)
         assert res.json == [
             {
-                "exception": "CastError",
-                "message": "Failed to cast value to integer type: bar",
+                "exception": "ParameterValidationError",
+                "field": "bar",
+                "message": "Failed to cast value to integer type: not_a_number",
             }
         ]
 
@@ -159,9 +163,8 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "ValidationError",
+                "field": "bar",
                 "message": "'not-a-valid-uuid' does not match '^[0-9]{2}-[A-F]{4}$'",
-                # TODO: ideally, this response would include "field"
-                # but I don't know how I can achieve this ATM ¯\_(ツ)_/¯  # noqa: ENC100
             }
         ]
 
@@ -190,9 +193,8 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "ValidationError",
-                "message": "'not-a-valid-uuid' is not a 'uuid'",
-                # TODO: ideally, this response would include "field"
-                # but I don't know how I can achieve this ATM ¯\_(ツ)_/¯  # noqa: ENC100
+                "field": "bar",
+                "message": "badly formed hexadecimal UUID string",
             }
         ]
 
@@ -218,7 +220,7 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
-                "message": "Missing required parameter: bar",
+                "message": "Missing required header parameter: bar",
                 "field": "bar",
             }
         ]
@@ -245,7 +247,7 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
-                "message": "Missing required parameter: bar",
+                "message": "Missing required cookie parameter: bar",
                 "field": "bar",
             }
         ]
@@ -393,12 +395,13 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
-                "message": "Missing required parameter: bar",
+                "message": "Missing required query parameter: bar",
                 "field": "bar",
             },
             {
-                "exception": "CastError",
+                "exception": "ParameterValidationError",
                 "message": "Failed to cast value to integer type: abc",
+                "field": "bar",
             },
             {
                 "exception": "ValidationError",
@@ -450,9 +453,9 @@ class BadRequestsTests(unittest.TestCase):
                 content:
                   application/json:
                     schema:
+                      type: object
                       required:
                         - foo
-                      type: object
                       properties:
                         foo:
                           type: array
@@ -466,9 +469,9 @@ class BadRequestsTests(unittest.TestCase):
         components:
           schemas:
             bar:
+              type: object
               required:
                 - bam
-              type: object
               properties:
                 bam:
                   type: number
