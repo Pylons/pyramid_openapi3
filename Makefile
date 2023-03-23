@@ -11,6 +11,7 @@ lock:
 	@poetry lock --no-update
 	@rm -rf .venv/
 	@nix-shell --run true
+	@direnv reload
 
 # Testing and linting targets
 all = false
@@ -22,10 +23,10 @@ lint:
 # 3. get all untracked files
 # 4. run pre-commit checks on them
 ifeq ($(all),true)
-	@poetry run pre-commit run --hook-stage push --all-files
+	@pre-commit run --hook-stage push --all-files
 else
 	@{ git diff --name-only ./; git diff --name-only --staged ./;git ls-files --other --exclude-standard; } \
-		| sort -u | uniq | poetry run xargs pre-commit run --hook-stage push --files
+		| sort -u | uniq | xargs pre-commit run --hook-stage push --files
 endif
 
 .PHONY: type
@@ -33,12 +34,12 @@ type: types
 
 .PHONY: types
 types: .
-	@poetry run mypy examples/todoapp
+	@mypy examples/todoapp
 	@cat ./typecov/linecount.txt
-	@poetry run typecov 100 ./typecov/linecount.txt
-	@poetry run mypy pyramid_openapi3
+	@typecov 100 ./typecov/linecount.txt
+	@mypy pyramid_openapi3
 	@cat ./typecov/linecount.txt
-	@poetry run typecov 100 ./typecov/linecount.txt
+	@typecov 100 ./typecov/linecount.txt
 
 
 # anything, in regex-speak
@@ -70,9 +71,9 @@ endif
 .PHONY: unit
 unit:
 ifndef path
-	@poetry run pytest pyramid_openapi3 $(verbosity) $(full_suite_args) $(pytest_args)
+	@pytest pyramid_openapi3 $(verbosity) $(full_suite_args) $(pytest_args)
 else
-	@poetry run pytest $(path)
+	@pytest $(path)
 endif
 
 .PHONY: test
