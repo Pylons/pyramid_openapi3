@@ -31,6 +31,9 @@ let
 
   commonPoetryArgs = {
     projectDir = ./.;
+    editablePackageSources = {
+      pyramid_openapi3 = ./.;
+    };
     overrides = ((poetry2nix.defaultPoetryOverrides.overrideOverlay preDefaults).extend postDefaults).extend (self: super: {
 
       openapi-core = super.openapi-core.overridePythonAttrs (
@@ -63,9 +66,9 @@ let
           buildInputs = (old.buildInputs or [ ]) ++ [ self.setuptools ];
         }
       );
-      pdbpp = super.pdbpp.overridePythonAttrs (
+      pdbpp = super.pdbpp.override (
         old: {
-          buildInputs = (old.buildInputs or [ ]) ++ [ self.setuptools ];
+          preferWheel = true;
         }
       );
       types-pytest-lazy-fixture = super.types-pytest-lazy-fixture.overridePythonAttrs (
@@ -126,7 +129,6 @@ let
           '';
         }
       );
-
     });
   };
 
@@ -136,6 +138,8 @@ let
 
   devEnv_38 = poetry2nix.mkPoetryEnv (commonPoetryArgs // {
     python = pkgs.python38;
+    pyproject = ./py38/pyproject.toml;
+    poetrylock = ./py38/poetry.lock;
   });
 
 in
