@@ -18,8 +18,11 @@ lock:
 		| sed 's/openapi-core = ">=/openapi-core = "==/g' \
 		| sed 's/pyramid = ">=/pyramid = "==/g' \
 		> py38/pyproject.toml
+	@rm -rf .venv/
 	@poetry lock --no-update --directory py38
-
+	@rm -rf .venv/
+	@nix-shell --run true
+	@direnv reload
 
 # Testing and linting targets
 all = false
