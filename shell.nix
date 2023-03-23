@@ -29,13 +29,10 @@ let
     inherit (pkgs) poetry;
   };
 
-  devEnv = poetry2nix.mkPoetryEnv ({
-    python = pkgs.python311;
+  commonPoetryArgs = {
     projectDir = ./.;
-    editablePackageSources = {
-      pyramid_openapi3 = ./.;
-    };
     overrides = ((poetry2nix.defaultPoetryOverrides.overrideOverlay preDefaults).extend postDefaults).extend (self: super: {
+
       openapi-core = super.openapi-core.overridePythonAttrs (
         old: {
           buildInputs = (old.buildInputs or [ ]) ++ [ self.poetry ];
@@ -129,7 +126,16 @@ let
           '';
         }
       );
+
     });
+  };
+
+  devEnv_311 = poetry2nix.mkPoetryEnv (commonPoetryArgs // {
+    python = pkgs.python311;
+  });
+
+  devEnv_38 = poetry2nix.mkPoetryEnv (commonPoetryArgs // {
+    python = pkgs.python38;
   });
 
 in
@@ -138,7 +144,8 @@ pkgs.mkShell {
   name = "dev-shell";
 
   buildInputs = with pkgs; [
-    devEnv
+    devEnv_311
+    devEnv_38
     poetry
     gitAndTools.pre-commit
     nixpkgs-fmt
