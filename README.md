@@ -168,7 +168,7 @@ The authors of pyramid_openapi3 believe that the approach of validating a manual
 
 ## Running tests
 
-You need to have [poetry](https://python-poetry.org/) and Python 3.7 through 3.11 installed on your machine. All `Makefile` commands assume you have the Poetry environment activated, i.e. `poetry shell`.
+You need to have [poetry](https://python-poetry.org/) and Python 3.8 through 3.11 installed on your machine. All `Makefile` commands assume you have the Poetry environment activated, i.e. `poetry shell`.
 
 Alternatively, if you use [nix](https://nix.dev/tutorials/declarative-and-reproducible-developer-environments), run `nix-shell` to drop into a shell that has everything prepared for development.
 
@@ -194,7 +194,7 @@ These packages tackle the same problem-space:
 
 We do our best to follow the rules below.
 
-* Support the latest few releases of Python, currently Python 3.7 through 3.11.
+* Support the latest few releases of Python, currently Python 3.8 through 3.11.
 * Support the latest few releases of Pyramid, currently 1.10.7 through 2.0.
 * Support the latest few releases of `openapi-core`, currently 0.16.1 through 0.16.2.
 * See `poetry.lock` for a frozen-in-time known-good-set of all dependencies.

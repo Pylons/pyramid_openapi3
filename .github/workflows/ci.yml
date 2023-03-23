@@ -60,3 +60,39 @@ jobs:
         with:
           name: htmlcov
           path: htmlcov
+
+  test_38:
+    name: "Python 3.8 Tests"
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/nix-shell
+        with:
+          cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+      - name: unit tests
+        run: |
+          nix-shell --run "PYTHON=python3.8 make unit"
+
+      - name: Run tests for the singlefile example
+        run: |
+          cd examples/singlefile
+          nix-shell --run "python3.8 -m unittest app.py"
+
+      - name: Run tests for the todoapp example
+        run: |
+          cd examples/todoapp
+          nix-shell --run "python3.8 -m unittest tests.py"
+
+      - name: Run tests for the splitfile example
+        run: |
+          cd examples/splitfile
+          nix-shell --run "python3.8 -m unittest tests.py"
+
+      - name: Save coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: htmlcov
+          path: htmlcov

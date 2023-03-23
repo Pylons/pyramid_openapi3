@@ -2,7 +2,7 @@
 
 1. Add a new version to CHANGELOG.md. Browse through https://github.com/Pylons/pyramid_openapi3/commits/main to see what was done since last release. Remember to set the correct release date.
 1. Set the same version in `pyproject.toml`.
-1. Set the same version in `pyproject_py37.toml`.
+1. `make lock`
 1. `make tests`
 1. `export VERSION=<new version>`
 1. `git add -p && git ci -m "release $VERSION"`

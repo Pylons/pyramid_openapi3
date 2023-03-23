@@ -1,6 +1,8 @@
 # Convenience makefile to build the dev env and run common commands
 # Based on https://github.com/niteoweb/Makefile
 
+PYTHON ?= python3.11
+
 .PHONY: all
 all: tests
 
@@ -71,9 +73,9 @@ endif
 .PHONY: unit
 unit:
 ifndef path
-	@pytest pyramid_openapi3 $(verbosity) $(full_suite_args) $(pytest_args)
+	@$(PYTHON) -m pytest pyramid_openapi3 $(verbosity) $(full_suite_args) $(pytest_args)
 else
-	@pytest $(path)
+	@$(PYTHON) -m pytest $(path)
 endif
 
 .PHONY: test
