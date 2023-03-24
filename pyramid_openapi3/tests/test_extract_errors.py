@@ -413,8 +413,8 @@ class BadRequestsTests(unittest.TestCase):
             },
         ]
 
-    def test_bad_JWT_token(self) -> None:
-        """Render 401 on bad JWT token."""
+    def test_missing_JWT_token(self) -> None:
+        """Render 401 on missing JWT token."""
         endpoints = """
           /foo:
             get:
@@ -424,8 +424,8 @@ class BadRequestsTests(unittest.TestCase):
               responses:
                 200:
                   description: Say hello
-                400:
-                  description: Bad Request
+                401:
+                  description: Unauthorized
         components:
           securitySchemes:
             Token:
@@ -433,7 +433,7 @@ class BadRequestsTests(unittest.TestCase):
               name: Authorization
               in: header
         """
-        res = self._testapp(view=self.foo, endpoints=endpoints).get("/foo", status=400)
+        res = self._testapp(view=self.foo, endpoints=endpoints).get("/foo", status=401)
         assert res.json == [
             {
                 "exception": "SecurityValidationError",

@@ -8,7 +8,7 @@ from .wrappers import PyramidOpenAPIRequest
 from openapi_core import Spec
 from openapi_core.unmarshalling.request import V31RequestUnmarshaller
 from openapi_core.unmarshalling.response import V31ResponseUnmarshaller
-from openapi_core.validation.request.exceptions import InvalidSecurity
+from openapi_core.validation.request.exceptions import SecurityValidationError
 from openapi_spec_validator import validate_spec
 from openapi_spec_validator.readers import read_from_filename
 from pathlib import Path
@@ -363,7 +363,7 @@ def openapi_validation_error(
     if isinstance(context, RequestValidationError):
         status_code = 400
         for error in context.errors:
-            if isinstance(error, InvalidSecurity):
+            if isinstance(error, SecurityValidationError):
                 status_code = 401
 
     if isinstance(context, ResponseValidationError):

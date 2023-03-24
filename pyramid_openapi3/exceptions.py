@@ -12,7 +12,6 @@ import typing as t
 
 
 class RequestValidationError(HTTPBadRequest):
-
     explanation = "Request validation failed."
 
     def __init__(
@@ -28,7 +27,6 @@ class RequestValidationError(HTTPBadRequest):
 
 
 class ResponseValidationError(HTTPInternalServerError):
-
     explanation = "Response validation failed."
 
     def __init__(
@@ -64,7 +62,7 @@ class ImproperAPISpecificationWarning(UserWarning):
 
 
 def extract_errors(
-    request: Request, errors: t.List[OpenAPIError], field=None
+    request: Request, errors: t.List[OpenAPIError], field: str = None
 ) -> t.Iterator[t.Dict[str, str]]:
     """Extract errors for JSON response.
 
