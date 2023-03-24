@@ -174,7 +174,7 @@ def test_add_spec_view_already_defined() -> None:
                     )
 
 
-def test_add_spec_view_directorya() -> None:
+def test_add_spec_view_directory() -> None:
     """Test registration of a view that serves the openapi document."""
     with testConfig() as config:
         config.include("pyramid_openapi3")

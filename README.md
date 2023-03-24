@@ -80,7 +80,7 @@ For responses, if the payload does not match the API document, an exception is r
 
 ### Relative File References in Spec
 
-A feature introduced in OpenAPI3 is the ability to use `$ref` links to external files (https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#referenceObject).
+A feature introduced in OpenAPI3 is the ability to use `$ref` links to external files (https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#reference-object).
 
 To use this, you must ensure that you have all of your spec files in a given directory (ensure that you do not have any code in this directory as all the files in it are exposed as static files), then **replace** the `pyramid_openapi3_spec` call that you did in [Getting Started](#getting-started) with the following:
 
