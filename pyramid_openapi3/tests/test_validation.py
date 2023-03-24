@@ -98,9 +98,8 @@ class RequestValidationBase(TestCase):
 
 
 class TestRequestValidation(RequestValidationBase):
-
     openapi_spec = (
-        b"openapi: '3.0.0'\n"
+        b"openapi: '3.1.0'\n"
         b"info:\n"
         b"  version: '1.0.0'\n"
         b"  title: Foo API\n"
@@ -362,9 +361,8 @@ class TestRequestValidation(RequestValidationBase):
 
 
 class TestImproperAPISpecValidation(RequestValidationBase):
-
     openapi_spec = (
-        b'openapi: "3.0.0"\n'
+        b'openapi: "3.1.0"\n'
         b"info:\n"
         b'  version: "1.0.0"\n'
         b"  title: Foo API\n"

@@ -1,4 +1,4 @@
-## Validate [Pyramid](https://trypyramid.com) views against an [OpenAPI 3.0](https://swagger.io/specification/) document
+## Validate [Pyramid](https://trypyramid.com) views against an [OpenAPI 3.1](https://swagger.io/specification/) document
 
 <p align="center">
   <img height="200" src="https://github.com/Pylons/pyramid_openapi3/blob/main/header.jpg?raw=true" />
@@ -37,7 +37,7 @@ The reason this package exists is to give you peace of mind when providing a RES
 
 - Your **API documentation is never out-of-date**, since it is generated out of the API document that you write.
 - The documentation comes with **_try-it-out_ examples** for every endpoint in your API. You don't have to provide (and maintain) `curl` commands to showcase how your API works. Users can try it themselves, right in their browsers.
-- Your **API document is always valid**, since your Pyramid app won't even start if the document does not comply with the OpenAPI 3.0 specification.
+- Your **API document is always valid**, since your Pyramid app won't even start if the document does not comply with the OpenAPI 3.1 specification.
 - Automatic request **payload validation and sanitization**. Your views do not require any code for validation and input sanitation. Your view code only deals with business logic. Tons of tests never need to be written since every request, and its payload, is validated against your API document before it reaches your view code.
 - Your API **responses always match your API document**. Every response from your view is validated against your document and a `500 Internal Server Error` is returned if the response does not exactly match what your document says the output of a certain API endpoint should be. This decreases the effects of [Hyrum's Law](https://www.hyrumslaw.com).
 - **A single source of truth**. Because of the checks outlined above, you can be sure that whatever your API document says is in fact what is going on in reality. You have a single source of truth to consult when asking an API related question, such as "Remind me again, which fields are returned by the endpoint `/user/info`?".
@@ -49,7 +49,7 @@ The reason this package exists is to give you peace of mind when providing a RES
 
 ## Features
 
-- Validates your API document (for example, `openapi.yaml` or `openapi.json`) against the OpenAPI 3.0 specification using the [openapi-spec-validator](https://github.com/p1c2u/openapi-spec-validator).
+- Validates your API document (for example, `openapi.yaml` or `openapi.json`) against the OpenAPI 3.1 specification using the [openapi-spec-validator](https://github.com/p1c2u/openapi-spec-validator).
 - Generates and serves the [Swagger try-it-out documentation](https://swagger.io/tools/swagger-ui/) for your API.
 - Validates incoming requests *and* outgoing responses against your API document using [openapi-core](https://github.com/p1c2u/openapi-core).
 
@@ -80,7 +80,7 @@ For responses, if the payload does not match the API document, an exception is r
 
 ### Relative File References in Spec
 
-A feature introduced in OpenAPI3 is the ability to use `$ref` links to external files (https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.0.md#referenceObject).
+A feature introduced in OpenAPI3 is the ability to use `$ref` links to external files (https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#referenceObject).
 
 To use this, you must ensure that you have all of your spec files in a given directory (ensure that you do not have any code in this directory as all the files in it are exposed as static files), then **replace** the `pyramid_openapi3_spec` call that you did in [Getting Started](#getting-started) with the following:
 

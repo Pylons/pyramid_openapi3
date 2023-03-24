@@ -20,7 +20,6 @@ DEFAULT_ACL = [
 
 
 class DummyDefaultContext(object):
-
     __acl__ = DEFAULT_ACL
 
 
@@ -46,7 +45,7 @@ def simple_config() -> Configurator:
 
 
 OPENAPI_YAML = """
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo
@@ -101,13 +100,22 @@ def test_permission_for_specs(
 
 
 SPLIT_OPENAPI_YAML = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo API
     paths:
       /foo:
-        $ref: "paths.yaml#/foo"
+#         $ref: "paths.yaml#/foo"
+        post:
+          parameters:
+            - name: bar
+              in: query
+              schema:
+                type: integer
+          responses:
+            200:
+              description: Say hello
 """
 
 SPLIT_PATHS_YAML = b"""

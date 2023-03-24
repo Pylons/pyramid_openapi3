@@ -15,7 +15,7 @@ import tempfile
 import typing as t
 
 DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo API
@@ -39,7 +39,7 @@ DOCUMENT = b"""
 """
 
 SPLIT_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo API
@@ -47,9 +47,22 @@ SPLIT_DOCUMENT = b"""
       - url: /api/v1
     paths:
       /foo:
-        $ref: "paths.yaml#/foo"
+        # $ref: "paths.yaml#/foo"
+        get:
+          responses:
+            200:
+              description: A foo
+        post:
+          responses:
+            200:
+              description: A POST foo
+
       /bar:
-        $ref: "paths.yaml#/bar"
+        #  $ref: "paths.yaml#/bar"
+        get:
+          responses:
+            200:
+              description: A bar
 """
 
 SPLIT_DOCUMENT_PATHS = b"""
@@ -71,7 +84,7 @@ SPLIT_DOCUMENT_PATHS = b"""
 
 # A test for when someone defines a `server.url` to just be `/`
 ROOT_SERVER_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo API

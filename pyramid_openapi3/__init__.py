@@ -6,16 +6,9 @@ from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequest
 from openapi_core import Spec
-from openapi_core.deserializing.media_types.factories import (
-    MediaTypeDeserializersFactory,
-)
 from openapi_core.unmarshalling.request import V31RequestUnmarshaller
 from openapi_core.unmarshalling.response import V31ResponseUnmarshaller
-from openapi_core.unmarshalling.schemas.factories import SchemaUnmarshallersFactory
 from openapi_core.validation.request.exceptions import InvalidSecurity
-from openapi_core import RequestValidator
-from openapi_core import ResponseValidator
-from openapi_schema_validator import OAS30Validator
 from openapi_spec_validator import validate_spec
 from openapi_spec_validator.readers import read_from_filename
 from pathlib import Path
@@ -35,8 +28,6 @@ from pyramid.settings import asbool
 from pyramid.tweens import EXCVIEW
 from string import Template
 from urllib.parse import urlparse
-from openapi_core.validation.schemas import oas31_schema_validators_factory
-from openapi_core.unmarshalling.schemas import oas31_types_unmarshaller
 
 import hupper
 import logging
@@ -112,7 +103,6 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
     if info.options.get("openapi"):
 
         def wrapper_view(context: Context, request: Request) -> Response:
-
             # We need this to be able to raise AttributeError if view code
             # accesses request.openapi_validated on a view that is marked
             # with openapi=False
@@ -213,7 +203,7 @@ def add_spec_view(
     permission: str = NO_PERMISSION_REQUIRED,
     apiname: str = "pyramid_openapi3",
 ) -> None:
-    """Serve and register OpenApi 3.0 specification file.
+    """Serve and register OpenApi 3.1 specification file.
 
     :param filepath: absolute/relative path to the specification file
     :param route: URL path where to serve specification file
@@ -260,7 +250,7 @@ def add_spec_view_directory(
     permission: str = NO_PERMISSION_REQUIRED,
     apiname: str = "pyramid_openapi3",
 ) -> None:
-    """Serve and register OpenApi 3.0 specification directory.
+    """Serve and register OpenApi 3.1 specification directory.
 
     :param filepath: absolute/relative path to the root specification file
     :param route: URL path where to serve specification file
@@ -309,27 +299,20 @@ def _create_api_settings(
         "pyramid_openapi3_deserializers"
     )
 
-    media_type_deserializers_factory = MediaTypeDeserializersFactory(
-        custom_deserializers=custom_deserializers
-    )
-    schema_unmarshallers_factory = SchemaUnmarshallersFactory(
-        oas31_schema_validators_factory,
-        oas31_types_unmarshaller,
-        custom_formatters=custom_formatters,
-    )
-
     return {
         "filepath": filepath,
         "spec_route_name": route_name,
         "spec": spec,
-        "request_validator": V31RequestUnmarshaller(spec),
-        #     schema_unmarshallers_factory,
-        #     media_type_deserializers_factory=media_type_deserializers_factory,
-        # ),
-        "response_validator": V31ResponseUnmarshaller(spec),
-        #     schema_unmarshallers_factory,
-        #     media_type_deserializers_factory=media_type_deserializers_factory,
-        # ),
+        "request_validator": V31RequestUnmarshaller(
+            spec,
+            extra_format_validators=custom_formatters,
+            extra_media_type_deserializers=custom_deserializers,
+        ),
+        "response_validator": V31ResponseUnmarshaller(
+            spec,
+            extra_format_validators=custom_formatters,
+            extra_media_type_deserializers=custom_deserializers,
+        ),
     }
 
 
@@ -340,7 +323,7 @@ def register_routes(
     apiname: str = "pyramid_openapi3",
     route_prefix: t.Optional[str] = None,
 ) -> None:
-    """Register routes to app from OpenApi 3.0 specification.
+    """Register routes to app from OpenApi 3.1 specification.
 
     :param route_name_ext: Extension's key for using a ``route_name`` argument
     :param root_factory_ext: Extension's key for using a ``factory`` argument

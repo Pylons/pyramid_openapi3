@@ -1,9 +1,9 @@
 """Tests views."""
 
 from dataclasses import dataclass
-from openapi_core.templating.paths.finders import BasePathFinder
-from openapi_core import RequestValidator
-from openapi_core import ResponseValidator
+from openapi_core.templating.paths.finders import APICallPathFinder
+from openapi_core.unmarshalling.request import V31RequestUnmarshaller
+from openapi_core.unmarshalling.response import V31ResponseUnmarshaller
 from pyramid.exceptions import ConfigurationError
 from pyramid.interfaces import Interface
 from pyramid.interfaces import IRouteRequest
@@ -15,8 +15,6 @@ from pyramid.router import Router
 from pyramid.testing import DummyRequest
 from pyramid.testing import testConfig
 from pyramid_openapi3.exceptions import RequestValidationError
-from openapi_core.unmarshalling.request import V31RequestUnmarshaller
-from openapi_core.unmarshalling.response import V31ResponseUnmarshaller
 
 import os
 import pytest
@@ -32,7 +30,7 @@ class DummyStartResponse(object):
 
 
 MINIMAL_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo API
@@ -45,7 +43,7 @@ MINIMAL_DOCUMENT = b"""
 """
 
 ALTERNATE_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Bar API
@@ -58,13 +56,19 @@ ALTERNATE_DOCUMENT = b"""
 """
 
 SPLIT_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo API
+    servers:
+      - url: /
     paths:
       /foo:
-        $ref: "paths.yaml#/foo"
+#        $ref: paths.yaml#/foo
+        get:
+          responses:
+            200:
+              description: A foo
 """
 
 SPLIT_DOCUMENT_PATHS = b"""
@@ -76,13 +80,17 @@ SPLIT_DOCUMENT_PATHS = b"""
 """
 
 ALTERNATE_SPLIT_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Bar API
     paths:
       /bar:
-        $ref: "paths.yaml#/bar"
+#        $ref: "paths.yaml#/bar"
+        get:
+          responses:
+            200:
+              description: A bar
 """
 
 ALTERNATE_SPLIT_DOCUMENT_PATHS = b"""
@@ -166,7 +174,7 @@ def test_add_spec_view_already_defined() -> None:
                     )
 
 
-def test_add_spec_view_directory() -> None:
+def test_add_spec_view_directorya() -> None:
     """Test registration of a view that serves the openapi document."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -190,10 +198,11 @@ def test_add_spec_view_directory() -> None:
             assert openapi_settings["spec"]["info"]["title"] == "Foo API"
 
             # Make sure that the path (located in a different file) resolves correctly
-            # path = PathFinder(spec=openapi_settings["spec"]).find(
-            #     "get", "http://example.com", path="/foo"
-            # )
-            # assert path is not None
+            path = APICallPathFinder(
+                spec=openapi_settings["spec"],
+                base_url="",
+            ).find("get", "/foo")
+            assert path is not None
 
             assert isinstance(
                 openapi_settings["request_validator"], V31RequestUnmarshaller
@@ -550,7 +559,7 @@ def test_path_parameters() -> None:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as document:
             document.write(
-                b'openapi: "3.0.0"\n'
+                b'openapi: "3.1.0"\n'
                 b"info:\n"
                 b'  version: "1.0.0"\n'
                 b"  title: Foo API\n"
@@ -609,7 +618,7 @@ def test_header_parameters() -> None:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as document:
             document.write(
-                b'openapi: "3.0.0"\n'
+                b'openapi: "3.1.0"\n'
                 b"info:\n"
                 b'  version: "1.0.0"\n'
                 b"  title: Foo API\n"
@@ -669,7 +678,7 @@ def test_cookie_parameters() -> None:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as document:
             document.write(
-                b'openapi: "3.0.0"\n'
+                b'openapi: "3.1.0"\n'
                 b"info:\n"
                 b'  version: "1.0.0"\n'
                 b"  title: Foo API\n"

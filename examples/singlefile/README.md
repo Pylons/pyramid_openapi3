@@ -31,6 +31,6 @@ z
 
 * More information about the library providing the integration between OpenAPI specs and Pyramid, more advanced features and design defence, is available in the main [README](https://github.com/Pylons/pyramid_openapi3) file.
 
-* More validators for fields are listed in the [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.0.md#properties) document. You can use Regex as well.
+* More validators for fields are listed in the [OpenAPI Specification](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md#properties) document. You can use Regex as well.
 
 * For an idea of a fully-fledged production OpenApi specification, check out [WooCart's OpenAPI docs](https://app.woocart.com/api/v1/).
