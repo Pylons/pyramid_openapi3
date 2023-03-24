@@ -1,6 +1,5 @@
 """Test rendering errors as JSON responses."""
 
-from openapi_core.validation.schemas.formatters import Formatter
 from pyramid.config import Configurator
 from pyramid.httpexceptions import exception_response
 from pyramid.request import Request
@@ -567,27 +566,26 @@ class CustomFormattersTests(unittest.TestCase):
         """Say hello."""
         return f"Hello {request.openapi_validated.body['name']}"
 
-    class UniqueName(Formatter):  # noqa: D106
-        def validate(self, name: str) -> bool:
-            """Ensure name is unique."""
-            if not isinstance(name, str):
-                return True  # Only check strings (let default validation handle others)
+    def validate(self, name: str) -> bool:
+        """Ensure name is unique."""
+        if not isinstance(name, str):
+            return True  # Only check strings (let default validation handle others)
 
-            name = name.lower()
-            if name in ["alice", "bob"]:
-                raise RequestValidationError(
-                    errors=[
-                        InvalidCustomFormatterValue(  # type: ignore
-                            value=name,
-                            type="unique-name",
-                            original_exception=Exception(
-                                f"Name '{name}' already taken. Choose a different name!"
-                            ),
-                            field="name",
-                        )
-                    ]
-                )
-            return True
+        name = name.lower()
+        if name in ["alice", "bob"]:
+            raise RequestValidationError(
+                errors=[
+                    InvalidCustomFormatterValue(  # type: ignore
+                        value=name,
+                        type="unique-name",
+                        original_exception=Exception(
+                            f"Name '{name}' already taken. Choose a different name!"
+                        ),
+                        field="name",
+                    )
+                ]
+            )
+        return True
 
     OPENAPI_YAML = """
         openapi: "3.1.0"
@@ -628,7 +626,7 @@ class CustomFormattersTests(unittest.TestCase):
             with Configurator() as config:
                 config.include("pyramid_openapi3")
                 config.pyramid_openapi3_spec(document.name)
-                config.pyramid_openapi3_add_formatter("unique-name", self.UniqueName())
+                config.pyramid_openapi3_add_formatter("unique-name", self.validate)
                 config.add_route("hello", "/hello")
                 config.add_view(
                     openapi=True, renderer="json", view=self.hello, route_name="hello"

@@ -900,21 +900,19 @@ version = "0.17.1"
 description = "client-side and server-side support for the OpenAPI Specification v3"
 category = "main"
 optional = false
-python-versions = ">=3.7.0,<4.0.0"
-files = [
-    {file = "openapi_core-0.17.1-py3-none-any.whl", hash = "sha256:c61175ba12987705c93d1df3dbcba4f84f9450057142cca7dc234aa03e2a59db"},
-    {file = "openapi_core-0.17.1.tar.gz", hash = "sha256:561b7e2b37b336e9c62d4634b9059d12d9bb2e1859062a39d3a0fa6afc8c9de6"},
-]
+python-versions = "^3.7.0"
+files = []
+develop = false
 
 [package.dependencies]
 isodate = "*"
-jsonschema-spec = ">=0.1.1,<0.2.0"
+jsonschema-spec = "^0.1.1"
 more-itertools = "*"
-openapi-schema-validator = ">=0.4.2,<0.5.0"
-openapi-spec-validator = ">=0.5.0,<0.6.0"
+openapi-schema-validator = "^0.4.2"
+openapi-spec-validator = "^0.5.0"
 parse = "*"
-pathable = ">=0.4.0,<0.5.0"
-typing-extensions = ">=4.3.0,<5.0.0"
+pathable = "^0.4.0"
+typing-extensions = "^4.3.0"
 werkzeug = "*"
 
 [package.extras]
@@ -923,6 +921,13 @@ docs = ["sphinx (>=5.3.0,<6.0.0)", "sphinx-immaterial (>=0.11.0,<0.12.0)"]
 falcon = ["falcon (>=3.0)"]
 flask = ["flask"]
 requests = ["requests"]
+starlette = []
+
+[package.source]
+type = "git"
+url = "https://github.com/zupo/openapi-core.git"
+reference = "patch-2"
+resolved_reference = "5c3b18d7a19c3ae9411728d5801b98d51a7c8cb2"
 
 [[package]]
 name = "openapi-schema-validator"
@@ -1907,4 +1912,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "316c85bfc6ff5859c85394abc84b88e8d2303c6b5f42e31bfe40f981abc1689a"
+content-hash = "683390164c063c6d0645b6ec28064c63ab02a6d7fbc6521044cbde0a66ae2c3d"
