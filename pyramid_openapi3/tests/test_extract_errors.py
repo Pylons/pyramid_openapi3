@@ -677,7 +677,9 @@ class CustomDeserializerTests(unittest.TestCase):
 
     def hello(self, context: t.Any, request: Request) -> str:
         """Say hello."""
-        return f"Hello {request.openapi_validated.body['name']}"
+        result = self.reverse(f"Hello {request.openapi_validated.body['name']}")
+        request.response.content_type = "application/backwards+json"
+        return result
 
     @staticmethod
     def reverse(s: str) -> str:
@@ -707,7 +709,7 @@ class CustomDeserializerTests(unittest.TestCase):
                 200:
                   description: Say hello
                   content:
-                    application/json:
+                    application/backwards+json:
                       schema:
                         type: string
                 400:
@@ -726,9 +728,7 @@ class CustomDeserializerTests(unittest.TestCase):
                 config.include("pyramid_openapi3")
                 config.pyramid_openapi3_spec(document.name)
                 config.pyramid_openapi3_add_deserializer(
-                    # "application/backwards+json", lambda x: json.loads(self.reverse(x))
-                    "application/backwards+json",
-                    lambda x: json.loads(self.reverse(x)),
+                    "application/backwards+json", lambda x: json.loads(self.reverse(x))
                 )
                 config.add_route("hello", "/hello")
                 config.add_view(
@@ -744,4 +744,4 @@ class CustomDeserializerTests(unittest.TestCase):
         headers = {"Content-Type": "application/backwards+json"}
         body = '}"opuz" :"eman"{'  # reversed '{"name": "zupo"}'
         res = self._testapp().post("/hello", body, headers, status=200)
-        assert res.json == "Hello zupo"
+        assert res.json == "opuz olleH"  # reversed 'Hello zupo'
