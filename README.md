@@ -141,6 +141,13 @@ config.add_route("foo_route", pattern="/foo")
 
 The `pyramid_openapi3_register_routes()` method supports setting a factory and route prefix as well. See the source for details.
 
+### Specify protocol and port for getting the OpenAPI 3 spec file
+
+Sometimes, it is necessary to specify the protocol and port to access the openapi3 spec file. This can be configured using the `proto_port` optional parameter to the the `pyramid_openapi3_add_explorer` function:
+
+    config.pyramid_openapi3_add_explorer(proto_port=('https', 443))
+
+
 ## Demo / Examples
 
 There are three examples provided with this package:
