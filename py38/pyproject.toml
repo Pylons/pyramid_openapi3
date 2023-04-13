@@ -27,7 +27,7 @@ exclude = ["pyramid_openapi3/tests/"]
 python = "^3.8"
 
 # openapi-core = "==0.16.1"
-openapi-core = { git = "https://github.com/zupo/openapi-core.git", branch = "patch-2" }
+openapi-core = { git = "https://github.com/python-openapi/openapi-core.git", branch = "master" }
 pyramid = "==1.10.7"
 
 

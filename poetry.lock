@@ -925,9 +925,9 @@ starlette = []
 
 [package.source]
 type = "git"
-url = "https://github.com/zupo/openapi-core.git"
-reference = "patch-2"
-resolved_reference = "5c3b18d7a19c3ae9411728d5801b98d51a7c8cb2"
+url = "https://github.com/python-openapi/openapi-core.git"
+reference = "master"
+resolved_reference = "0ff63158feed4702a549538888e9d64ff705947b"
 
 [[package]]
 name = "openapi-schema-validator"
@@ -1912,4 +1912,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "683390164c063c6d0645b6ec28064c63ab02a6d7fbc6521044cbde0a66ae2c3d"
+content-hash = "38016ea3d809ed7bca2a45e5b91ffe22d90d23e0dcba48593c33333716f1bdb3"
