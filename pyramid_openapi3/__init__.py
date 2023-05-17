@@ -150,7 +150,7 @@ def add_explorer_view(
     route: str = "/docs/",
     route_name: str = "pyramid_openapi3.explorer",
     template: str = "static/index.html",
-    ui_version: str = "4.15.5",
+    ui_version: str = "4.18.3",
     permission: str = NO_PERMISSION_REQUIRED,
     apiname: str = "pyramid_openapi3",
     proto_port: t.Optional[t.Tuple[str, int]] = None,
