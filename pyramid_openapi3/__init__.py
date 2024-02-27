@@ -9,7 +9,7 @@ from openapi_core import Spec
 from openapi_core.unmarshalling.request import V30RequestUnmarshaller
 from openapi_core.unmarshalling.response import V30ResponseUnmarshaller
 from openapi_core.validation.request.exceptions import SecurityValidationError
-from openapi_spec_validator import validate_spec
+from openapi_spec_validator import validate
 from openapi_spec_validator.readers import read_from_filename
 from pathlib import Path
 from pyramid.config import Configurator
@@ -234,7 +234,7 @@ def add_spec_view(
             hupper.get_reloader().watch_files([filepath])
         spec_dict, _ = read_from_filename(filepath)
 
-        validate_spec(spec_dict)
+        validate(spec_dict)
         spec = Spec.from_dict(spec_dict)
 
         def spec_view(request: Request) -> FileResponse:
@@ -286,8 +286,8 @@ def add_spec_view_directory(
 
         spec_dict, _ = read_from_filename(str(path))
         spec_url = path.as_uri()
-        validate_spec(spec_dict, spec_url=spec_url)
-        spec = Spec.from_dict(spec_dict, spec_url=spec_url)
+        validate(spec_dict, base_uri=spec_url)
+        spec = Spec.from_dict(spec_dict, base_uri=spec_url)
 
         config.add_static_view(route, str(path.parent), permission=permission)
         config.add_route(route_name, f"{route}/{path.name}")
