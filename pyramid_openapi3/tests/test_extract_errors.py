@@ -1,6 +1,5 @@
 """Test rendering errors as JSON responses."""
 
-from openapi_core.unmarshalling.schemas.formatters import Formatter
 from pyramid.config import Configurator
 from pyramid.httpexceptions import exception_response
 from pyramid.request import Request
@@ -74,7 +73,7 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
-                "message": "Missing required parameter: bar",
+                "message": "Missing required query parameter: bar",
                 "field": "bar",
             }
         ]
@@ -101,7 +100,7 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
-                "message": "Missing required parameter: bar",
+                "message": "Missing required query parameter: bar",
                 "field": "bar",
             }
         ]
@@ -126,11 +125,13 @@ class BadRequestsTests(unittest.TestCase):
 
         res = self._testapp(
             view=self.foo, endpoints=endpoints, route="/foo/{bar}"
-        ).post("/foo/bar", status=400)
+        ).post("/foo/not_a_number", status=400)
         assert res.json == [
             {
-                "exception": "CastError",
-                "message": "Failed to cast value to integer type: bar",
+                # TODO: used to be CastError, might have been fixed later
+                "exception": "ParameterValidationError",
+                "message": "Failed to cast value to integer type: not_a_number",
+                "field": "bar",
             }
         ]
 
@@ -160,8 +161,7 @@ class BadRequestsTests(unittest.TestCase):
             {
                 "exception": "ValidationError",
                 "message": "'not-a-valid-uuid' does not match '^[0-9]{2}-[A-F]{4}$'",
-                # TODO: ideally, this response would include "field"
-                # but I don't know how I can achieve this ATM ¯\_(ツ)_/¯  # noqa: ENC100
+                "field": "bar",
             }
         ]
 
@@ -190,9 +190,8 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "ValidationError",
-                "message": "'not-a-valid-uuid' is not a 'uuid'",
-                # TODO: ideally, this response would include "field"
-                # but I don't know how I can achieve this ATM ¯\_(ツ)_/¯  # noqa: ENC100
+                "message": "badly formed hexadecimal UUID string",
+                "field": "bar",
             }
         ]
 
@@ -218,7 +217,7 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
-                "message": "Missing required parameter: bar",
+                "message": "Missing required header parameter: bar",
                 "field": "bar",
             }
         ]
@@ -245,7 +244,7 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
-                "message": "Missing required parameter: bar",
+                "message": "Missing required cookie parameter: bar",
                 "field": "bar",
             }
         ]
@@ -393,12 +392,14 @@ class BadRequestsTests(unittest.TestCase):
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
-                "message": "Missing required parameter: bar",
+                "message": "Missing required query parameter: bar",
                 "field": "bar",
             },
             {
-                "exception": "CastError",
+                # TODO: used to be CastError, might have been fixed later
+                "exception": "ParameterValidationError",
                 "message": "Failed to cast value to integer type: abc",
+                "field": "bar",
             },
             {
                 "exception": "ValidationError",
@@ -435,8 +436,8 @@ class BadRequestsTests(unittest.TestCase):
         res = self._testapp(view=self.foo, endpoints=endpoints).get("/foo", status=401)
         assert res.json == [
             {
-                "exception": "InvalidSecurity",
-                "message": "Security not valid for any requirement",
+                "exception": "SecurityValidationError",
+                "message": "Security not found. Schemes not valid for any requirement: [['Token']]",
             }
         ]
 
@@ -565,27 +566,26 @@ class CustomFormattersTests(unittest.TestCase):
         """Say hello."""
         return f"Hello {request.openapi_validated.body['name']}"
 
-    class UniqueName(Formatter):  # noqa: D106
-        def validate(self, name: str) -> bool:
-            """Ensure name is unique."""
-            if not isinstance(name, str):
-                return True  # Only check strings (let default validation handle others)
+    def unique_name(self, name: str) -> bool:
+        """Ensure name is unique."""
+        if not isinstance(name, str):
+            return True  # Only check strings (let default validation handle others)
 
-            name = name.lower()
-            if name in ["alice", "bob"]:
-                raise RequestValidationError(
-                    errors=[
-                        InvalidCustomFormatterValue(  # type: ignore
-                            value=name,
-                            type="unique-name",
-                            original_exception=Exception(
-                                f"Name '{name}' already taken. Choose a different name!"
-                            ),
-                            field="name",
-                        )
-                    ]
-                )
-            return True
+        name = name.lower()
+        if name in ["alice", "bob"]:
+            raise RequestValidationError(
+                errors=[
+                    InvalidCustomFormatterValue(  # type: ignore
+                        value=name,
+                        type="unique-name",
+                        original_exception=Exception(
+                            f"Name '{name}' already taken. Choose a different name!"
+                        ),
+                        field="name",
+                    )
+                ]
+            )
+        return True
 
     OPENAPI_YAML = """
         openapi: "3.0.0"
@@ -626,7 +626,7 @@ class CustomFormattersTests(unittest.TestCase):
             with Configurator() as config:
                 config.include("pyramid_openapi3")
                 config.pyramid_openapi3_spec(document.name)
-                config.pyramid_openapi3_add_formatter("unique-name", self.UniqueName())
+                config.pyramid_openapi3_add_formatter("unique-name", self.unique_name)
                 config.add_route("hello", "/hello")
                 config.add_view(
                     openapi=True, renderer="json", view=self.hello, route_name="hello"

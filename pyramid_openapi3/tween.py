@@ -41,8 +41,8 @@ def response_tween_factory(
             if "routes" in gsettings:
                 settings_key = gsettings["routes"][request.matched_route.name]
                 settings = request.registry.settings[settings_key]
-            result = settings["response_validator"].validate(
-                settings["spec"], request=openapi_request, response=openapi_response
+            result = settings["response_validator"].unmarshal(
+                request=openapi_request, response=openapi_response
             )
             request_validated = request.environ.get("pyramid_openapi3.validate_request")
             if result.errors:

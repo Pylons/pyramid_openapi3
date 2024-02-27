@@ -190,13 +190,14 @@ class TestRequestValidation(RequestValidationBase):
             [
                 {
                     "exception": "MissingRequiredParameter",
-                    "message": "Missing required parameter: bar",
+                    "message": "Missing required query parameter: bar",
                     "field": "bar",
                 }
             ],
         )
         self.assertEqual(
-            cm.output, ["WARNING:pyramid_openapi3:Missing required parameter: bar"]
+            cm.output,
+            ["WARNING:pyramid_openapi3:Missing required query parameter: bar"],
         )
 
     def test_response_validation_error(self) -> None:
@@ -411,7 +412,7 @@ class TestImproperAPISpecValidation(RequestValidationBase):
                 self.assertEqual(len(cw), 1)
                 self.assertEqual(
                     str(cw[0].message),
-                    'Discarding 400 Bad Request validation error with body [{"exception":"MissingRequiredParameter","message":"Missing required parameter: bar","field":"bar"}] as it is not a valid response for GET to /foo (foo)',
+                    'Discarding 400 Bad Request validation error with body [{"exception":"MissingRequiredParameter","message":"Missing required query parameter: bar","field":"bar"}] as it is not a valid response for GET to /foo (foo)',
                 )
         self.assertEqual(
             cm.output, ["ERROR:pyramid_openapi3:Unknown response http status: 400"]
