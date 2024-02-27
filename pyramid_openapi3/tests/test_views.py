@@ -1,9 +1,9 @@
 """Tests views."""
 
 from dataclasses import dataclass
-from openapi_core.templating.paths.finders import PathFinder
-from openapi_core.validation.request.validators import RequestValidator
-from openapi_core.validation.response.validators import ResponseValidator
+from openapi_core.templating.paths.finders import APICallPathFinder
+from openapi_core.validation.request.protocols import RequestValidator
+from openapi_core.validation.response.protocols import ResponseValidator
 from pyramid.exceptions import ConfigurationError
 from pyramid.interfaces import Interface
 from pyramid.interfaces import IRouteRequest
@@ -184,8 +184,8 @@ def test_add_spec_view_directory() -> None:
             assert openapi_settings["spec"]["info"]["title"] == "Foo API"
 
             # Make sure that the path (located in a different file) resolves correctly
-            path = PathFinder(spec=openapi_settings["spec"]).find(
-                "get", "http://example.com", path="/foo"
+            path = APICallPathFinder(spec=openapi_settings["spec"]).find(
+                "get", "http://example.com/foo"
             )
             assert path is not None
 
@@ -604,7 +604,7 @@ def test_path_parameters() -> None:
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
         context = None
         with pytest.raises(
-            RequestValidationError, match="Missing required parameter: foo"
+            RequestValidationError, match="Missing required query parameter: foo"
         ):
             response = view(context, request)
 
@@ -664,7 +664,7 @@ def test_header_parameters() -> None:
         context = None
 
         with pytest.raises(
-            RequestValidationError, match="Missing required parameter: foo"
+            RequestValidationError, match="Missing required header parameter: foo"
         ):
             response = view(context, request)
 
@@ -723,7 +723,7 @@ def test_cookie_parameters() -> None:
         request.matched_route = DummyRoute(name="foo", pattern="/foo")
         context = None
         with pytest.raises(
-            RequestValidationError, match="Missing required parameter: foo"
+            RequestValidationError, match="Missing required cookie parameter: foo"
         ):
             response = view(context, request)
 

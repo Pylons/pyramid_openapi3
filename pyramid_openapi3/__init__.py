@@ -6,15 +6,9 @@ from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequest
 from openapi_core import Spec
-from openapi_core.deserializing.media_types.factories import (
-    MediaTypeDeserializersFactory,
-)
-from openapi_core.unmarshalling.schemas.enums import UnmarshalContext
-from openapi_core.unmarshalling.schemas.factories import SchemaUnmarshallersFactory
-from openapi_core.validation.exceptions import InvalidSecurity
-from openapi_core.validation.request.validators import RequestValidator
-from openapi_core.validation.response.validators import ResponseValidator
-from openapi_schema_validator import OAS30Validator
+from openapi_core.unmarshalling.request import V30RequestUnmarshaller
+from openapi_core.unmarshalling.response import V30ResponseUnmarshaller
+from openapi_core.validation.request.exceptions import SecurityValidationError
 from openapi_spec_validator import validate_spec
 from openapi_spec_validator.readers import read_from_filename
 from pathlib import Path
@@ -86,9 +80,7 @@ def openapi_validated(request: Request) -> dict:
 
     if request.environ.get("pyramid_openapi3.validate_request"):
         openapi_request = PyramidOpenAPIRequest(request)
-        validated = settings["request_validator"].validate(
-            settings["spec"], openapi_request
-        )
+        validated = settings["request_validator"].unmarshal(openapi_request)
         return validated
 
     return {}  # pragma: no cover
@@ -243,7 +235,7 @@ def add_spec_view(
         spec_dict, _ = read_from_filename(filepath)
 
         validate_spec(spec_dict)
-        spec = Spec.create(spec_dict)
+        spec = Spec.from_dict(spec_dict)
 
         def spec_view(request: Request) -> FileResponse:
             return FileResponse(filepath, request=request, content_type="text/yaml")
@@ -295,7 +287,7 @@ def add_spec_view_directory(
         spec_dict, _ = read_from_filename(str(path))
         spec_url = path.as_uri()
         validate_spec(spec_dict, spec_url=spec_url)
-        spec = Spec.create(spec_dict, url=spec_url)
+        spec = Spec.from_dict(spec_dict, spec_url=spec_url)
 
         config.add_static_view(route, str(path.parent), permission=permission)
         config.add_route(route_name, f"{route}/{path.name}")
@@ -318,31 +310,19 @@ def _create_api_settings(
         "pyramid_openapi3_deserializers"
     )
 
-    media_type_deserializers_factory = MediaTypeDeserializersFactory(
-        custom_deserializers=custom_deserializers
-    )
-    schema_unmarshallers_request_factory = SchemaUnmarshallersFactory(
-        OAS30Validator,
-        custom_formatters=custom_formatters,
-        context=UnmarshalContext.REQUEST,
-    )
-    schema_unmarshallers_response_factory = SchemaUnmarshallersFactory(
-        OAS30Validator,
-        custom_formatters=custom_formatters,
-        context=UnmarshalContext.RESPONSE,
-    )
-
     return {
         "filepath": filepath,
         "spec_route_name": route_name,
         "spec": spec,
-        "request_validator": RequestValidator(
-            schema_unmarshallers_request_factory,
-            media_type_deserializers_factory=media_type_deserializers_factory,
+        "request_validator": V30RequestUnmarshaller(
+            spec,
+            extra_format_validators=custom_formatters,
+            extra_media_type_deserializers=custom_deserializers,
         ),
-        "response_validator": ResponseValidator(
-            schema_unmarshallers_response_factory,
-            media_type_deserializers_factory=media_type_deserializers_factory,
+        "response_validator": V30ResponseUnmarshaller(
+            spec,
+            extra_format_validators=custom_formatters,
+            extra_media_type_deserializers=custom_deserializers,
         ),
     }
 
@@ -394,7 +374,7 @@ def openapi_validation_error(
     if isinstance(context, RequestValidationError):
         status_code = 400
         for error in context.errors:
-            if isinstance(error, InvalidSecurity):
+            if isinstance(error, SecurityValidationError):
                 status_code = 401
 
     if isinstance(context, ResponseValidationError):
