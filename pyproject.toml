@@ -27,6 +27,7 @@ exclude = ["pyramid_openapi3/tests/"]
 python = "^3.8"
 
 openapi-core = ">=0.19.0"
+jsonschema-path = ">=0.3.0"
 pyramid = ">=1.10.7"
 
 

@@ -5,7 +5,7 @@ from .exceptions import MissingEndpointsError
 from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequest
-from openapi_core import Spec
+from jsonschema_path import SchemaPath
 from openapi_core.unmarshalling.request import V30RequestUnmarshaller
 from openapi_core.unmarshalling.response import V30ResponseUnmarshaller
 from openapi_core.validation.request.exceptions import SecurityValidationError
@@ -235,7 +235,7 @@ def add_spec_view(
         spec_dict, _ = read_from_filename(filepath)
 
         validate(spec_dict)
-        spec = Spec.from_dict(spec_dict)
+        spec = SchemaPath.from_dict(spec_dict)
 
         def spec_view(request: Request) -> FileResponse:
             return FileResponse(filepath, request=request, content_type="text/yaml")
@@ -287,7 +287,7 @@ def add_spec_view_directory(
         spec_dict, _ = read_from_filename(str(path))
         spec_url = path.as_uri()
         validate(spec_dict, base_uri=spec_url)
-        spec = Spec.from_dict(spec_dict, base_uri=spec_url)
+        spec = SchemaPath.from_dict(spec_dict, base_uri=spec_url)
 
         config.add_static_view(route, str(path.parent), permission=permission)
         config.add_route(route_name, f"{route}/{path.name}")
@@ -303,7 +303,7 @@ def add_spec_view_directory(
 
 
 def _create_api_settings(
-    config: Configurator, filepath: str, route_name: str, spec: Spec
+    config: Configurator, filepath: str, route_name: str, spec: SchemaPath
 ) -> t.Dict:
     custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
     custom_deserializers = config.registry.settings.get(
@@ -438,7 +438,7 @@ def check_all_routes(event: ApplicationCreated) -> None:
                 settings["pyramid_openapi3"]["routes"][route_name] = name
 
 
-def _get_server_prefixes(spec: Spec) -> t.List[str]:
+def _get_server_prefixes(spec: SchemaPath) -> t.List[str]:
     """Build a set of possible route prefixes from the api spec.
 
     Api routes may optionally be prefixed using servers (e.g: `/api/v1`).
