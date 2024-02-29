@@ -56,6 +56,11 @@ class PyramidOpenAPIRequest:
         return self.request.body
 
     @property
+    def content_type(self) -> str:
+        """The content type of the request."""  # noqa D401
+        return self.request.content_type
+
+    @property
     def mimetype(self) -> str:
         """The content type of the request."""  # noqa D401
         return self.request.content_type
@@ -74,6 +79,11 @@ class PyramidOpenAPIResponse:
     def status_code(self) -> int:
         """The status code as integer."""  # noqa D401
         return self.response.status_code
+
+    @property
+    def content_type(self) -> str:
+        """The content type of the response."""  # noqa D401
+        return self.response.content_type
 
     @property
     def mimetype(self) -> str:

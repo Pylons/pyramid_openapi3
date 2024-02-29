@@ -43,6 +43,7 @@ def test_mapped_values_request() -> None:
     assert openapi_request.method == "get"
     assert openapi_request.body == ""
     assert openapi_request.mimetype == "text/html"
+    assert openapi_request.content_type == "text/html"
 
 
 def test_relative_app_request() -> None:
@@ -73,6 +74,7 @@ def test_relative_app_request() -> None:
     assert openapi_request.method == "get"
     assert openapi_request.body == ""
     assert openapi_request.mimetype == "text/html"
+    assert openapi_request.content_type == "text/html"
 
 
 def test_form_data_request() -> None:
@@ -115,4 +117,5 @@ def test_mapped_values_response() -> None:
     assert openapi_response.data == ""
     assert openapi_response.status_code == 200
     assert openapi_response.mimetype == "text/html"
+    assert openapi_response.content_type == "text/html"
     assert openapi_response.headers == pyramid_request.response.headers

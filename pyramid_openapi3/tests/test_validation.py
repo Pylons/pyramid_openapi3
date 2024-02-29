@@ -398,6 +398,7 @@ class TestImproperAPISpecValidation(RequestValidationBase):
         router = Router(self.config.registry)
         environ = {
             "wsgi.url_scheme": "http",
+            "SERVER_PROTOCOL": "HTTP/1.1",
             "SERVER_NAME": "localhost",
             "SERVER_PORT": "8080",
             "REQUEST_METHOD": "GET",
