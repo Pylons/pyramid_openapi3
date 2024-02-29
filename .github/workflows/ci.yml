@@ -63,14 +63,6 @@ jobs:
           name: htmlcov
           path: htmlcov
 
-      - name: Upload test durations to BlueRacer.io
-        if: |
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'push' && !contains(github.ref, 'refs/tags/'))
-        env:
-          BLUERACER_TOKEN: ${{ secrets.BLUERACER_TOKEN }}
-        run: bash <(curl -s https://app.blueracer.io/upload)
-
   test_38:
     name: "Python 3.8 Tests"
 
