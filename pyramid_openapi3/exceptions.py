@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from openapi_core.exceptions import OpenAPIError
-from openapi_core.unmarshalling.schemas.exceptions import FormatUnmarshalError
+from openapi_core.unmarshalling.schemas.exceptions import UnmarshallerError
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.request import Request
@@ -49,10 +49,13 @@ class ResponseValidationError(HTTPInternalServerError):
 
 
 @dataclass
-class InvalidCustomFormatterValue(FormatUnmarshalError):
+class InvalidCustomFormatterValue(UnmarshallerError):
     """Value failed to format with a custom formatter."""
 
     field: str
+    value: str
+    type: str  # noqa: A003 # we use `type` as a dataclass field name
+    original_exception: Exception
 
     def __str__(self) -> str:
         """Provide more control over error message."""
