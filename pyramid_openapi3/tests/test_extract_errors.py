@@ -556,7 +556,6 @@ class BadResponsesTests(unittest.TestCase):
         ]
 
 
-@unittest.skip("Needs to be re-implemented")
 class CustomFormattersTests(unittest.TestCase):
     """A suite of tests that showcase how custom formatters can be used."""
 
