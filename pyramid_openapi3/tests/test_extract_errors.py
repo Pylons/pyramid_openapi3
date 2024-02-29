@@ -572,7 +572,7 @@ class CustomFormattersTests(unittest.TestCase):
         if name in ["alice", "bob"]:
             raise RequestValidationError(
                 errors=[
-                    InvalidCustomFormatterValue(  # type: ignore
+                    InvalidCustomFormatterValue(
                         value=name,
                         type="unique-name",
                         original_exception=Exception(
