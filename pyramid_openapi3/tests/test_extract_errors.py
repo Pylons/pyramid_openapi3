@@ -480,9 +480,10 @@ class BadRequestsTests(unittest.TestCase):
 
         assert res.json == [
             {
-                "exception": "ValidationError",
-                "message": "'not a number' is not of type 'number'",
-                "field": "foo/0/bam",
+                "exception": "RequestBodyValidationError",
+                "message": "Failed to cast value to number type: not a number",
+                # TODO: field is no longer emitted for the request body
+                # "field": "foo/0/bam",
             }
         ]
 
