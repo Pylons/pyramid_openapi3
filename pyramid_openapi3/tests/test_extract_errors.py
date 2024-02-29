@@ -128,7 +128,6 @@ class BadRequestsTests(unittest.TestCase):
         ).post("/foo/not_a_number", status=400)
         assert res.json == [
             {
-                # TODO: used to be CastError, might have been fixed later
                 "exception": "ParameterValidationError",
                 "message": "Failed to cast value to integer type: not_a_number",
                 "field": "bar",
@@ -396,7 +395,6 @@ class BadRequestsTests(unittest.TestCase):
                 "field": "bar",
             },
             {
-                # TODO: used to be CastError, might have been fixed later
                 "exception": "ParameterValidationError",
                 "message": "Failed to cast value to integer type: abc",
                 "field": "bar",
@@ -482,8 +480,6 @@ class BadRequestsTests(unittest.TestCase):
             {
                 "exception": "RequestBodyValidationError",
                 "message": "Failed to cast value to number type: not a number",
-                # TODO: field is no longer emitted for the request body
-                # "field": "foo/0/bam",
             }
         ]
 
