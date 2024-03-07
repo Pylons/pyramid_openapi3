@@ -72,7 +72,7 @@ def test_relative_app_request() -> None:
     assert openapi_request.path == "/subpath/foo"
     assert openapi_request.path_pattern == "/foo"
     assert openapi_request.method == "get"
-    assert openapi_request.body == ""
+    assert openapi_request.body == b""
     assert openapi_request.mimetype == "text/html"
     assert openapi_request.content_type == "text/html"
 
@@ -114,7 +114,7 @@ def test_mapped_values_response() -> None:
 
     openapi_response = PyramidOpenAPIResponse(pyramid_request.response)
 
-    assert openapi_response.data == ""
+    assert openapi_response.data == b""
     assert openapi_response.status_code == 200
     assert openapi_response.mimetype == "text/html"
     assert openapi_response.content_type == "text/html"

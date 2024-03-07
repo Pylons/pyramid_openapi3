@@ -47,12 +47,10 @@ class PyramidOpenAPIRequest:
         return self.request.method.lower()
 
     @property
-    def body(self) -> t.Optional[t.Union[str, t.Dict]]:
-        """The request body, as string."""  # noqa D401
+    def body(self) -> t.Optional[t.Union[bytes, str, t.Dict]]:
+        """The request body."""  # noqa D401
         if "multipart/form-data" == self.request.content_type:
             return self.request.POST.mixed()
-        if isinstance(self.request.body, bytes):
-            return self.request.body.decode("utf-8")
         return self.request.body
 
     @property
@@ -71,9 +69,9 @@ class PyramidOpenAPIResponse:
         self.response = response
 
     @property
-    def data(self) -> str:
-        """The response body, as string."""  # noqa D401
-        return self.response.text
+    def data(self) -> bytes:
+        """The response body."""  # noqa D401
+        return self.response.body
 
     @property
     def status_code(self) -> int:

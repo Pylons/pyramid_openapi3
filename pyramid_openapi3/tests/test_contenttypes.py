@@ -72,9 +72,6 @@ class TestContentTypes(unittest.TestCase):
         res = self._testapp().post_json("/foo", {"bar": "baz"}, status=200)
         self.assertEqual(res.json, {"bar": "zab"})
 
-    # FIXME: Something deep in request validation isn't happy right now.
-    # Might be related: https://github.com/Pylons/pyramid_openapi3/issues/199
-    @unittest.expectedFailure
     def test_post_form(self) -> None:  # pragma: no cover
         """Post with `application/x-www-form-urlencoded`."""
 
