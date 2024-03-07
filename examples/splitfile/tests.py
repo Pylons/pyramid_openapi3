@@ -78,12 +78,8 @@ class TestBadResponses(TestHappyPath):
             res.json,
             [
                 {
-                    "exception": "ValidationError",
-                    "message": "'foo' is not of type 'object'",
-                },
-                {
-                    "exception": "ValidationError",
-                    "message": "'bar' is not of type 'object'",
+                    "exception": "DataValidationError",
+                    "message": "Failed to cast value to object type: foo",
                 },
             ],
         )
