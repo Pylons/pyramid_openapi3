@@ -23,19 +23,19 @@ View = t.Callable[[t.Any, Request], Response]
 
 
 @dataclass
-class DummyRoute:
+class DummyRoute:  # noqa: D101
     name: str
     pattern: str
 
 
-class DummyStartResponse(object):
+class DummyStartResponse(object):  # noqa: D101
     def __call__(self, status: str, headerlist: t.List[t.Tuple[str, str]]) -> None:
         """WSGI start_response protocol."""
         self.status = status
         self.headerlist = headerlist
 
 
-class RequestValidationBase(TestCase):
+class RequestValidationBase(TestCase):  # noqa: D101
     openapi_spec: bytes
 
     def setUp(self) -> None:
@@ -63,7 +63,9 @@ class RequestValidationBase(TestCase):
         tearDown()
         self.config = None
 
-    def _add_view(self, view_func: t.Callable = None, openapi: bool = True) -> None:
+    def _add_view(
+        self, view_func: t.Optional[t.Callable] = None, openapi: bool = True
+    ) -> None:
         """Add a simple example view.
 
         :param view_func: an optional view callable.
@@ -84,7 +86,7 @@ class RequestValidationBase(TestCase):
         )
         return view
 
-    def _get_request(self, params: t.Dict = None) -> DummyRequest:
+    def _get_request(self, params: t.Optional[t.Dict] = None) -> DummyRequest:
         """Create a DummyRequest instance matching example view.
 
         :param params: Query parameter dictionary
@@ -97,7 +99,7 @@ class RequestValidationBase(TestCase):
         return request
 
 
-class TestRequestValidation(RequestValidationBase):
+class TestRequestValidation(RequestValidationBase):  # noqa: D101
 
     openapi_spec = (
         b"openapi: '3.0.0'\n"
@@ -301,9 +303,9 @@ class TestRequestValidation(RequestValidationBase):
         self.assertEqual(start_response.status, "400 Bad Request")
 
         # now let's disable it
-        self.config.registry.settings[
-            "pyramid_openapi3.enable_request_validation"
-        ] = False
+        self.config.registry.settings["pyramid_openapi3.enable_request_validation"] = (
+            False
+        )
         start_response = DummyStartResponse()
         response = router(environ, start_response)
         self.assertEqual(start_response.status, "200 OK")
@@ -329,9 +331,9 @@ class TestRequestValidation(RequestValidationBase):
         self.assertEqual(start_response.status, "500 Internal Server Error")
 
         # now let's disable it
-        self.config.registry.settings[
-            "pyramid_openapi3.enable_response_validation"
-        ] = False
+        self.config.registry.settings["pyramid_openapi3.enable_response_validation"] = (
+            False
+        )
         start_response = DummyStartResponse()
         response = router(environ, start_response)
         self.assertEqual(start_response.status, "200 OK")
@@ -341,9 +343,9 @@ class TestRequestValidation(RequestValidationBase):
         """Test response validation still works if request validation is disabled."""
         self._add_view(lambda *arg: "not-valid")
 
-        self.config.registry.settings[
-            "pyramid_openapi3.enable_request_validation"
-        ] = False
+        self.config.registry.settings["pyramid_openapi3.enable_request_validation"] = (
+            False
+        )
 
         # by default validation is enabled
         router = Router(self.config.registry)
@@ -361,7 +363,7 @@ class TestRequestValidation(RequestValidationBase):
         self.assertEqual(start_response.status, "500 Internal Server Error")
 
 
-class TestImproperAPISpecValidation(RequestValidationBase):
+class TestImproperAPISpecValidation(RequestValidationBase):  # noqa: D101
 
     openapi_spec = (
         b'openapi: "3.0.0"\n'

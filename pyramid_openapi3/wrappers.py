@@ -11,6 +11,8 @@ import typing as t
 
 
 class PyramidOpenAPIRequest:
+    """Map Pyramid Request attributes to what openapi expects."""
+
     def __init__(self, request: Request) -> None:
         self.request = request
 
@@ -65,6 +67,8 @@ class PyramidOpenAPIRequest:
 
 
 class PyramidOpenAPIResponse:
+    """Map Pyramid Response attributes to what openapi expects."""
+
     def __init__(self, response: Response) -> None:
         self.response = response
 

@@ -348,9 +348,9 @@ def register_routes(
                 root_factory = path_item.get(root_factory_ext)
                 config.add_route(
                     route_name,
-                    pattern=route_prefix + pattern
-                    if route_prefix is not None
-                    else pattern,
+                    pattern=(
+                        route_prefix + pattern if route_prefix is not None else pattern
+                    ),
                     factory=root_factory or None,
                 )
 

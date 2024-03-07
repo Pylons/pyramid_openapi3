@@ -10,7 +10,7 @@ from webob.multidict import MultiDict
 
 
 @dataclass
-class DummyRoute:
+class DummyRoute:  # noqa: D101
     name: str
     pattern: str
 

@@ -1,8 +1,8 @@
 let
   nixpkgs = builtins.fetchTarball {
     # https://github.com/NixOS/nixpkgs/tree/nixos-23.11 on 2024-03-07
-    url = "https://github.com/nixos/nixpkgs/archive/880992dcc006a5e00dd0591446fdf723e6a51a64.tar.gz";
-    sha256 = "1rsbjwbjgnrh0gm54w7nlshkkgp5718d5rk4x8kvklpfivlpfb5n";
+    url = "https://github.com/nixos/nixpkgs/archive/f945939fd679284d736112d3d5410eb867f3b31c.tar.gz";
+    sha256 = "06da1wf4w752spsm16kkckfhxx5m09lwcs8931gwh76yvclq7257";
   };
   poetry2nixsrc = builtins.fetchTarball {
     # https://github.com/nix-community/poetry2nix/commits/master on 2024-03-07
@@ -33,8 +33,8 @@ let
     });
   };
 
-  devEnv_311 = poetry2nix.mkPoetryEnv (commonPoetryArgs // {
-    python = pkgs.python311;
+  devEnv_312 = poetry2nix.mkPoetryEnv (commonPoetryArgs // {
+    python = pkgs.python312;
   });
 
   devEnv_39 = poetry2nix.mkPoetryEnv (commonPoetryArgs // {
@@ -49,7 +49,7 @@ pkgs.mkShell {
   name = "dev-shell";
 
   buildInputs = with pkgs; [
-    devEnv_311
+    devEnv_312
     devEnv_39
     poetry
     gitAndTools.pre-commit
