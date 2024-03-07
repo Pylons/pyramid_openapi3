@@ -25,8 +25,8 @@ Follow the instructions in [README.rst](https://github.com/Pylons/pyramid_openap
 
 In CI, we want to test the oldest supported versions of `openapi-core` and `pyramid` on the oldest supported Python version. We do it like so:
 
-* Have the `py38` folder with additional `pyproject.toml` and `poetry.lock` files
+* Have the `py39` folder with additional `pyproject.toml` and `poetry.lock` files
   that are changed to pin `openapi-core` and `pyramid` to minimally supported version.
 * They are auto-generated when running `make lock`.
-* They are used by Nix to prepare the Python 3.8 env.
-* `PYTHON=python3.8 make tests` then run tests with an older Python version.
+* They are used by Nix to prepare the Python 3.9 env.
+* `PYTHON=python3.9 make tests` then run tests with an older Python version.

@@ -64,7 +64,7 @@ jobs:
           path: htmlcov
 
   test_38:
-    name: "Python 3.8 Tests"
+    name: "Python 3.9 Tests"
 
     runs-on: ubuntu-22.04
 
@@ -76,22 +76,22 @@ jobs:
 
       - name: unit tests
         run: |
-          nix-shell --run "PYTHON=python3.8 make unit"
+          nix-shell --run "PYTHON=python3.9 make unit"
 
       - name: Run tests for the singlefile example
         run: |
           cd examples/singlefile
-          nix-shell --run "python3.8 -m unittest app.py"
+          nix-shell --run "python3.9 -m unittest app.py"
 
       - name: Run tests for the todoapp example
         run: |
           cd examples/todoapp
-          nix-shell --run "python3.8 -m unittest tests.py"
+          nix-shell --run "python3.9 -m unittest tests.py"
 
       - name: Run tests for the splitfile example
         run: |
           cd examples/splitfile
-          nix-shell --run "python3.8 -m unittest tests.py"
+          nix-shell --run "python3.9 -m unittest tests.py"
 
       - name: Save coverage report
         uses: actions/upload-artifact@v3
