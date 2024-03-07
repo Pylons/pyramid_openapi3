@@ -175,7 +175,7 @@ The authors of pyramid_openapi3 believe that the approach of validating a manual
 
 ## Running tests
 
-You need to have [poetry](https://python-poetry.org/) and Python 3.9 through 3.11 installed on your machine. All `Makefile` commands assume you have the Poetry environment activated, i.e. `poetry shell`.
+You need to have [poetry](https://python-poetry.org/) and Python 3.9 through 3.12 installed on your machine. All `Makefile` commands assume you have the Poetry environment activated, i.e. `poetry shell`.
 
 Alternatively, if you use [nix](https://nix.dev/tutorials/declarative-and-reproducible-developer-environments), run `nix-shell` to drop into a shell that has everything prepared for development.
 
@@ -201,16 +201,18 @@ These packages tackle the same problem-space:
 
 We do our best to follow the rules below.
 
-* Support the latest few releases of Python, currently Python 3.9 through 3.11.
-* Support the latest few releases of Pyramid, currently 1.10.7 through 2.0.
-* Support the latest few releases of `openapi-core`, currently 0.16.1 through 0.16.2.
+* Support the latest few releases of Python, currently Python 3.9 through 3.12.
+* Support the latest few releases of Pyramid, currently 1.10.7 through 2.0.2.
+* Support the latest few releases of `openapi-core`, currently just 0.19.0.
 * See `poetry.lock` for a frozen-in-time known-good-set of all dependencies.
 
 ## Use in the wild
 
 A couple of projects that use pyramid_openapi3 in production:
 
-- [WooCart API](https://app.woocart.com/api/v1) - User control panel for WooCart Managed WooCommerce service.
+- [Pareto Security Team Dashboard API](https://dash.paretosecurity.com/api/v1) - Team Dashboard for Pareto Security macOS security app.
+- [SEO Domain Finder API](https://app.seodomainfinder.com/api/v1) - A tool for finding expired domains with SEO value.
+- [Rankalyzer.io](https://app.rankalyzer.io/api/v1) - Monitor SEO changes and strategies of competitors to improve your search traffic.
 - [Kafkai API](https://app.kafkai.com/api/v1) - User control panel for Kafkai text generation service.
-- [Open on-chain data API](https://tradingstrategy.ai/api/explorer/) - Decentralised exchange and blockchain trading data open API
-- [Pareto Security Team Dashboard API](https://dash.paretosecurity.app/api/v1) - Team Dashboard for Pareto Security macOS security app
+- [Open on-chain data API](https://tradingstrategy.ai/api/explorer/) - Decentralised exchange and blockchain trading data open API.
+- [Mayet RX](https://app.mayetrx.com/api/v1) - Vendor management system for pharma/medical clinical trials.

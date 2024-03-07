@@ -22,7 +22,7 @@ import tempfile
 import typing as t
 
 
-class DummyStartResponse(object):
+class DummyStartResponse(object):  # noqa: D101
     def __call__(self, status: str, headerlist: t.List[t.Tuple[str, str]]) -> None:
         """WSGI start_response protocol."""
         self.status = status
@@ -459,7 +459,7 @@ def test_explorer_view_missing_spec() -> None:
 
 
 @dataclass
-class DummyRoute:
+class DummyRoute:  # noqa: D101
     name: str
     pattern: str
 

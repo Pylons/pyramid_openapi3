@@ -6,7 +6,6 @@ from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.testing import testConfig
 from pyramid_openapi3 import MissingEndpointsError
-from pytest_lazyfixture import lazy_fixture
 
 import logging
 import os
@@ -181,19 +180,19 @@ def root_server_app_config(
     yield simple_config
 
 
-@pytest.fixture(
-    params=(
-        lazy_fixture("simple_app_config"),
-        lazy_fixture("split_file_app_config"),
-    )
+app_config = pytest.mark.parametrize(
+    "app_config",
+    [
+        "simple_app_config",
+        "split_file_app_config",
+    ],
 )
-def app_config(request: SubRequest) -> Configurator:
-    """Parametrized fixture containing various app configs to test."""
-    return request.param
 
 
-def test_all_routes(app_config: Configurator) -> None:
+@app_config
+def test_all_routes(app_config: Configurator, request: SubRequest) -> None:
     """Test case showing that an app can be created with all routes defined."""
+    app_config = request.getfixturevalue(app_config)
     app_config.add_route(name="foo", pattern="/foo")
     app_config.add_route(name="bar", pattern="/bar")
     app_config.add_view(
@@ -206,8 +205,10 @@ def test_all_routes(app_config: Configurator) -> None:
     app_config.make_wsgi_app()
 
 
-def test_prefixed_routes(app_config: Configurator) -> None:
+@app_config
+def test_prefixed_routes(app_config: Configurator, request: SubRequest) -> None:
     """Test case for prefixed routes."""
+    app_config = request.getfixturevalue(app_config)
     app_config.add_route(name="foo", pattern="/api/v1/foo")
     app_config.add_route(name="bar", pattern="/api/v1/bar")
     app_config.add_view(
@@ -220,8 +221,12 @@ def test_prefixed_routes(app_config: Configurator) -> None:
     app_config.make_wsgi_app()
 
 
-def test_pyramid_prefixed_context_routes(app_config: Configurator) -> None:
+@app_config
+def test_pyramid_prefixed_context_routes(
+    app_config: Configurator, request: SubRequest
+) -> None:
     """Test case for prefixed routes using pyramid route_prefix_context."""
+    app_config = request.getfixturevalue(app_config)
     with app_config.route_prefix_context("/api/v1"):
         app_config.add_route(name="foo", pattern="/foo")
         app_config.add_route(name="bar", pattern="/bar")
@@ -235,19 +240,23 @@ def test_pyramid_prefixed_context_routes(app_config: Configurator) -> None:
     app_config.make_wsgi_app()
 
 
-def test_missing_routes(app_config: Configurator) -> None:
+@app_config
+def test_missing_routes(app_config: Configurator, request: SubRequest) -> None:
     """Test case showing app creation fails, when defined routes are missing."""
+    app_config = request.getfixturevalue(app_config)
     with pytest.raises(MissingEndpointsError) as ex:
         app_config.make_wsgi_app()
 
     assert str(ex.value) == "Unable to find routes for endpoints: /foo, /bar"
 
 
+@app_config
 def test_disable_endpoint_validation(
-    app_config: Configurator, caplog: LogCaptureFixture
+    app_config: Configurator, caplog: LogCaptureFixture, request: SubRequest
 ) -> None:
     """Test case showing app creation whilst disabling endpoint validation."""
     caplog.set_level(logging.INFO)
+    app_config = request.getfixturevalue(app_config)
     app_config.registry.settings["pyramid_openapi3.enable_endpoint_validation"] = False
     app_config.add_route(name="foo", pattern="/foo")
     app_config.add_view(
@@ -273,8 +282,12 @@ def test_unconfigured_app(
     assert "pyramid_openapi3 settings not found" in caplog.text
 
 
-def test_routes_setting_generation(app_config: Configurator) -> None:
+@app_config
+def test_routes_setting_generation(
+    app_config: Configurator, request: SubRequest
+) -> None:
     """Test the `routes` setting is correctly created after app creation."""
+    app_config = request.getfixturevalue(app_config)
 
     # Test that having multiple routes for a single route / pattern still works
     app_config.add_route(name="get_foo", pattern="/foo", request_method="GET")

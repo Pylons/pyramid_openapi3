@@ -12,6 +12,7 @@ import typing as t
 
 
 class RequestValidationError(HTTPBadRequest):
+    """Error raised when Request validation fails."""
 
     explanation = "Request validation failed."
 
@@ -28,6 +29,7 @@ class RequestValidationError(HTTPBadRequest):
 
 
 class ResponseValidationError(HTTPInternalServerError):
+    """Error raised when Response validation fails."""
 
     explanation = "Response validation failed."
 
@@ -144,6 +146,8 @@ def extract_errors(
 
 
 class MissingEndpointsError(Exception):
+    """Error raised when endpoints are not found."""
+
     missing: list
 
     def __init__(self, missing: t.List[str]) -> None:

@@ -1,5 +1,23 @@
 ## Changelog
 
+0.17.0 (unreleased)
+-------------------
+
+* Update the supported version of Python to 3.12, Pyramid to 2.0.2.
+  Drop support for Python 3.8.
+  [zupo]
+
+* Update the supported version of `openapi-core` to 0.19.0, refs #220.
+  Drop support for all older versions of `openapi-core`.
+  [miketheman, Wim-De-Clercq, zupo]
+
+* Update Swagger UI version to 4.18.3, refs #210.
+  [kskarthik]
+
+* Add support for specifying the protocol and port for getting the openapi3
+  spec file, fixes running behind a reverse proxy, refs #176.
+  [vpet98, zupo]
+
 
 0.16.0 (2023-03-22)
 -------------------
