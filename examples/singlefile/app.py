@@ -123,7 +123,7 @@ class FunctionalTests(unittest.TestCase):
         We don't have to write (and test!) any validation code in our view!
         """
         res = self.testapp.get("/hello", status=400)
-        self.assertIn("Missing required parameter: name", res.text)
+        self.assertIn("Missing required query parameter: name", res.text)
 
     def test_name_too_short(self):
         """A name that is too short is picked up by openapi-core validation.
