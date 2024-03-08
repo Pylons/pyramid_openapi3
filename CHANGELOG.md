@@ -1,6 +1,6 @@
 ## Changelog
 
-0.17.0 (unreleased)
+0.17.0 (2024-03-08)
 -------------------
 
 * Update the supported version of Python to 3.12, Pyramid to 2.0.2.

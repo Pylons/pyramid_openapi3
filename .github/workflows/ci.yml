@@ -131,7 +131,6 @@ jobs:
           POETRY_VERSION=$(nix-shell --run "poetry version --short")
           echo $POETRY_VERSION
 
-          nix-shell --run "echo `poetry version --short`"
           [[ "$GITHUB_REF_NAME" == "$POETRY_VERSION" ]] && exit 0 || exit 1
 
       - run: nix-shell --run "poetry publish --build"
