@@ -51,13 +51,17 @@ class PyramidOpenAPIRequest:
     @property
     def body(self) -> t.Optional[t.Union[bytes, str, t.Dict]]:
         """The request body."""  # noqa D401
-        if "multipart/form-data" == self.request.content_type:
-            return self.request.POST.mixed()
         return self.request.body
 
     @property
     def content_type(self) -> str:
         """The content type of the request."""  # noqa D401
+        if "multipart/form-data" == self.request.content_type:
+            # Pyramid does not include boundary in request.content_type, but
+            # openapi-core needs it to parse the request body.
+            return self.request.headers.environ.get(
+                "CONTENT_TYPE", "multipart/form-data"
+            )
         return self.request.content_type
 
     @property
