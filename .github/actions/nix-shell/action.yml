@@ -10,10 +10,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: cachix/install-nix-action@v20
+    - uses: cachix/install-nix-action@v26
       with:
         nix_path: nixpkgs=channel:nixos-unstable
-    - uses: cachix/cachix-action@v12
+    - uses: cachix/cachix-action@v14
       with:
         name: pyramid-openapi3
         authToken: '${{ inputs.cachix_auth_token }}'
