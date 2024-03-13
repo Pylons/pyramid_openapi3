@@ -119,6 +119,9 @@ jobs:
       # POETRY_PYPI_TOKEN_TESTPYPI: ${{ secrets.POETRY_PYPI_TOKEN_TESTPYPI }}
       # POETRY_REPOSITORIES_TESTPYPI_URL: https://test.pypi.org/legacy/
 
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/nix-shell
@@ -134,3 +137,9 @@ jobs:
           [[ "$GITHUB_REF_NAME" == "$POETRY_VERSION" ]] && exit 0 || exit 1
 
       - run: nix-shell --run "poetry publish --build"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          make_latest: true

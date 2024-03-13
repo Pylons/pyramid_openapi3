@@ -1,5 +1,9 @@
 ## Changelog
 
+For future releases, see <https://github.com/Pylons/pyramid_openapi3/releases>
+
+---
+
 0.17.1 (2024-03-11)
 -------------------
 
