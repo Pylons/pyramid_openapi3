@@ -6,8 +6,8 @@ from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequest
 from jsonschema_path import SchemaPath
-from openapi_core.unmarshalling.request import V30RequestUnmarshaller
-from openapi_core.unmarshalling.response import V30ResponseUnmarshaller
+from openapi_core.unmarshalling.request import V31RequestUnmarshaller
+from openapi_core.unmarshalling.response import V31ResponseUnmarshaller
 from openapi_core.validation.request.exceptions import SecurityValidationError
 from openapi_spec_validator import validate
 from openapi_spec_validator.readers import read_from_filename
@@ -314,12 +314,12 @@ def _create_api_settings(
         "filepath": filepath,
         "spec_route_name": route_name,
         "spec": spec,
-        "request_validator": V30RequestUnmarshaller(
+        "request_validator": V31RequestUnmarshaller(
             spec,
             extra_format_validators=custom_formatters,
             extra_media_type_deserializers=custom_deserializers,
         ),
-        "response_validator": V30ResponseUnmarshaller(
+        "response_validator": V31ResponseUnmarshaller(
             spec,
             extra_format_validators=custom_formatters,
             extra_media_type_deserializers=custom_deserializers,
