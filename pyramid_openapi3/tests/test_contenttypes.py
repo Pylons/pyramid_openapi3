@@ -24,7 +24,7 @@ def app(spec: str) -> Router:
         return {
             "key1": body["key1"][::-1],
             "key2": [x[::-1] for x in body["key2"]],
-            "key3": body["key3"].decode("utf-8")[::-1],
+            "key3": body["key3"][::-1],
         }
 
     with Configurator() as config:
@@ -70,7 +70,7 @@ OPENAPI_YAML = """
                 type: string
             key3:
               type: string
-              format: binary
+              contentMediaType: application/octet-stream
     paths:
       /foo:
         post:
