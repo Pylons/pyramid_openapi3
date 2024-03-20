@@ -102,7 +102,7 @@ class RequestValidationBase(TestCase):  # noqa: D101
 class TestRequestValidation(RequestValidationBase):  # noqa: D101
 
     openapi_spec = (
-        b"openapi: '3.0.0'\n"
+        b"openapi: '3.1.0'\n"
         b"info:\n"
         b"  version: '1.0.0'\n"
         b"  title: Foo API\n"
@@ -366,7 +366,7 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
 class TestImproperAPISpecValidation(RequestValidationBase):  # noqa: D101
 
     openapi_spec = (
-        b'openapi: "3.0.0"\n'
+        b'openapi: "3.1.0"\n'
         b"info:\n"
         b'  version: "1.0.0"\n'
         b"  title: Foo API\n"

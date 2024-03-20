@@ -48,7 +48,7 @@ def app(spec: str) -> Router:
 
 
 OPENAPI_YAML = """
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo

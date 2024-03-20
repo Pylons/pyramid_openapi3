@@ -18,7 +18,7 @@ def test_register_routes_simple() -> None:
         with tempfile.NamedTemporaryFile() as tempdoc:
             tempdoc.write(
                 b"""\
-openapi: "3.0.0"
+openapi: "3.1.0"
 info:
   version: "1.0.0"
   title: Foo API
@@ -60,7 +60,7 @@ def test_register_routes_with_factory() -> None:
         with tempfile.NamedTemporaryFile() as tempdoc:
             tempdoc.write(
                 b"""\
-openapi: "3.0.0"
+openapi: "3.1.0"
 info:
   version: "1.0.0"
   title: Foo API
@@ -108,7 +108,7 @@ def test_register_routes_with_prefix() -> None:
         with tempfile.NamedTemporaryFile() as tempdoc:
             tempdoc.write(
                 b"""\
-openapi: "3.0.0"
+openapi: "3.1.0"
 info:
   version: "1.0.0"
   title: Foo API

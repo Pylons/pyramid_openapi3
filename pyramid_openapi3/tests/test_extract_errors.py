@@ -31,7 +31,7 @@ class BadRequestsTests(unittest.TestCase):
         return None  # pragma: no cover
 
     OPENAPI_YAML = """
-        openapi: "3.0.0"
+        openapi: "3.1.0"
         info:
           version: "1.0.0"
           title: Foo
@@ -488,7 +488,7 @@ class BadResponsesTests(unittest.TestCase):
     """A suite of tests that make sure bad responses are prevented."""
 
     OPENAPI_YAML = b"""
-        openapi: "3.0.0"
+        openapi: "3.1.0"
         info:
           version: "1.0.0"
           title: Foo
@@ -585,7 +585,7 @@ class CustomFormattersTests(unittest.TestCase):
         return True
 
     OPENAPI_YAML = """
-        openapi: "3.0.0"
+        openapi: "3.1.0"
         info:
           version: "1.0.0"
           title: Foo
@@ -684,7 +684,7 @@ class CustomDeserializerTests(unittest.TestCase):
         return s[::-1]
 
     OPENAPI_YAML = """
-        openapi: "3.0.0"
+        openapi: "3.1.0"
         info:
           version: "1.0.0"
           title: Foo
