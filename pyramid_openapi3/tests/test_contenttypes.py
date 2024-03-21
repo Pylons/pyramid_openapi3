@@ -24,7 +24,7 @@ def app(spec: str) -> Router:
         return {
             "key1": body["key1"][::-1],
             "key2": [x[::-1] for x in body["key2"]],
-            "key3": body["key3"][::-1],
+            "key3": body["key3"].decode("utf-8")[::-1],
         }
 
     with Configurator() as config:
@@ -48,7 +48,7 @@ def app(spec: str) -> Router:
 
 
 OPENAPI_YAML = """
-    openapi: "3.1.0"
+    openapi: "3.0.0"
     info:
       version: "1.0.0"
       title: Foo
@@ -70,7 +70,7 @@ OPENAPI_YAML = """
                 type: string
             key3:
               type: string
-              contentMediaType: application/octet-stream
+              format: binary
     paths:
       /foo:
         post:
@@ -148,10 +148,9 @@ class TestContentTypes(unittest.TestCase):
         )
 
 
-# This is almost the same as the previous test, but with OpenAPI 3.0.0.
-# The test app also has to perform more decoding because the request body
-# is not automatically decoded by OpenAPI 3.0.
-def app300(spec: str) -> Router:
+# This is almost the same as the previous test, but with OpenAPI 3.1.0.
+# `multipart_view()` no longer needs to decode the bytes to a string.
+def app310(spec: str) -> Router:
     """Prepare a Pyramid app."""
 
     def foo_view(request: Request) -> t.Dict[str, str]:
@@ -164,7 +163,7 @@ def app300(spec: str) -> Router:
         return {
             "key1": body["key1"][::-1],
             "key2": [x[::-1] for x in body["key2"]],
-            "key3": body["key3"].decode("utf-8")[::-1],
+            "key3": body["key3"][::-1],
         }
 
     with Configurator() as config:
@@ -187,8 +186,8 @@ def app300(spec: str) -> Router:
         return config.make_wsgi_app()
 
 
-OPENAPI_YAML300 = """
-    openapi: "3.0.0"
+OPENAPI_YAML310 = """
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo
@@ -210,7 +209,7 @@ OPENAPI_YAML300 = """
                 type: string
             key3:
               type: string
-              format: binary
+              contentMediaType: application/octet-stream
     paths:
       /foo:
         post:
@@ -238,7 +237,7 @@ OPENAPI_YAML300 = """
 """
 
 
-class TestContentTypes300(unittest.TestCase):
+class TestContentTypes310(unittest.TestCase):
     """A suite of tests that make sure different body content types are supported."""
 
     def _testapp(self) -> TestApp:
@@ -246,10 +245,10 @@ class TestContentTypes300(unittest.TestCase):
         from webtest import TestApp
 
         with tempfile.NamedTemporaryFile() as document:
-            document.write(OPENAPI_YAML300.encode())
+            document.write(OPENAPI_YAML310.encode())
             document.seek(0)
 
-            return TestApp(app300(document.name))
+            return TestApp(app310(document.name))
 
     def test_post_json(self) -> None:
         """Post with `application/json`."""
