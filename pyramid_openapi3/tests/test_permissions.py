@@ -46,7 +46,7 @@ def simple_config() -> Configurator:
 
 
 OPENAPI_YAML = """
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo
@@ -101,7 +101,7 @@ def test_permission_for_specs(
 
 
 SPLIT_OPENAPI_YAML = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo API

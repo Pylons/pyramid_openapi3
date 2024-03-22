@@ -7,10 +7,13 @@ from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequest
 from jsonschema_path import SchemaPath
 from openapi_core.unmarshalling.request import V30RequestUnmarshaller
+from openapi_core.unmarshalling.request import V31RequestUnmarshaller
 from openapi_core.unmarshalling.response import V30ResponseUnmarshaller
+from openapi_core.unmarshalling.response import V31ResponseUnmarshaller
 from openapi_core.validation.request.exceptions import SecurityValidationError
 from openapi_spec_validator import validate
 from openapi_spec_validator.readers import read_from_filename
+from openapi_spec_validator.versions.shortcuts import get_spec_version
 from pathlib import Path
 from pyramid.config import Configurator
 from pyramid.config import PHASE0_CONFIG
@@ -142,7 +145,7 @@ def add_explorer_view(
     route: str = "/docs/",
     route_name: str = "pyramid_openapi3.explorer",
     template: str = "static/index.html",
-    ui_version: str = "4.18.3",
+    ui_version: str = "5.12.0",
     permission: str = NO_PERMISSION_REQUIRED,
     apiname: str = "pyramid_openapi3",
     proto_port: t.Optional[t.Tuple[str, int]] = None,
@@ -310,16 +313,29 @@ def _create_api_settings(
         "pyramid_openapi3_deserializers"
     )
 
+    # switch unmarshaller based on spec version
+    spec_version = get_spec_version(spec.contents())
+    request_unmarshallers = {
+        "OpenAPIV3.0": V30RequestUnmarshaller,
+        "OpenAPIV3.1": V31RequestUnmarshaller,
+    }
+    response_unmarshallers = {
+        "OpenAPIV3.0": V30ResponseUnmarshaller,
+        "OpenAPIV3.1": V31ResponseUnmarshaller,
+    }
+    request_unmarshaller = request_unmarshallers[str(spec_version)]
+    response_unmarshaller = response_unmarshallers[str(spec_version)]
+
     return {
         "filepath": filepath,
         "spec_route_name": route_name,
         "spec": spec,
-        "request_validator": V30RequestUnmarshaller(
+        "request_validator": request_unmarshaller(
             spec,
             extra_format_validators=custom_formatters,
             extra_media_type_deserializers=custom_deserializers,
         ),
-        "response_validator": V30ResponseUnmarshaller(
+        "response_validator": response_unmarshaller(
             spec,
             extra_format_validators=custom_formatters,
             extra_media_type_deserializers=custom_deserializers,

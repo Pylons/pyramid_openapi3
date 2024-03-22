@@ -30,7 +30,7 @@ class DummyStartResponse(object):  # noqa: D101
 
 
 MINIMAL_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo API
@@ -43,7 +43,7 @@ MINIMAL_DOCUMENT = b"""
 """
 
 ALTERNATE_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Bar API
@@ -56,7 +56,7 @@ ALTERNATE_DOCUMENT = b"""
 """
 
 SPLIT_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Foo API
@@ -74,7 +74,7 @@ SPLIT_DOCUMENT_PATHS = b"""
 """
 
 ALTERNATE_SPLIT_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Bar API
@@ -567,7 +567,7 @@ def test_path_parameters() -> None:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as document:
             document.write(
-                b'openapi: "3.0.0"\n'
+                b'openapi: "3.1.0"\n'
                 b"info:\n"
                 b'  version: "1.0.0"\n'
                 b"  title: Foo API\n"
@@ -626,7 +626,7 @@ def test_header_parameters() -> None:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as document:
             document.write(
-                b'openapi: "3.0.0"\n'
+                b'openapi: "3.1.0"\n'
                 b"info:\n"
                 b'  version: "1.0.0"\n'
                 b"  title: Foo API\n"
@@ -686,7 +686,7 @@ def test_cookie_parameters() -> None:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as document:
             document.write(
-                b'openapi: "3.0.0"\n'
+                b'openapi: "3.1.0"\n'
                 b"info:\n"
                 b'  version: "1.0.0"\n'
                 b"  title: Foo API\n"

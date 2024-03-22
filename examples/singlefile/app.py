@@ -16,7 +16,7 @@ import unittest
 # example we want everything in a single file. Other examples have it nicely
 # separated.
 OPENAPI_DOCUMENT = b"""
-    openapi: "3.0.0"
+    openapi: "3.1.0"
     info:
       version: "1.0.0"
       title: Hello API
