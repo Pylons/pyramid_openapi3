@@ -22,15 +22,7 @@ let
     editablePackageSources = {
       pyramid_openapi3 = ./.;
     };
-    overrides = poetry2nix.overrides.withDefaults (self: super: {
-
-      ruamel-yaml = super.ruamel-yaml.overridePythonAttrs (
-        old: {
-          propagatedBuildInputs = [ ];
-        }
-      );
-
-    });
+    overrides = poetry2nix.overrides.withDefaults (self: super: { });
   };
 
   devEnv_312 = poetry2nix.mkPoetryEnv (commonPoetryArgs // {
