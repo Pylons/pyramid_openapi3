@@ -742,3 +742,68 @@ class CustomDeserializerTests(unittest.TestCase):
         body = self.reverse(json.dumps({"name": "zupo"}))
         res = self._testapp().post("/hello", body, headers, status=200)
         assert res.json == self.reverse("Hello zupo")
+
+
+class CustomUnmarshallersTests(unittest.TestCase):
+    """A suite of tests that showcase how custom unmarshallers can be used."""
+
+    def hello(self, context: t.Any, request: Request) -> str:
+        """Say hello."""
+        return f"Hello {request.openapi_validated.body['id']}"
+
+    def parse_id(self, id: str) -> str:
+        if not isinstance(id, str):
+            return id  # Only check strings (let default validation handle others)
+        return id.strip("[]").replace(",", " and ")
+
+    OPENAPI_YAML = """
+        openapi: "3.1.0"
+        info:
+          version: "1.0.0"
+          title: Foo
+        paths:
+          /hello:
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      required:
+                        - id
+                      properties:
+                        id:
+                          type: string
+                          format: parse-id
+              responses:
+                200:
+                  description: Say hello
+                400:
+                  description: Bad Request
+    """
+
+    def _testapp(self) -> TestApp:
+        """Start up the app so that tests can send requests to it."""
+        from webtest import TestApp
+
+        with tempfile.NamedTemporaryFile() as document:
+            document.write(self.OPENAPI_YAML.encode())
+            document.seek(0)
+
+            with Configurator() as config:
+                config.include("pyramid_openapi3")
+                config.pyramid_openapi3_spec(document.name)
+                config.pyramid_openapi3_add_unmarshaller("parse-id", self.parse_id)
+                config.add_route("hello", "/hello")
+                config.add_view(
+                    openapi=True, renderer="json", view=self.hello, route_name="hello"
+                )
+                app = config.make_wsgi_app()
+
+            return TestApp(app)
+
+    def test_say_hello(self) -> None:
+        """Test happy path."""
+        res = self._testapp().post_json("/hello", {"id": "[1,2,3]"}, status=200)
+        assert res.json == "Hello 1 and 2 and 3"

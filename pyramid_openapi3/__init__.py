@@ -45,6 +45,7 @@ def includeme(config: Configurator) -> None:
     config.add_view_deriver(openapi_view)
     config.add_directive("pyramid_openapi3_add_formatter", add_formatter)
     config.add_directive("pyramid_openapi3_add_deserializer", add_deserializer)
+    config.add_directive("pyramid_openapi3_add_unmarshaller", add_unmarshaller)
     config.add_directive("pyramid_openapi3_add_explorer", add_explorer_view)
     config.add_directive("pyramid_openapi3_spec", add_spec_view)
     config.add_directive("pyramid_openapi3_spec_directory", add_spec_view_directory)
@@ -209,6 +210,13 @@ def add_deserializer(config: Configurator, name: str, func: t.Callable) -> None:
     reg[name] = func
 
 
+def add_unmarshaller(config: Configurator, name: str, func: t.Callable) -> None:
+    """Add support for configuring unmarshallers."""
+    config.registry.settings.setdefault("pyramid_openapi3_unmarshallers", {})
+    reg = config.registry.settings["pyramid_openapi3_unmarshallers"]
+    reg[name] = func
+
+
 def add_spec_view(
     config: Configurator,
     filepath: str,
@@ -312,6 +320,9 @@ def _create_api_settings(
     custom_deserializers = config.registry.settings.get(
         "pyramid_openapi3_deserializers"
     )
+    custom_unmarshallers = config.registry.settings.get(
+        "pyramid_openapi3_unmarshallers"
+    )
 
     # switch unmarshaller based on spec version
     spec_version = get_spec_version(spec.contents())
@@ -334,11 +345,13 @@ def _create_api_settings(
             spec,
             extra_format_validators=custom_formatters,
             extra_media_type_deserializers=custom_deserializers,
+            extra_format_unmarshallers=custom_unmarshallers,
         ),
         "response_validator": response_unmarshaller(
             spec,
             extra_format_validators=custom_formatters,
             extra_media_type_deserializers=custom_deserializers,
+            extra_format_unmarshallers=custom_unmarshallers,
         ),
     }
 
