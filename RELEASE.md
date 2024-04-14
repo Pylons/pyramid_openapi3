@@ -10,4 +10,7 @@
 1. `git push --tags`
 
 The Action should build & test the package, and then upload it to PyPI.
-Then, automatically create a new GitHub Release with generated changelog.
+Then, automatically create a new GitHub Release with generated changelog. After
+the Action is done, go to https://github.com/Pylons/pyramid_openapi3/releases/,
+and edit the latest release to remove cleanup/unnecessary items from the
+description.
