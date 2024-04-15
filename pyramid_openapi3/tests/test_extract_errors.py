@@ -751,10 +751,9 @@ class CustomUnmarshallersTests(unittest.TestCase):
         """Say hello."""
         return f"Hello {request.openapi_validated.body['id']}"
 
-    def parse_id(self, id: str) -> str:
-        if not isinstance(id, str):
-            return id  # Only check strings (let default validation handle others)
-        return id.strip("[]").replace(",", " and ")
+    def parse_id(self, id_: str) -> str:
+        """Expand id parameter."""
+        return id_.strip("[]").replace(",", " and ")
 
     OPENAPI_YAML = """
         openapi: "3.1.0"
