@@ -173,7 +173,7 @@ def add_explorer_view(
                 template = Template(f.read())
                 html = template.safe_substitute(
                     ui_version=ui_version,
-                    spec_url=request.route_url(settings[apiname]["spec_route_name"]),
+                    spec_url=request.route_path(settings[apiname]["spec_route_name"]),
                 )
             return Response(html)
 

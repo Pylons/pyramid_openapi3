@@ -344,7 +344,7 @@ def test_add_multiple_explorer_views() -> None:
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
-        assert b"http://example.com/foo/openapi.yaml" in response.body
+        assert b'url: "/foo/openapi.yaml"' in response.body
 
         request = config.registry.queryUtility(IRouteRequest, name="bar_api_explorer")
         view = config.registry.adapters.registered(
@@ -352,7 +352,7 @@ def test_add_multiple_explorer_views() -> None:
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
-        assert b"http://example.com/bar/openapi.yaml" in response.body
+        assert b'url: "/bar/openapi.yaml"' in response.body
 
 
 def test_add_multiple_explorer_views_using_directory() -> None:
@@ -398,7 +398,7 @@ def test_add_multiple_explorer_views_using_directory() -> None:
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
-        assert b"http://example.com/foo.yaml" in response.body
+        assert b'url: "/foo.yaml"' in response.body
 
         request = config.registry.queryUtility(IRouteRequest, name="bar_api_explorer")
         view = config.registry.adapters.registered(
@@ -406,7 +406,7 @@ def test_add_multiple_explorer_views_using_directory() -> None:
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
-        assert b"http://example.com/bar.yaml" in response.body
+        assert b'url: "/bar.yaml"' in response.body
 
 
 def test_explorer_view_missing_spec() -> None:
