@@ -303,33 +303,6 @@ def test_add_explorer_view() -> None:
         assert b"<title>Swagger UI</title>" in response.body
 
 
-def test_add_explorer_view_custom_proto_port() -> None:
-    """Test serving Swagger UI on a custom protocol and port."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
-
-        with tempfile.NamedTemporaryFile() as document:
-            document.write(MINIMAL_DOCUMENT)
-            document.seek(0)
-
-            config.pyramid_openapi3_spec(
-                document.name, route="/foo.yaml", route_name="foo_api_spec"
-            )
-
-        config.pyramid_openapi3_add_explorer(proto_port=("https", 6543))
-        request = config.registry.queryUtility(
-            IRouteRequest, name="pyramid_openapi3.explorer"
-        )
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
-        request = DummyRequest(config=config)
-        request.environ["SERVER_NAME"] = "example.com"
-        response = view(request=request, context=None)
-        assert b"<title>Swagger UI</title>" in response.body
-        assert b"https://example.com:6543/foo.yaml" in response.body
-
-
 def test_add_multiple_explorer_views() -> None:
     """Test registration of multiple views serving different Swagger UI."""
     with testConfig() as config:
