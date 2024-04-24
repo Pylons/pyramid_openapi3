@@ -28,5 +28,5 @@ In CI, we want to test the oldest supported versions of `openapi-core` and `pyra
 * Have the `py39` folder with additional `pyproject.toml` and `poetry.lock` files
   that are changed to pin `openapi-core` and `pyramid` to minimally supported version.
 * They are auto-generated when running `make lock`.
-* They are used by Nix to prepare the Python 3.9 env.
-* `PYTHON=python3.9 make tests` then run tests with an older Python version.
+* They are used by Nix to prepare the Python 3.10 env.
+* `PYTHON=python3.10 make tests` then run tests with an older Python version.
