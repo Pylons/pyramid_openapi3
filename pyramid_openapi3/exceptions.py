@@ -153,4 +153,4 @@ class MissingEndpointsError(Exception):
     def __init__(self, missing: t.List[str]) -> None:
         self.missing = missing
         message = f"Unable to find routes for endpoints: {', '.join(missing)}"
-        super(MissingEndpointsError, self).__init__(message)
+        super().__init__(message)
