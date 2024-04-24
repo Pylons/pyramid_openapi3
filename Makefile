@@ -17,9 +17,9 @@ lock:
 	@cat pyproject.toml \
 		| sed 's/openapi-core = ">=/openapi-core = "==/g' \
 		| sed 's/pyramid = ">=/pyramid = "==/g' \
-		> py39/pyproject.toml
+		> py310/pyproject.toml
 	@rm -rf .venv/
-	@poetry lock --no-update --directory py39
+	@poetry lock --no-update --directory py310
 	@rm -rf .venv/
 	@nix-shell --run true
 	@direnv reload

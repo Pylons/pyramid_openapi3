@@ -63,8 +63,8 @@ jobs:
           name: htmlcov
           path: htmlcov/
 
-  test_39:
-    name: "Python 3.9 Tests"
+  test_310:
+    name: "Python 3.10 Tests"
 
     runs-on: ubuntu-22.04
 
@@ -74,29 +74,31 @@ jobs:
         with:
           cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-      - name: unit tests
+      - name: Run linters and unit tests
         run: |
-          nix-shell --run "PYTHON=python3.9 make unit"
+          nix-shell --run "PYTHON=python3.10 make lint all=true"
+          nix-shell --run "PYTHON=python3.10 make types"
+          nix-shell --run "PYTHON=python3.10 make unit"
 
       - name: Run tests for the singlefile example
         run: |
           cd examples/singlefile
-          nix-shell --run "python3.9 -m unittest app.py"
+          nix-shell --run "python3.10 -m unittest app.py"
 
       - name: Run tests for the todoapp example
         run: |
           cd examples/todoapp
-          nix-shell --run "python3.9 -m unittest tests.py"
+          nix-shell --run "python3.10 -m unittest tests.py"
 
       - name: Run tests for the splitfile example
         run: |
           cd examples/splitfile
-          nix-shell --run "python3.9 -m unittest tests.py"
+          nix-shell --run "python3.10 -m unittest tests.py"
 
       - name: Save coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: htmlcov-py39
+          name: htmlcov-py310
           path: htmlcov/
 
 
@@ -104,7 +106,7 @@ jobs:
     name: "Release to PyPI"
 
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    needs: [test_312, test_39]
+    needs: [test_312, test_310]
     runs-on: ubuntu-22.04
 
     # To test publishing to testpypi:
