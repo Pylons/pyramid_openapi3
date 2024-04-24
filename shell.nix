@@ -29,10 +29,10 @@ let
     python = pkgs.python312;
   });
 
-  devEnv_39 = poetry2nix.mkPoetryEnv (commonPoetryArgs // {
-    python = pkgs.python39;
-    pyproject = ./py39/pyproject.toml;
-    poetrylock = ./py39/poetry.lock;
+  devEnv_310 = poetry2nix.mkPoetryEnv (commonPoetryArgs // {
+    python = pkgs.python310;
+    pyproject = ./py310/pyproject.toml;
+    poetrylock = ./py310/poetry.lock;
   });
 
 in
@@ -42,7 +42,7 @@ pkgs.mkShell {
 
   buildInputs = with pkgs; [
     devEnv_312
-    devEnv_39
+    devEnv_310
     poetry
     gitAndTools.pre-commit
     nixpkgs-fmt
