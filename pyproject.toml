@@ -24,7 +24,7 @@ exclude = ["pyramid_openapi3/tests/"]
 
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 
 openapi-core = ">=0.19.1"
 pyramid = ">=1.10.7"
