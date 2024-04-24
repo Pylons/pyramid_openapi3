@@ -7,7 +7,7 @@ The `app.py` file in this folder showcases how to use the [pyramid_openapi3](htt
 ```bash
 * git clone https://github.com/Pylons/pyramid_openapi3.git
 * cd pyramid_openapi3/examples/singlefile
-* virtualenv -p python3.9 .
+* virtualenv -p python3.10 .
 * source bin/activate
 * pip install pyramid_openapi3
 * python app.py
