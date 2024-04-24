@@ -28,7 +28,7 @@ class DummyRoute:  # noqa: D101
     pattern: str
 
 
-class DummyStartResponse(object):  # noqa: D101
+class DummyStartResponse:  # noqa: D101
     def __call__(self, status: str, headerlist: t.List[t.Tuple[str, str]]) -> None:
         """WSGI start_response protocol."""
         self.status = status

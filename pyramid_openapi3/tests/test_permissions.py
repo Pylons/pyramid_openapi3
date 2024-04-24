@@ -19,7 +19,7 @@ DEFAULT_ACL = [
 ]
 
 
-class DummyDefaultContext(object):  # noqa: D101
+class DummyDefaultContext:  # noqa: D101
 
     __acl__ = DEFAULT_ACL
 
