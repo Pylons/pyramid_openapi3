@@ -42,8 +42,10 @@ class PyramidOpenAPIRequest:
         # will fail. one example of this is using WSGI compositors like
         # rutter (https://rutter.rtfd.io)
         # see:  https://wsgi.readthedocs.io/en/latest/definitions.html#envvar-SCRIPT_NAME
-        relative_matched_route_pattern = "%s%s" % \
-            (self.request.script_name, self.request.matched_route.pattern)
+        relative_matched_route_pattern = "%s%s" % (
+            self.request.script_name,
+            self.request.matched_route.pattern,
+        )
 
         path_pattern = (
             relative_matched_route_pattern
