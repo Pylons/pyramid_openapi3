@@ -69,7 +69,7 @@ class ImproperAPISpecificationWarning(UserWarning):
 
 
 def extract_errors(
-    request: Request, errors: t.List[OpenAPIError], field: t.Optional[str] = None
+    request: Request, errors: t.List[OpenAPIError], parent_field: t.Optional[str] = None
 ) -> t.Iterator[t.Dict[str, str]]:
     """Extract errors for JSON response.
 
@@ -129,7 +129,7 @@ def extract_errors(
 
         output.update({"message": message})
 
-        field = getattr(err, "field", field)
+        field = getattr(err, "field", parent_field)
         if field is None:
             field = getattr(err, "name", None)
         if field is None and getattr(err, "validator", None) == "required":
