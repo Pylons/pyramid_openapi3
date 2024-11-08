@@ -397,7 +397,7 @@ class BadRequestsTests(unittest.TestCase):
             {
                 "exception": "ParameterValidationError",
                 "message": "Failed to cast value to integer type: abc",
-                "field": "bar",
+                "field": "bam",
             },
             {
                 "exception": "ValidationError",
