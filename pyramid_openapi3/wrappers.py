@@ -36,11 +36,20 @@ class PyramidOpenAPIRequest:
     @property
     def path_pattern(self) -> str:
         """The matched url with path pattern."""  # noqa D401
-        path_pattern = (
-            self.request.matched_route.pattern
-            if self.request.matched_route
-            else self.request.path_info
-        )
+
+        # since application might be mounted on virtual location we need
+        # to prepend it to the route pattern, or request's response validation
+        # will fail. one example of this is using WSGI compositors like
+        # rutter (https://rutter.rtfd.io)
+        # see:  https://wsgi.readthedocs.io/en/latest/definitions.html#envvar-SCRIPT_NAME
+        if self.request.matched_route:
+            path_pattern = "%s%s" % (
+                self.request.script_name,
+                self.request.matched_route.pattern,
+            )
+        else:
+            path_pattern = self.request.path
+
         return path_pattern
 
     @property
