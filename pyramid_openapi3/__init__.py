@@ -33,6 +33,7 @@ from string import Template
 from urllib.parse import urlparse
 
 import hupper
+import json
 import logging
 import typing as t
 
@@ -147,6 +148,11 @@ def add_explorer_view(
     route_name: str = "pyramid_openapi3.explorer",
     template: str = "static/index.html",
     ui_version: str = "5.12.0",
+    ui_config: t.Optional[dict[str, t.Any]] = None,
+    oauth_config: t.Optional[dict[str, t.Any]] = None,
+    oauth_redirect_route: t.Optional[str] = None,
+    oauth_redirect_route_name: str = "pyramid_openapi3.explorer.oauth2-redirect",
+    oauth_redirect_html: str = "static/oauth2-redirect.html",
     permission: str = NO_PERMISSION_REQUIRED,
     apiname: str = "pyramid_openapi3",
 ) -> None:
@@ -156,11 +162,28 @@ def add_explorer_view(
     :param route_name: Route name that's being added
     :param template: Dotted path to the html template that renders Swagger UI response
     :param ui_version: Swagger UI version string
+    :param ui_config:
+        A dictionary conforming to the SwaggerUI API.
+        Any settings defined here will override those defined by default.
+    :param oauth_config:
+        If defined, then SwaggerUI.initOAuth will be invoked with the supplied config.
+    :param oauth_redirect_route:
+        URL path where the redirect will be served. By default the path is constructed
+        by appending a ``/oauth2-redirect`` path component to the ``route`` parameter.
+    :param oauth_redirect_route_name:
+        Route name for the redirect route.
+    :param oauth_redirect_html:
+        Dotted path to the html that renders the oauth2-redirect HTML.
     :param permission: Permission for the explorer view
     """
 
+    if oauth_redirect_route is None:
+        oauth_redirect_route = route.rstrip("/") + "/oauth2-redirect"
+
     def register() -> None:
-        resolved_template = AssetResolver().resolve(template)
+        asset_resolver = AssetResolver()
+        resolved_template = asset_resolver.resolve(template)
+        redirect_html = asset_resolver.resolve(oauth_redirect_html)
 
         def explorer_view(request: Request) -> Response:
             settings = config.registry.settings
@@ -171,15 +194,36 @@ def add_explorer_view(
                 )
             with open(resolved_template.abspath()) as f:
                 template = Template(f.read())
+                merged_ui_config = {
+                    "url": request.route_path(settings[apiname]["spec_route_name"]),
+                    "dom_id": "#swagger-ui",
+                    "deepLinking": True,
+                    "validatorUrl": None,
+                    "layout": "StandaloneLayout",
+                    "oauth2RedirectUrl": request.route_url(oauth_redirect_route_name),
+                }
+                if ui_config:
+                    merged_ui_config.update(ui_config)
                 html = template.safe_substitute(
                     ui_version=ui_version,
-                    spec_url=request.route_path(settings[apiname]["spec_route_name"]),
+                    ui_config=json.dumps(merged_ui_config),
+                    oauth_config=json.dumps(oauth_config),
                 )
             return Response(html)
 
         config.add_route(route_name, route)
         config.add_view(
             route_name=route_name, permission=permission, view=explorer_view
+        )
+
+        def redirect_view(request: Request) -> FileResponse:
+            return FileResponse(redirect_html.abspath())
+
+        config.add_route(oauth_redirect_route_name, oauth_redirect_route)
+        config.add_view(
+            route_name=oauth_redirect_route_name,
+            permission=permission,
+            view=redirect_view,
         )
 
     config.action((f"{apiname}_add_explorer",), register, order=PHASE0_CONFIG)

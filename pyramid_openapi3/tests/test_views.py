@@ -292,7 +292,7 @@ def test_add_explorer_view() -> None:
                 document.name, route="/foo.yaml", route_name="foo_api_spec"
             )
 
-        config.pyramid_openapi3_add_explorer()
+        config.pyramid_openapi3_add_explorer(ui_config={"deepLinking": False})
         request = config.registry.queryUtility(
             IRouteRequest, name="pyramid_openapi3.explorer"
         )
@@ -301,6 +301,56 @@ def test_add_explorer_view() -> None:
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
+        assert b"const oauthConfig = null;" in response.body
+        assert b'"deepLinking": false' in response.body
+        assert (
+            b'"oauth2RedirectUrl": "http://example.com/docs/oauth2-redirect"'
+            in response.body
+        )
+
+
+def test_add_explorer_oauth_view() -> None:
+    """Test registration of a view serving the Swagger UI."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
+        with tempfile.NamedTemporaryFile() as document:
+            document.write(MINIMAL_DOCUMENT)
+            document.seek(0)
+
+            config.pyramid_openapi3_spec(
+                document.name, route="/foo.yaml", route_name="foo_api_spec"
+            )
+
+        config.pyramid_openapi3_add_explorer(
+            oauth_redirect_route="/dummy/oauth2-redirect",
+            oauth_config={
+                "usePkceWithAuthorizationCodeGrant": True,
+            },
+        )
+        request = config.registry.queryUtility(
+            IRouteRequest, name="pyramid_openapi3.explorer"
+        )
+        view = config.registry.adapters.registered(
+            (IViewClassifier, request, Interface), IView, name=""
+        )
+        response = view(request=DummyRequest(config=config), context=None)
+        assert b"<title>Swagger UI</title>" in response.body
+        assert b"ui.initOAuth(" in response.body
+        assert b"usePkceWithAuthorizationCodeGrant" in response.body
+        assert (
+            b'"oauth2RedirectUrl": "http://example.com/dummy/oauth2-redirect"'
+            in response.body
+        )
+
+        request = config.registry.queryUtility(
+            IRouteRequest, name="pyramid_openapi3.explorer.oauth2-redirect"
+        )
+        view = config.registry.adapters.registered(
+            (IViewClassifier, request, Interface), IView, name=""
+        )
+        response = view(request=DummyRequest(config=config), context=None)
+        assert b"<title>Swagger UI: OAuth2 Redirect</title>" in response.body
 
 
 def test_add_multiple_explorer_views() -> None:
@@ -344,7 +394,7 @@ def test_add_multiple_explorer_views() -> None:
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
-        assert b'url: "/foo/openapi.yaml"' in response.body
+        assert b'"url": "/foo/openapi.yaml"' in response.body
 
         request = config.registry.queryUtility(IRouteRequest, name="bar_api_explorer")
         view = config.registry.adapters.registered(
@@ -352,7 +402,7 @@ def test_add_multiple_explorer_views() -> None:
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
-        assert b'url: "/bar/openapi.yaml"' in response.body
+        assert b'"url": "/bar/openapi.yaml"' in response.body
 
 
 def test_add_multiple_explorer_views_using_directory() -> None:
@@ -398,7 +448,7 @@ def test_add_multiple_explorer_views_using_directory() -> None:
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
-        assert b'url: "/foo.yaml"' in response.body
+        assert b'"url": "/foo.yaml"' in response.body
 
         request = config.registry.queryUtility(IRouteRequest, name="bar_api_explorer")
         view = config.registry.adapters.registered(
@@ -406,7 +456,7 @@ def test_add_multiple_explorer_views_using_directory() -> None:
         )
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
-        assert b'url: "/bar.yaml"' in response.body
+        assert b'"url": "/bar.yaml"' in response.body
 
 
 def test_explorer_view_missing_spec() -> None:
