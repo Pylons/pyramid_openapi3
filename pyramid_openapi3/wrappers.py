@@ -41,7 +41,7 @@ class PyramidOpenAPIRequest:
             if self.request.matched_route
             else self.request.path_info
         )
-        return path_pattern
+        return self.request.script_name + path_pattern
 
     @property
     def method(self) -> str:

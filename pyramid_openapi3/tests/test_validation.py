@@ -363,6 +363,110 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         self.assertEqual(start_response.status, "500 Internal Server Error")
 
 
+class TestServerRequestValidation(RequestValidationBase):  # noqa: D101
+
+    openapi_spec = (
+        b"openapi: '3.1.0'\n"
+        b"info:\n"
+        b"  version: '1.0.0'\n"
+        b"  title: Foo API\n"
+        b"servers:\n"
+        b"  - url: /prefix/v1\n"
+        b"  - url: http://example.com/prefix\n"
+        b"paths:\n"
+        b"  /foo:\n"
+        b"    get:\n"
+        b"      responses:\n"
+        b"        200:\n"
+        b"          description: A foo\n"
+        b"          content:\n"
+        b"            application/json:\n"
+        b"              schema:\n"
+        b"                type: object\n"
+        b"                properties:\n"
+        b"                  test:\n"
+        b"                    type: string\n"
+        b"        400:\n"
+        b"          description: Bad Request\n"
+    )
+
+    def test_server_validation_works_with_script_name(self) -> None:
+        """Expect to find a match for http://localhost:8080/prefix/v1/foo."""
+        self._add_view(lambda *arg: {"test": "correct"})
+        # run request through router
+        router = Router(self.config.registry)
+        environ = {
+            "wsgi.url_scheme": "http",
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": "8080",
+            "REQUEST_METHOD": "GET",
+            "SCRIPT_NAME": "/prefix/v1",
+            "PATH_INFO": "/foo",
+            "HTTP_ACCEPT": "application/json",
+        }
+        start_response = DummyStartResponse()
+        response = router(environ, start_response)
+
+        self.assertEqual(start_response.status, "200 OK")
+        self.assertEqual(json.loads(response[0]), {"test": "correct"})
+
+    def test_server_validation_works_with_script_name_and_hostname(self) -> None:
+        """Expect to find a match for http://example.com/prefix/foo."""
+        self._add_view(lambda *arg: {"test": "correct"})
+        # run request through router
+        router = Router(self.config.registry)
+        environ = {
+            "wsgi.url_scheme": "http",
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": "8080",
+            "REQUEST_METHOD": "GET",
+            "SCRIPT_NAME": "/prefix",
+            "PATH_INFO": "/foo",
+            "HTTP_HOST": "example.com",
+            "HTTP_ACCEPT": "application/json",
+        }
+        start_response = DummyStartResponse()
+        response = router(environ, start_response)
+
+        self.assertEqual(start_response.status, "200 OK")
+        self.assertEqual(json.loads(response[0]), {"test": "correct"})
+
+    def test_server_validation_fails_with_bad_hostname(self) -> None:
+        """Expect to fail for /prefix/v2/foo."""
+        self._add_view()
+        # run request through router
+        router = Router(self.config.registry)
+        environ = {
+            "wsgi.url_scheme": "http",
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": "8080",
+            "REQUEST_METHOD": "GET",
+            "SCRIPT_NAME": "/prefix/v2",
+            "PATH_INFO": "/foo",
+            "HTTP_HOST": "example.com",
+            "HTTP_ACCEPT": "application/json",
+        }
+        start_response = DummyStartResponse()
+        with self.assertLogs(level="ERROR") as cm:
+            response = router(environ, start_response)
+        self.assertEqual(start_response.status, "500 Internal Server Error")
+        self.assertEqual(
+            json.loads(response[0]),
+            [
+                {
+                    "exception": "ServerNotFound",
+                    "message": "Server not found for http://example.com/prefix/v2/foo",
+                }
+            ],
+        )
+        self.assertEqual(
+            cm.output,
+            [
+                "ERROR:pyramid_openapi3:Server not found for http://example.com/prefix/v2/foo"
+            ],
+        )
+
+
 class TestImproperAPISpecValidation(RequestValidationBase):  # noqa: D101
 
     openapi_spec = (
