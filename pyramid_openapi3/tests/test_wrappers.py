@@ -69,7 +69,7 @@ def test_relative_app_request() -> None:
     )
     assert openapi_request.host_url == "http://example.com"
     assert openapi_request.path == "/subpath/foo"
-    assert openapi_request.path_pattern == "/foo"
+    assert openapi_request.path_pattern == "/subpath/foo"
     assert openapi_request.method == "get"
     assert openapi_request.body == b""
     assert openapi_request.mimetype == "text/html"
