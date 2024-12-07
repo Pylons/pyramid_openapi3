@@ -310,7 +310,7 @@ def test_add_explorer_view() -> None:
 
 
 def test_add_explorer_oauth_view() -> None:
-    """Test registration of a view serving the Swagger UI."""
+    """Test registration of a view serving the Swagger UI with OAuth support."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
 
