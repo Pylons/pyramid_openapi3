@@ -154,6 +154,20 @@ Sometimes, it is necessary to specify the protocol and port to access the openap
 config.pyramid_openapi3_add_explorer(proto_port=('https', 443))
 ```
 
+### CSP nonce
+
+If a Content Security Policy (CSP) is used in your Pyramid application, you can pass a nonce to the OpenAPI explorer UI by setting the `csp_nonce` request parameter:
+
+```python
+def inject_csp_header_tween(request):
+    nonce = secrets.token_urlsafe(16)
+    request.csp_nonce = nonce
+    response = handler(request)
+    response.headers["Content-Security-Policy"] = f"script-src 'self' 'nonce-{nonce}'"
+    return response
+```
+
+
 ## Demo / Examples
 
 There are three examples provided with this package:

@@ -204,10 +204,15 @@ def add_explorer_view(
                 }
                 if ui_config:
                     merged_ui_config.update(ui_config)
+                # Check if request has a CSP nonce (for Content Security Policy)
+                nonce = getattr(request, "csp_nonce", None)
+                nonce_attr = f' nonce="{nonce}"' if nonce else ""
+
                 html = template.safe_substitute(
                     ui_version=ui_version,
                     ui_config=json.dumps(merged_ui_config),
                     oauth_config=json.dumps(oauth_config),
+                    nonce_attr=nonce_attr,
                 )
             return Response(html)
 
