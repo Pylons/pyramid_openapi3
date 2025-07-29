@@ -760,3 +760,63 @@ def test_cookie_parameters() -> None:
         response = view(context, request)
 
         assert response.json == "foo"
+
+
+def test_add_explorer_view_with_csp_nonce() -> None:
+    """Test explorer view includes CSP nonce when available on request."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
+        with tempfile.NamedTemporaryFile() as document:
+            document.write(MINIMAL_DOCUMENT)
+            document.seek(0)
+
+            config.pyramid_openapi3_spec(
+                document.name, route="/foo.yaml", route_name="foo_api_spec"
+            )
+
+        config.pyramid_openapi3_add_explorer()
+        request = config.registry.queryUtility(
+            IRouteRequest, name="pyramid_openapi3.explorer"
+        )
+        view = config.registry.adapters.registered(
+            (IViewClassifier, request, Interface), IView, name=""
+        )
+
+        # Test with CSP nonce
+        dummy_request = DummyRequest(config=config)
+        dummy_request.csp_nonce = "test-nonce-123"
+        response = view(request=dummy_request, context=None)
+
+        assert b'<script nonce="test-nonce-123">' in response.body
+        assert b"<title>Swagger UI</title>" in response.body
+
+
+def test_add_explorer_view_without_csp_nonce() -> None:
+    """Test explorer view works normally when no CSP nonce is present."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
+        with tempfile.NamedTemporaryFile() as document:
+            document.write(MINIMAL_DOCUMENT)
+            document.seek(0)
+
+            config.pyramid_openapi3_spec(
+                document.name, route="/foo.yaml", route_name="foo_api_spec"
+            )
+
+        config.pyramid_openapi3_add_explorer()
+        request = config.registry.queryUtility(
+            IRouteRequest, name="pyramid_openapi3.explorer"
+        )
+        view = config.registry.adapters.registered(
+            (IViewClassifier, request, Interface), IView, name=""
+        )
+
+        # Test without CSP nonce
+        dummy_request = DummyRequest(config=config)
+        response = view(request=dummy_request, context=None)
+
+        assert b"<script>" in response.body
+        assert b"nonce=" not in response.body
+        assert b"<title>Swagger UI</title>" in response.body
