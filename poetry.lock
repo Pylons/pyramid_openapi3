@@ -1214,19 +1214,19 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4.3)", "pytest-
 
 [[package]]
 name = "pluggy"
-version = "1.4.0"
+version = "1.6.0"
 description = "plugin and hook calling mechanisms for python"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "pluggy-1.4.0-py3-none-any.whl", hash = "sha256:7db9f7b503d67d1c5b95f59773ebb58a8c1c288129a88665838012cfb07b8981"},
-    {file = "pluggy-1.4.0.tar.gz", hash = "sha256:8c85c2876142a764e5b7548e7d9a0e0ddb46f5185161049a79b7e974454223be"},
+    {file = "pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746"},
+    {file = "pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3"},
 ]
 
 [package.extras]
 dev = ["pre-commit", "tox"]
-testing = ["pytest", "pytest-benchmark"]
+testing = ["coverage", "pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pre-commit"
@@ -1372,26 +1372,27 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.0.2"
+version = "9.0.3"
 description = "pytest: simple powerful testing with Python"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "pytest-8.0.2-py3-none-any.whl", hash = "sha256:edfaaef32ce5172d5466b5127b42e0d6d35ebbe4453f0e3505d96afd93f6b096"},
-    {file = "pytest-8.0.2.tar.gz", hash = "sha256:d4051d623a2e0b7e51960ba963193b09ce6daeb9759a451844a21e4ddedfc1bd"},
+    {file = "pytest-9.0.3-py3-none-any.whl", hash = "sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9"},
+    {file = "pytest-9.0.3.tar.gz", hash = "sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c"},
 ]
 
 [package.dependencies]
-colorama = {version = "*", markers = "sys_platform == \"win32\""}
-exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
-iniconfig = "*"
-packaging = "*"
-pluggy = ">=1.3.0,<2.0"
-tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
+colorama = {version = ">=0.4", markers = "sys_platform == \"win32\""}
+exceptiongroup = {version = ">=1", markers = "python_version < \"3.11\""}
+iniconfig = ">=1.0.1"
+packaging = ">=22"
+pluggy = ">=1.5,<2"
+pygments = ">=2.7.2"
+tomli = {version = ">=1", markers = "python_version < \"3.11\""}
 
 [package.extras]
-testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests", "setuptools", "xmlschema"]
 
 [[package]]
 name = "pytest-cov"
