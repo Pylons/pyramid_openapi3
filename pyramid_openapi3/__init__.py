@@ -6,10 +6,10 @@ from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
 from .wrappers import PyramidOpenAPIRequest
 from jsonschema_path import SchemaPath
+from openapi_core import V30ResponseValidator
+from openapi_core import V31ResponseValidator
 from openapi_core.unmarshalling.request import V30RequestUnmarshaller
 from openapi_core.unmarshalling.request import V31RequestUnmarshaller
-from openapi_core.unmarshalling.response import V30ResponseUnmarshaller
-from openapi_core.unmarshalling.response import V31ResponseUnmarshaller
 from openapi_core.validation.request.exceptions import SecurityValidationError
 from openapi_spec_validator import validate
 from openapi_spec_validator.readers import read_from_filename
@@ -362,18 +362,18 @@ def _create_api_settings(
         "pyramid_openapi3_unmarshallers"
     )
 
-    # switch unmarshaller based on spec version
+    # switch validator based on spec version
     spec_version = get_spec_version(spec.contents())
     request_unmarshallers = {
         "OpenAPIV3.0": V30RequestUnmarshaller,
         "OpenAPIV3.1": V31RequestUnmarshaller,
     }
-    response_unmarshallers = {
-        "OpenAPIV3.0": V30ResponseUnmarshaller,
-        "OpenAPIV3.1": V31ResponseUnmarshaller,
+    response_validators = {
+        "OpenAPIV3.0": V30ResponseValidator,
+        "OpenAPIV3.1": V31ResponseValidator,
     }
     request_unmarshaller = request_unmarshallers[str(spec_version)]
-    response_unmarshaller = response_unmarshallers[str(spec_version)]
+    response_validator = response_validators[str(spec_version)]
 
     return {
         "filepath": filepath,
@@ -385,11 +385,10 @@ def _create_api_settings(
             extra_media_type_deserializers=custom_deserializers,
             extra_format_unmarshallers=custom_unmarshallers,
         ),
-        "response_validator": response_unmarshaller(
+        "response_validator": response_validator(
             spec,
             extra_format_validators=custom_formatters,
             extra_media_type_deserializers=custom_deserializers,
-            extra_format_unmarshallers=custom_unmarshallers,
         ),
     }
 
