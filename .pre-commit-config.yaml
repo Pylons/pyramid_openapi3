@@ -72,10 +72,10 @@ repos:
         language: system
         types: [yaml]
 
-    -   id: nixpkg-fmt
+    -   id: nixfmt
         name: Format *.nix
         description: Format nix files.
-        entry: nixpkgs-fmt
+        entry: nixfmt
         language: system
         files: .*\.nix
         types: [non-executable, file, text]

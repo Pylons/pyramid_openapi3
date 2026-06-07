@@ -14,12 +14,11 @@ pkgs.mkShell {
   buildInputs = with pkgs; [
     # The supported Python range (3.10-3.12); uv uses these directly.
     python310
-    python311
     python312
     uv
     git
     pre-commit
-    nixpkgs-fmt
+    nixfmt
   ];
 
   # Use the Nix-provided interpreters instead of uv-managed downloads.
