@@ -1,28 +1,13 @@
 # Convenience makefile to build the dev env and run common commands
 # Based on https://github.com/niteoweb/Makefile
 
-PYTHON ?= python3.12
-
 .PHONY: all
 all: tests
 
 # Lock version pins for Python dependencies
 .PHONY: lock
 lock:
-	@rm -rf .venv/
-	@poetry lock --no-update
-	@rm -rf .venv/
-	@nix-shell --run true
-	@direnv reload
-	@cat pyproject.toml \
-		| sed 's/openapi-core = ">=/openapi-core = "==/g' \
-		| sed 's/pyramid = ">=/pyramid = "==/g' \
-		> py310/pyproject.toml
-	@rm -rf .venv/
-	@poetry lock --no-update --directory py310
-	@rm -rf .venv/
-	@nix-shell --run true
-	@direnv reload
+	@uv lock
 
 # Testing and linting targets
 all = false
@@ -34,10 +19,10 @@ lint:
 # 3. get all untracked files
 # 4. run pre-commit checks on them
 ifeq ($(all),true)
-	@pre-commit run --hook-stage push --all-files
+	@uv run pre-commit run --hook-stage push --all-files
 else
 	@{ git diff --name-only ./; git diff --name-only --staged ./;git ls-files --other --exclude-standard; } \
-		| sort -u | uniq | xargs pre-commit run --hook-stage push --files
+		| sort -u | uniq | xargs uv run pre-commit run --hook-stage push --files
 endif
 
 .PHONY: type
@@ -45,12 +30,12 @@ type: types
 
 .PHONY: types
 types: .
-	@mypy examples/todoapp
+	@uv run mypy examples/todoapp
 	@cat ./typecov/linecount.txt
-	@typecov 100 ./typecov/linecount.txt
-	@mypy pyramid_openapi3
+	@uv run typecov 100 ./typecov/linecount.txt
+	@uv run mypy pyramid_openapi3
 	@cat ./typecov/linecount.txt
-	@typecov 100 ./typecov/linecount.txt
+	@uv run typecov 100 ./typecov/linecount.txt
 
 
 # anything, in regex-speak
@@ -82,9 +67,9 @@ endif
 .PHONY: unit
 unit:
 ifndef path
-	@$(PYTHON) -m pytest pyramid_openapi3 $(verbosity) $(full_suite_args) $(pytest_args)
+	@uv run pytest pyramid_openapi3 $(verbosity) $(full_suite_args) $(pytest_args)
 else
-	@$(PYTHON) -m pytest $(path)
+	@uv run pytest $(path)
 endif
 
 .PHONY: test

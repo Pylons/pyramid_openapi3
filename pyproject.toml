@@ -1,14 +1,13 @@
-[tool.poetry]
+[project]
 name = "pyramid_openapi3"
 version = "0.21.0"
 description = "Pyramid addon for OpenAPI3 validation of requests and responses."
 readme = "README.md"
-authors = [
-  "Neyts Zupan",
-  "Domen Kozar"
-]
 license = "MIT"
-repository = "https://github.com/Pylons/pyramid_openapi3"
+authors = [
+  { name = "Neyts Zupan" },
+  { name = "Domen Kozar" },
+]
 keywords = ["pyramid", "openapi3", "openapi", "rest", "restful"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -17,62 +16,64 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-packages = [
-  { include = "pyramid_openapi3", from = "." },
+requires-python = ">=3.10"
+dependencies = [
+  "openapi-core>=0.19.1,<0.20",
+  "pyramid>=1.10.7",
 ]
-exclude = ["pyramid_openapi3/tests/"]
 
+[project.urls]
+Repository = "https://github.com/Pylons/pyramid_openapi3"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-
-openapi-core = ">=0.19.1"
-pyramid = ">=1.10.7"
-
-
-[tool.poetry.dev-dependencies]
-autoflake = "*"
-black = "*"
-codespell = "*"
-coverage = "*"
-docutils = "*"
-flake8 = "*"
-flake8-assertive = "*"
-flake8-blind-except = "*"
-flake8-bugbear = "*"
-flake8-builtins = "*"
-flake8-comprehensions = "*"
-flake8-debugger = "*"
-flake8-deprecated = "*"
-flake8-docstrings = "*"
-flake8-ensure-ascii = "*"
-flake8-plone-hasattr = "*"
-flake8-print = "*"
-flake8-self = "*"
-flake8-super-call = "*"
-flake8-tuple = "*"
-isort = "*"
-mccabe = "*"
-more-itertools = "*"
-mypy = "<1.19"  # 1.19+ pulls librt, whose riscv64 wheels break poetry2nix
-pdbpp = "*"
-pre-commit = "*"
-pre-commit-hooks = "*"
-pytest = "*"
-pytest-cov = "*"
-pytest-instafail = "*"
-pytest-randomly = "*"
-pytest-socket = "*"
-pyupgrade = "*"
-typecov = "*"
-types-pytest-lazy-fixture = "*"
-webtest = "*"
-yamllint = "*"
-
+[dependency-groups]
+dev = [
+  "autoflake",
+  "black",
+  "codespell",
+  "coverage",
+  "docutils",
+  "flake8",
+  "flake8-assertive",
+  "flake8-blind-except",
+  "flake8-bugbear",
+  "flake8-builtins",
+  "flake8-comprehensions",
+  "flake8-debugger",
+  "flake8-deprecated",
+  "flake8-docstrings",
+  "flake8-ensure-ascii",
+  "flake8-plone-hasattr",
+  "flake8-print",
+  "flake8-self",
+  "flake8-super-call",
+  "flake8-tuple",
+  "isort",
+  "mccabe",
+  "more-itertools",
+  "mypy",
+  "pdbpp",
+  "pre-commit",
+  "pre-commit-hooks",
+  "pytest",
+  "pytest-cov",
+  "pytest-instafail",
+  "pytest-randomly",
+  "pytest-socket",
+  "pyupgrade",
+  "typecov",
+  "types-pytest-lazy-fixture",
+  "webtest",
+  "yamllint",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.9.30,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "pyramid_openapi3"
+module-root = ""
+source-exclude = ["pyramid_openapi3/tests"]
 
 
 [tool.autoflake]
