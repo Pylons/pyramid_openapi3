@@ -16,8 +16,7 @@ def test_register_routes_simple() -> None:
     with testConfig() as config:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as tempdoc:
-            tempdoc.write(
-                b"""\
+            tempdoc.write(b"""\
 openapi: "3.1.0"
 info:
   version: "1.0.0"
@@ -34,8 +33,7 @@ paths:
       responses:
         200:
           description: A bar
-"""
-            )
+""")
             tempdoc.seek(0)
             config.pyramid_openapi3_spec(tempdoc.name)
             config.pyramid_openapi3_register_routes()
@@ -58,8 +56,7 @@ def test_register_routes_with_factory() -> None:
     with testConfig() as config:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as tempdoc:
-            tempdoc.write(
-                b"""\
+            tempdoc.write(b"""\
 openapi: "3.1.0"
 info:
   version: "1.0.0"
@@ -79,8 +76,7 @@ paths:
         200:
           description: A bar
 
-"""
-            )
+""")
             tempdoc.seek(0)
             config.pyramid_openapi3_spec(tempdoc.name)
             config.pyramid_openapi3_register_routes()
@@ -106,8 +102,7 @@ def test_register_routes_with_prefix() -> None:
     with testConfig() as config:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as tempdoc:
-            tempdoc.write(
-                b"""\
+            tempdoc.write(b"""\
 openapi: "3.1.0"
 info:
   version: "1.0.0"
@@ -121,8 +116,7 @@ paths:
       responses:
         200:
           description: A foo
-"""
-            )
+""")
             tempdoc.seek(0)
             config.pyramid_openapi3_spec(tempdoc.name)
             config.pyramid_openapi3_register_routes(route_prefix="/api/v1")
