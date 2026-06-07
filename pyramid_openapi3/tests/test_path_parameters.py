@@ -14,8 +14,7 @@ def test_path_parameter_validation() -> None:
     """Test validated parameters in context factory."""
 
     with NamedTemporaryFile() as tempdoc:
-        tempdoc.write(
-            b"""\
+        tempdoc.write(b"""\
 openapi: "3.1.0"
 info:
   version: "1.0.0"
@@ -32,8 +31,7 @@ paths:
       responses:
         200:
           description: A foo
-"""
-        )
+""")
         tempdoc.seek(0)
 
         with Configurator() as config:

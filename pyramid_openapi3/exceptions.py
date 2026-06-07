@@ -16,7 +16,9 @@ class RequestValidationError(HTTPBadRequest):
 
     explanation = "Request validation failed."
 
-    def __init__(
+    # B042 is a false positive here: this subclasses a webob HTTPException and
+    # the errors attr cannot be forwarded to super().__init__().
+    def __init__(  # noqa: B042
         self, *args: t.Any, errors: t.List[Exception], **kwargs: t.Any
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -33,7 +35,9 @@ class ResponseValidationError(HTTPInternalServerError):
 
     explanation = "Response validation failed."
 
-    def __init__(
+    # B042 is a false positive here: this subclasses a webob HTTPException and
+    # the response/errors attrs cannot be forwarded to super().__init__().
+    def __init__(  # noqa: B042
         self,
         *args: t.Any,
         response: Response,
