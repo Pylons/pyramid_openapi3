@@ -12,7 +12,6 @@ def _foo_view(request: Request) -> int:
 
 def test_path_parameter_validation() -> None:
     """Test validated parameters in context factory."""
-
     with NamedTemporaryFile() as tempdoc:
         tempdoc.write(b"""\
 openapi: "3.1.0"

@@ -4,15 +4,16 @@ from pyramid.authentication import SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.request import Request
+from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.security import Allow
 from pyramid.security import Authenticated
-from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.session import SignedCookieSessionFactory
 from webtest.app import TestApp
 
 import os
 import pytest
 import tempfile
+import typing as t
 
 DEFAULT_ACL = [
     (Allow, Authenticated, "view"),
@@ -20,7 +21,6 @@ DEFAULT_ACL = [
 
 
 class DummyDefaultContext:  # noqa: D101
-
     __acl__ = DEFAULT_ACL
 
 
@@ -30,7 +30,7 @@ def get_default_context(request: Request) -> DummyDefaultContext:
 
 
 @pytest.fixture
-def simple_config() -> Configurator:
+def simple_config() -> t.Generator[Configurator, None, None]:
     """Prepare the base configuration needed for the Pyramid app."""
     with Configurator() as config:
         config.include("pyramid_openapi3")
@@ -77,7 +77,6 @@ def test_permission_for_specs(
     simple_config: Configurator, route: str, permission: str, status: int
 ) -> None:
     """Allow (200) or deny (403) access to the spec/explorer view."""
-
     with tempfile.NamedTemporaryFile() as document:
         document.write(OPENAPI_YAML.encode())
         document.seek(0)

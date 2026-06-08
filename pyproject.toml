@@ -1,113 +1,150 @@
-[tool.poetry]
+[project]
 name = "pyramid_openapi3"
 version = "0.21.0"
 description = "Pyramid addon for OpenAPI3 validation of requests and responses."
 readme = "README.md"
-authors = [
-  "Neyts Zupan",
-  "Domen Kozar"
-]
+requires-python = ">=3.11,<4"
 license = "MIT"
-repository = "https://github.com/Pylons/pyramid_openapi3"
-keywords = ["pyramid", "openapi3", "openapi", "rest", "restful"]
+license-files = ["LICENSE"]
+authors = [{ name = "Neyts Zupan" }, { name = "Domen Kozar" }]
+keywords = ["openapi", "openapi3", "pyramid", "rest", "restful"]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Framework :: Pyramid",
-    "Topic :: Internet :: WWW/HTTP",
-    "Topic :: Software Development :: Libraries :: Python Modules",
+  "Development Status :: 4 - Beta",
+  "Framework :: Pyramid",
+  "Intended Audience :: Developers",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-packages = [
-  { include = "pyramid_openapi3", from = "." },
+dependencies = [
+  # openapi-core 0.23.0 removed SchemaPath.contents(), which this addon relies
+  # on. The supported line is 0.19.x (see README deprecation policy).
+  "openapi-core>=0.19.1,<0.20",
+  "pyramid>=1.10.7",
 ]
-exclude = ["pyramid_openapi3/tests/"]
 
+[project.urls]
+Repository = "https://github.com/Pylons/pyramid_openapi3"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-
-openapi-core = ">=0.19.1"
-pyramid = ">=1.10.7"
-
-
-[tool.poetry.dev-dependencies]
-autoflake = "*"
-black = "*"
-codespell = "*"
-coverage = "*"
-docutils = "*"
-flake8 = "*"
-flake8-assertive = "*"
-flake8-blind-except = "*"
-flake8-bugbear = "*"
-flake8-builtins = "*"
-flake8-comprehensions = "*"
-flake8-debugger = "*"
-flake8-deprecated = "*"
-flake8-docstrings = "*"
-flake8-ensure-ascii = "*"
-flake8-plone-hasattr = "*"
-flake8-print = "*"
-flake8-self = "*"
-flake8-super-call = "*"
-flake8-tuple = "*"
-isort = "*"
-mccabe = "*"
-more-itertools = "*"
-mypy = "<1.19"  # 1.19+ pulls librt, whose riscv64 wheels break poetry2nix
-pdbpp = "*"
-pre-commit = "*"
-pre-commit-hooks = "*"
-pytest = "*"
-pytest-cov = "*"
-pytest-instafail = "*"
-pytest-randomly = "*"
-pytest-socket = "*"
-pyupgrade = "*"
-typecov = "*"
-types-pytest-lazy-fixture = "*"
-webtest = "*"
-yamllint = "*"
-
+[dependency-groups]
+# Lower bounds keep the lowest-direct resolution (run by `make lock` to generate
+# uv-oldest.lock) on working tool versions while it pins openapi-core/pyramid to
+# floors.
+dev = [
+  "pytest>=8",
+  "pytest-cov>=5",
+  "pytest-instafail>=0.5",
+  "pytest-randomly>=3.15",
+  "pytest-socket>=0.7",
+  "waitress>=3",
+  "webtest>=3",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
 
+[tool.coverage.run]
+branch = true
 
-[tool.autoflake]
-remove-all-unused-imports = true
-in-place = true
-recursive = true
+[tool.coverage.report]
+exclude_also = ['if __name__ == "__main__":']
 
+[tool.pytest.ini_options]
+testpaths = ["pyramid_openapi3"]
 
-[tool.isort]
-atomic=true
-force_alphabetical_sort=true
-force_single_line=true
-line_length=88
-profile="black"
+[tool.ruff]
+target-version = "py311"
+exclude = [".git", ".venv"]
+line-length = 88
 
+[tool.ruff.lint]
+select = ["ALL"]
 
-[tool.mypy]
-follow_imports = "silent"
-check_untyped_defs = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-linecount_report = "./typecov"
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = [
-  "openapi_core.*",
-  "openapi_spec_validator.*",
-  "openapi_schema_validator.*",
-  "hupper.*",
-  "pyramid.*",
-  "pytest",
-  "webob.multidict.*",
-  "webtest.*",
-  "zope.interface.*",
-
+ignore = [
+  "ANN401",  # typing.Any disallowed in **kw
+  "ARG001",  # Unused function argument
+  "ARG002",  # Unused method argument
+  "COM812",  # Missing trailing comma (conflicts with formatter)
+  "D107",  # Missing docstring in __init__ (matches the pre-uv .flake8 config)
+  "E501",  # line too long
+  "EM101",  # Exception must not use string literal
+  "EM102",  # Exception must not use string literal
+  "ERA001",  # Found commented out code
+  "FBT001",  # Boolean-typed argument
+  "N818",  # Exception name should end in Error (public API name, can't rename)
+  "PLR0913",  # Too many arguments (public config directives need them)
+  "TD002",  # TODO comments must have an author
+  "TD003",  # TODO comments must have a ticket reference
+  "TRY003",  # Avoid specifying long messages outside the exception class
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = [
+  "ANN002",  # Missing type annotation for *args
+  "ARG001",  # Unused function argument
+  "ARG005",  # Unused lambda argument (test view stubs)
+  "B018",  # Useless expression (deliberate attribute access to trigger errors)
+  "DTZ001",  # Naive datetime usage
+  "FBT002",  # Boolean default positional argument
+  "G004",  # Logging statement uses f-string
+  "N802",  # Function name should be lowercase
+  "N803",  # Argument name should be lowercase
+  "PLC0415",  # `import` should be at the top-level of a file
+  "PLR2004",  # Magic value comparisons
+  "PT006",  # pytest parametrize names type
+  "PT007",  # pytest parametrize values type
+  "PT009",  # Use assert instead of unittest assertion (TestCase-based suite)
+  "PT027",  # Use pytest.raises instead of unittest assertRaises
+  "PTH118",  # os.path.join (tempfile-based tests)
+  "PTH123",  # builtin open
+  "RET504",  # Unnecessary assign before return
+  "RUF043",  # pytest.raises match is a regex
+  "S101",  # Use of `assert` detected
+  "SIM117",  # Multiple with statements
+  "SLF001",  # Private member accessed
+  "TRY002",  # Create your own exception
+]
+"examples/**" = [
+  "ANN001",  # Missing type annotation for argument
+  "ANN201",  # Missing return type annotation
+  "B904",  # raise ... from (demo brevity)
+  "INP001",  # Add an `__init__.py`
+  "N802",  # Function name should be lowercase
+  "PLC0415",  # `import` should be at the top-level of a file
+  "PLR2004",  # Magic value comparisons
+  "PT009",  # Use assert instead of unittest assertion (TestCase-based examples)
+  "PTH118",  # os.path.join
+  "PTH120",  # os.path.dirname
+  "RSE102",  # Unnecessary parens on raise
+  "S101",  # Use of `assert` detected
+  "S104",  # Hardcoded bind to all interfaces (demo servers)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.isort]
+force-single-line = true
+no-sections = true
+from-first = true
+lines-between-types = 1
+
+[tool.ty.rules]
+# Pyramid extends Request/Response with reified attributes (registry, environ,
+# matched_route, openapi_validated, ...) and ships incomplete type information,
+# so ty cannot resolve them. The pre-uv mypy config silenced this via
+# `ignore_missing_imports` for pyramid.*; this is the ty equivalent.
+unresolved-attribute = "ignore"
+
+[tool.uv]
+# Setuptools dropped pkg_resources, but the oldest supported Pyramid (1.10.7,
+# exercised by the lowest-direct CI job) still imports it at module load.
+constraint-dependencies = ["setuptools<81"]
+# Only consider releases at least 7 days old. Project-local so `make lock` is
+# reproducible regardless of each dev's global ~/.config/uv/uv.toml.
+exclude-newer = "7 days"
+
+[tool.uv.build-backend]
+module-name = "pyramid_openapi3"
+module-root = ""
+source-exclude = ["pyramid_openapi3/tests"]

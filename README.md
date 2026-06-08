@@ -15,8 +15,6 @@
   </a>
   <img alt="Test coverage (main branch)"
        src="https://img.shields.io/badge/tests_coverage-100%25-brightgreen.svg">
-  <img alt="Test coverage (main branch)"
-       src="https://img.shields.io/badge/types_coverage-100%25-brightgreen.svg">
   <a href="https://pypi.org/project/pyramid_openapi3/">
     <img alt="latest version of pyramid_openapi3 on PyPI"
          src="https://img.shields.io/pypi/v/pyramid_openapi3.svg">
@@ -194,15 +192,8 @@ The authors of pyramid_openapi3 believe that the approach of validating a manual
 
 ## Running tests
 
-You need to have [poetry](https://python-poetry.org/) and Python 3.10 & 3.12 installed on your machine. All `Makefile` commands assume you have the Poetry environment activated, i.e. `poetry shell`.
-
-Alternatively, if you use [nix](https://nix.dev/tutorials/declarative-and-reproducible-developer-environments), run `nix-shell` to drop into a shell that has everything prepared for development.
-
-Then you can run:
-
-```shell
-make tests
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md#running-tests) for how to set up a development
+environment and run the tests and linters.
 
 ## Related packages
 
@@ -220,8 +211,8 @@ These packages tackle the same problem-space:
 
 We do our best to follow the rules below.
 
-- Support the latest few releases of Python, currently Python 3.10 through 3.12.
-- Support the latest few releases of Pyramid, currently 1.10.7 through 2.0.2.
+- Support the latest few releases of Python, currently Python 3.11 through 3.14.
+- Support the latest few releases of Pyramid, currently 1.10.7 through 2.1.
 - Support the latest few releases of `openapi-core`, currently just 0.19.0.
 - See `poetry.lock` for a frozen-in-time known-good-set of all dependencies.
 

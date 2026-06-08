@@ -1,1 +1,1 @@
-# noqa
+"""Tests for pyramid_openapi3."""

@@ -139,7 +139,7 @@ def root_server_document() -> t.Generator[t.IO, None, None]:
 
 
 @pytest.fixture
-def simple_config() -> Configurator:
+def simple_config() -> t.Generator[Configurator, None, None]:
     """Config fixture."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -148,36 +148,34 @@ def simple_config() -> Configurator:
 
 
 @pytest.fixture
-def simple_app_config(
-    simple_config: Configurator, document: t.IO
-) -> t.Generator[Configurator, None, None]:
+def simple_app_config(simple_config: Configurator, document: t.IO) -> Configurator:
     """Incremented fixture that loads the DOCUMENT above into the config."""
     simple_config.pyramid_openapi3_spec(
         document.name, route="/foo.yaml", route_name="foo_api_spec"
     )
-    yield simple_config
+    return simple_config
 
 
 @pytest.fixture
 def split_file_app_config(
     simple_config: Configurator, directory_document: str
-) -> t.Generator[Configurator, None, None]:
+) -> Configurator:
     """Incremented fixture that loads the SPLIT_DOCUMENT above into the config."""
     simple_config.pyramid_openapi3_spec_directory(
         directory_document, route="/foo", route_name="foo_api_spec"
     )
-    yield simple_config
+    return simple_config
 
 
 @pytest.fixture
 def root_server_app_config(
     simple_config: Configurator, root_server_document: t.IO
-) -> t.Generator[Configurator, None, None]:
+) -> Configurator:
     """Incremented fixture that loads the ROOT_SERVER_DOCUMENT above into the config."""
     simple_config.pyramid_openapi3_spec(
         root_server_document.name, route="/foo.yaml", route_name="foo_api_spec"
     )
-    yield simple_config
+    return simple_config
 
 
 app_config = pytest.mark.parametrize(
@@ -190,7 +188,7 @@ app_config = pytest.mark.parametrize(
 
 
 @app_config
-def test_all_routes(app_config: Configurator, request: SubRequest) -> None:
+def test_all_routes(app_config: str, request: SubRequest) -> None:
     """Test case showing that an app can be created with all routes defined."""
     app_config = request.getfixturevalue(app_config)
     app_config.add_route(name="foo", pattern="/foo")
@@ -206,7 +204,7 @@ def test_all_routes(app_config: Configurator, request: SubRequest) -> None:
 
 
 @app_config
-def test_prefixed_routes(app_config: Configurator, request: SubRequest) -> None:
+def test_prefixed_routes(app_config: str, request: SubRequest) -> None:
     """Test case for prefixed routes."""
     app_config = request.getfixturevalue(app_config)
     app_config.add_route(name="foo", pattern="/api/v1/foo")
@@ -222,9 +220,7 @@ def test_prefixed_routes(app_config: Configurator, request: SubRequest) -> None:
 
 
 @app_config
-def test_pyramid_prefixed_context_routes(
-    app_config: Configurator, request: SubRequest
-) -> None:
+def test_pyramid_prefixed_context_routes(app_config: str, request: SubRequest) -> None:
     """Test case for prefixed routes using pyramid route_prefix_context."""
     app_config = request.getfixturevalue(app_config)
     with app_config.route_prefix_context("/api/v1"):
@@ -241,7 +237,7 @@ def test_pyramid_prefixed_context_routes(
 
 
 @app_config
-def test_missing_routes(app_config: Configurator, request: SubRequest) -> None:
+def test_missing_routes(app_config: str, request: SubRequest) -> None:
     """Test case showing app creation fails, when defined routes are missing."""
     app_config = request.getfixturevalue(app_config)
     with pytest.raises(MissingEndpointsError) as ex:
@@ -252,7 +248,7 @@ def test_missing_routes(app_config: Configurator, request: SubRequest) -> None:
 
 @app_config
 def test_disable_endpoint_validation(
-    app_config: Configurator, caplog: LogCaptureFixture, request: SubRequest
+    app_config: str, caplog: LogCaptureFixture, request: SubRequest
 ) -> None:
     """Test case showing app creation whilst disabling endpoint validation."""
     caplog.set_level(logging.INFO)
@@ -283,9 +279,7 @@ def test_unconfigured_app(
 
 
 @app_config
-def test_routes_setting_generation(
-    app_config: Configurator, request: SubRequest
-) -> None:
+def test_routes_setting_generation(app_config: str, request: SubRequest) -> None:
     """Test the `routes` setting is correctly created after app creation."""
     app_config = request.getfixturevalue(app_config)
 

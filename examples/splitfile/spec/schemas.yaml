@@ -6,7 +6,6 @@ Item:
     title:
       type: string
       maxLength: 40
-
 Error:
   type: object
   required:

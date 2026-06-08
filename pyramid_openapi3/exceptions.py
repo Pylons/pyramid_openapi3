@@ -16,11 +16,7 @@ class RequestValidationError(HTTPBadRequest):
 
     explanation = "Request validation failed."
 
-    # B042 is a false positive here: this subclasses a webob HTTPException and
-    # the errors attr cannot be forwarded to super().__init__().
-    def __init__(  # noqa: B042
-        self, *args: t.Any, errors: t.List[Exception], **kwargs: t.Any
-    ) -> None:
+    def __init__(self, *args: t.Any, errors: list[Exception], **kwargs: t.Any) -> None:
         super().__init__(*args, **kwargs)
         self.errors = errors
         self.detail = self.message = "\n".join(str(e) for e in errors)
@@ -35,13 +31,11 @@ class ResponseValidationError(HTTPInternalServerError):
 
     explanation = "Response validation failed."
 
-    # B042 is a false positive here: this subclasses a webob HTTPException and
-    # the response/errors attrs cannot be forwarded to super().__init__().
-    def __init__(  # noqa: B042
+    def __init__(
         self,
         *args: t.Any,
         response: Response,
-        errors: t.List[Exception],
+        errors: list[Exception],
         **kwargs: t.Any,
     ) -> None:
         super().__init__(*args, **kwargs)
@@ -60,7 +54,7 @@ class InvalidCustomFormatterValue(UnmarshallerError):
 
     field: str
     value: str
-    type: str  # noqa: A003 # we use `type` as a dataclass field name
+    type: str  # we use `type` as a dataclass field name
     original_exception: Exception
 
     def __str__(self) -> str:
@@ -73,8 +67,8 @@ class ImproperAPISpecificationWarning(UserWarning):
 
 
 def extract_errors(
-    request: Request, errors: t.List[OpenAPIError], parent_field: t.Optional[str] = None
-) -> t.Iterator[t.Dict[str, str]]:
+    request: Request, errors: list[OpenAPIError], parent_field: str | None = None
+) -> t.Iterator[dict[str, str]]:
     """Extract errors for JSON response.
 
     You can tell pyramid_openapi3 to use your own version of this
@@ -154,7 +148,7 @@ class MissingEndpointsError(Exception):
 
     missing: list
 
-    def __init__(self, missing: t.List[str]) -> None:
+    def __init__(self, missing: list[str]) -> None:
         self.missing = missing
         message = f"Unable to find routes for endpoints: {', '.join(missing)}"
         super().__init__(message)

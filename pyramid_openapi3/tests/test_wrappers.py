@@ -16,7 +16,6 @@ class DummyRoute:  # noqa: D101
 
 def test_mapped_values_request() -> None:
     """Test that values are correctly mapped from pyramid's Request."""
-
     pyramid_request = DummyRequest(path="/foo")
     pyramid_request.matched_route = DummyRoute(name="foo", pattern="/foo")
     pyramid_request.matchdict["foo"] = "bar"
@@ -28,7 +27,7 @@ def test_mapped_values_request() -> None:
     assert pyramid_request.path_info == "/foo"
     assert pyramid_request.method == "GET"
 
-    openapi_request = PyramidOpenAPIRequest(pyramid_request)
+    openapi_request = PyramidOpenAPIRequest(pyramid_request)  # ty: ignore[invalid-argument-type]
 
     assert openapi_request.parameters == RequestParameters(
         path={"foo": "bar"},
@@ -47,7 +46,6 @@ def test_mapped_values_request() -> None:
 
 def test_relative_app_request() -> None:
     """Test that values are correctly mapped from pyramid's Request."""
-
     pyramid_request = Request.blank("/foo", base_url="http://example.com/subpath")
     pyramid_request.matched_route = DummyRoute(name="foo", pattern="/foo")
     pyramid_request.matchdict = {"foo": "bar"}
@@ -82,7 +80,7 @@ def test_no_matched_route() -> None:
     pyramid_request.matched_route = None
     pyramid_request.content_type = "text/html"
 
-    openapi_request = PyramidOpenAPIRequest(pyramid_request)
+    openapi_request = PyramidOpenAPIRequest(pyramid_request)  # ty: ignore[invalid-argument-type]
     assert openapi_request.host_url == "http://example.com"
     assert openapi_request.path == "/foo"
     assert openapi_request.path_pattern == "/foo"

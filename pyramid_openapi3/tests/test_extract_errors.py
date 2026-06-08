@@ -519,7 +519,7 @@ class BadResponsesTests(unittest.TestCase):
     def test_foo(self) -> None:
         """Say foo."""
 
-        def foo(*args: t.Any) -> t.Dict[str, str]:
+        def foo(*args: t.Any) -> dict[str, str]:
             """Say foobar."""
             return {"foo": "bar"}
 
@@ -737,7 +737,6 @@ class CustomDeserializerTests(unittest.TestCase):
 
     def test_say_hello(self) -> None:
         """Test happy path."""
-
         headers = {"Content-Type": "application/backwards+json"}
         body = self.reverse(json.dumps({"name": "zupo"}))
         res = self._testapp().post("/hello", body, headers, status=200)
