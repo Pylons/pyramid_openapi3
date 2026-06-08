@@ -7,18 +7,17 @@ from webob.multidict import MultiDict
 from webtest.app import TestApp
 
 import tempfile
-import typing as t
 import unittest
 
 
 def app(spec: str) -> Router:
     """Prepare a Pyramid app."""
 
-    def foo_view(request: Request) -> t.Dict[str, str]:
+    def foo_view(request: Request) -> dict[str, str]:
         """Return reversed string."""
         return {"bar": request.openapi_validated.body["bar"][::-1]}
 
-    def multipart_view(request: Request) -> t.Dict[str, t.Union[str, t.List[str]]]:
+    def multipart_view(request: Request) -> dict[str, str | list[str]]:
         """Return reversed string."""
         body = request.openapi_validated.body
         return {
@@ -113,19 +112,16 @@ class TestContentTypes(unittest.TestCase):
 
     def test_post_json(self) -> None:
         """Post with `application/json`."""
-
         res = self._testapp().post_json("/foo", {"bar": "baz"}, status=200)
         self.assertEqual(res.json, {"bar": "zab"})
 
     def test_post_form(self) -> None:  # pragma: no cover
         """Post with `application/x-www-form-urlencoded`."""
-
         res = self._testapp().post("/foo", params={"bar": "baz"}, status=200)
         self.assertEqual(res.json, {"bar": "zab"})
 
     def test_post_multipart(self) -> None:
         """Post with `multipart/form-data`."""
-
         multi_dict = MultiDict()
         multi_dict.add("key1", "value1")
         multi_dict.add("key2", "value2.1")
@@ -153,11 +149,11 @@ class TestContentTypes(unittest.TestCase):
 def app310(spec: str) -> Router:
     """Prepare a Pyramid app."""
 
-    def foo_view(request: Request) -> t.Dict[str, str]:
+    def foo_view(request: Request) -> dict[str, str]:
         """Return reversed string."""
         return {"bar": request.openapi_validated.body["bar"][::-1]}
 
-    def multipart_view(request: Request) -> t.Dict[str, t.Union[str, t.List[str]]]:
+    def multipart_view(request: Request) -> dict[str, str | list[str]]:
         """Return reversed string."""
         body = request.openapi_validated.body
         return {
@@ -252,19 +248,16 @@ class TestContentTypes310(unittest.TestCase):
 
     def test_post_json(self) -> None:
         """Post with `application/json`."""
-
         res = self._testapp().post_json("/foo", {"bar": "baz"}, status=200)
         self.assertEqual(res.json, {"bar": "zab"})
 
     def test_post_form(self) -> None:  # pragma: no cover
         """Post with `application/x-www-form-urlencoded`."""
-
         res = self._testapp().post("/foo", params={"bar": "baz"}, status=200)
         self.assertEqual(res.json, {"bar": "zab"})
 
     def test_post_multipart(self) -> None:
         """Post with `multipart/form-data`."""
-
         multi_dict = MultiDict()
         multi_dict.add("key1", "value1")
         multi_dict.add("key2", "value2.1")

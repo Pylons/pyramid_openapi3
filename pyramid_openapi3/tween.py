@@ -51,19 +51,15 @@ def response_tween_factory(
                 if request_validated and request.openapi_validated.errors:
                     warnings.warn_explicit(
                         ImproperAPISpecificationWarning(
-                            "Discarding {response.status} validation error with body "
-                            "{response.text} as it is not a valid response for "
-                            "{request.method} to {request.path} ({route.name})".format(
-                                response=response,
-                                request=request,
-                                route=request.matched_route,
-                            )
+                            f"Discarding {response.status} validation error with body "
+                            f"{response.text} as it is not a valid response for "
+                            f"{request.method} to {request.path} ({request.matched_route.name})"
                         ),
                         None,
                         registry.settings[settings_key]["filepath"],
                         0,
                     )
-                raise ResponseValidationError(response=response, errors=errors)
+                raise ResponseValidationError(response=response, errors=errors)  # noqa: TRY301
 
         # If there is no exception view, we also see request validation errors here
         except ResponseValidationError:

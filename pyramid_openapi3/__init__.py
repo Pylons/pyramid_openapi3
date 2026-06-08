@@ -1,9 +1,9 @@
 """Configure pyramid_openapi3 addon."""
 
-from .exceptions import extract_errors
 from .exceptions import MissingEndpointsError
 from .exceptions import RequestValidationError
 from .exceptions import ResponseValidationError
+from .exceptions import extract_errors
 from .wrappers import PyramidOpenAPIRequest
 from jsonschema_path import SchemaPath
 from openapi_core import V30ResponseValidator
@@ -15,9 +15,9 @@ from openapi_spec_validator import validate
 from openapi_spec_validator.readers import read_from_filename
 from openapi_spec_validator.versions.shortcuts import get_spec_version
 from pathlib import Path
-from pyramid.config import Configurator
 from pyramid.config import PHASE0_CONFIG
 from pyramid.config import PHASE1_CONFIG
+from pyramid.config import Configurator
 from pyramid.config.views import ViewDeriverInfo
 from pyramid.events import ApplicationCreated
 from pyramid.exceptions import ConfigurationError
@@ -70,7 +70,6 @@ def includeme(config: Configurator) -> None:
 
 def openapi_validated(request: Request) -> dict:
     """Get validated parameters."""
-
     # We need this here in case someone calls request.openapi_validated on
     # a view marked with openapi=False
     if not request.environ.get("pyramid_openapi3.enabled"):
@@ -85,8 +84,7 @@ def openapi_validated(request: Request) -> dict:
 
     if request.environ.get("pyramid_openapi3.validate_request"):
         openapi_request = PyramidOpenAPIRequest(request)
-        validated = settings["request_validator"].unmarshal(openapi_request)
-        return validated
+        return settings["request_validator"].unmarshal(openapi_request)
 
     return {}  # pragma: no cover
 
@@ -139,7 +137,7 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
     return view
 
 
-openapi_view.options = ("openapi",)  # type: ignore
+openapi_view.options = ("openapi",)
 
 
 def add_explorer_view(
@@ -148,9 +146,9 @@ def add_explorer_view(
     route_name: str = "pyramid_openapi3.explorer",
     template: str = "static/index.html",
     ui_version: str = "5.12.0",
-    ui_config: t.Optional[dict[str, t.Any]] = None,
-    oauth_config: t.Optional[dict[str, t.Any]] = None,
-    oauth_redirect_route: t.Optional[str] = None,
+    ui_config: dict[str, t.Any] | None = None,
+    oauth_config: dict[str, t.Any] | None = None,
+    oauth_redirect_route: str | None = None,
     oauth_redirect_route_name: str = "pyramid_openapi3.explorer.oauth2-redirect",
     oauth_redirect_html: str = "static/oauth2-redirect.html",
     permission: str = NO_PERMISSION_REQUIRED,
@@ -176,7 +174,6 @@ def add_explorer_view(
         Dotted path to the html that renders the oauth2-redirect HTML.
     :param permission: Permission for the explorer view
     """
-
     if oauth_redirect_route is None:
         oauth_redirect_route = route.rstrip("/") + "/oauth2-redirect"
 
@@ -192,7 +189,7 @@ def add_explorer_view(
                     "You need to call config.pyramid_openapi3_spec for the explorer "
                     "to work."
                 )
-            with open(resolved_template.abspath()) as f:
+            with Path(resolved_template.abspath()).open() as f:
                 template = Template(f.read())
                 merged_ui_config = {
                     "url": request.route_path(settings[apiname]["spec_route_name"]),
@@ -353,7 +350,7 @@ def add_spec_view_directory(
 
 def _create_api_settings(
     config: Configurator, filepath: str, route_name: str, spec: SchemaPath
-) -> t.Dict:
+) -> dict:
     custom_formatters = config.registry.settings.get("pyramid_openapi3_formatters")
     custom_deserializers = config.registry.settings.get(
         "pyramid_openapi3_deserializers"
@@ -398,7 +395,7 @@ def register_routes(
     route_name_ext: str = "x-pyramid-route-name",
     root_factory_ext: str = "x-pyramid-root-factory",
     apiname: str = "pyramid_openapi3",
-    route_prefix: t.Optional[str] = None,
+    route_prefix: str | None = None,
 ) -> None:
     """Register routes to app from OpenApi 3.0 specification.
 
@@ -424,7 +421,7 @@ def register_routes(
 
 
 def openapi_validation_error(
-    context: t.Union[RequestValidationError, ResponseValidationError], request: Request
+    context: RequestValidationError | ResponseValidationError, request: Request
 ) -> Response:
     """Render any validation errors as JSON."""
     if isinstance(context, RequestValidationError):
@@ -504,7 +501,7 @@ def check_all_routes(event: ApplicationCreated) -> None:
                 settings["pyramid_openapi3"]["routes"][route_name] = name
 
 
-def _get_server_prefixes(spec: SchemaPath) -> t.List[str]:
+def _get_server_prefixes(spec: SchemaPath) -> list[str]:
     """Build a set of possible route prefixes from the api spec.
 
     Api routes may optionally be prefixed using servers (e.g: `/api/v1`).

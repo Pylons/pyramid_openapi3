@@ -1,81 +1,121 @@
-default_stages: [commit,push]
+default_stages: [pre-commit, pre-push]
 repos:
--   repo: local
+  - repo: local
     hooks:
-    -   id: pyupgrade
-        name: pyupgrade
-        description: Upgrades syntax for modern versions of Python.
-        entry: pyupgrade
+      # Priority 0: Formatters (mutate files, run first, parallel with each other)
+      - id: ruff
+        name: Ruff linter with auto-fix
+        entry: ruff check --fix .
         language: system
+        pass_filenames: false
         types: [python]
-        args: [--py310-plus]
-
-    -   id: isort
-        name: isort
-        description: A Python utility that sorts imports alphabetically.
-        entry: isort
+        priority: 0
+      - id: tombi
+        name: Format TOML files
+        entry: tombi format
         language: system
-        types: [python]
-
-    -   id: autoflake
-        name: autoflake
-        description: Removes unused imports and unused variables from Python code.
-        entry: autoflake
-        language: system
-        types: [python]
-
-    -   id: flake8
-        name: Flake8
-        description: Python Style Guide Enforcement.
-        entry: flake8 --config .flake8
-        language: system
-        types: [python]
-
-    -   id: black
-        name: Black
-        description: Uncompromising Python code formatter.
-        entry: black
-        language: system
-        types: [python]
-
-    -   id: trailing-whitespace
-        name: Trim Trailing Space
-        entry: trailing-whitespace-fixer
-        language: system
-        types: [file, text]
-
-    -   id: end-of-file-fixer
-        name: Fix end of Files
-        description: Ensures that a file is either empty, or ends with one newline.
-        entry: end-of-file-fixer
-        language: system
-        types: [file, text]
-
-    -   id: check-merge-conflict
-        name: Check for merge conflicts
-        description: Check for files that contain merge conflict strings.
-        entry: check-merge-conflict
-        language: system
-        types: [file, text]
-
-    -   id: codespell
-        name: Check Spelling
-        description: Checks for common misspellings in text files.
-        entry: codespell --ignore-words .aspell.en.pws
-        language: system
-        types: [file, text]
-
-    -   id: yamllint
-        name: yamllint
-        description: Lint YAML files.
-        entry: yamllint
+        types: [toml]
+        priority: 0
+      - id: yamlfmt
+        name: Format YAML files
+        entry: yamlfmt
         language: system
         types: [yaml]
-
-    -   id: nixpkg-fmt
-        name: Format *.nix
-        description: Format nix files.
-        entry: nixpkgs-fmt
+        priority: 0
+      - id: nixfmt-rfc-style
+        name: Format Nix files (RFC style)
+        entry: nixfmt
         language: system
-        files: .*\.nix
-        types: [non-executable, file, text]
+        files: '\.nix$'
+        priority: 0
+      # Priority 5: Ruff format (runs after ruff lint+fix, before linters)
+      - id: ruff-format
+        name: Ruff formatter
+        entry: ruff format .
+        language: system
+        pass_filenames: false
+        types: [python]
+        priority: 5
+      # Priority 10: Linters and checkers (read-only, all parallel)
+      - id: actionlint
+        name: Lint GitHub Actions workflow files
+        entry: actionlint
+        language: system
+        files: ^\.github/workflows/.*\.ya?ml$
+        types: [file]
+        priority: 10
+      - id: codespell
+        name: Check Spelling
+        description: Checks for common misspellings in text files.
+        entry: codespell --ignore-words=.aspell.en.pws
+        language: system
+        exclude: ^.*\.lock$
+        types: [file, text]
+        priority: 10
+      - id: deadnix
+        name: Deadnix - Find unused Nix code
+        entry: deadnix --fail
+        language: system
+        files: '\.nix$'
+        priority: 10
+      - id: debug-statements
+        name: Check Debug Statements Absent (Python)
+        description: Checks that debug statements (pdb, ipdb, pudb) are not imported on commit.
+        entry: bash -c 'grep -nE "^\s*import (pdb|ipdb|pudb|wdb)|^\s*from (pdb|ipdb|pudb|wdb) import|^\s*breakpoint()" "$@"; test $? -eq 1' --
+        language: system
+        types: [python]
+        priority: 10
+      - id: detect-secrets
+        name: Detect secrets
+        description: Detect secrets in staged files
+        entry: detect-secrets-hook --baseline .secrets.baseline
+        language: system
+        types: [file, text]
+        exclude: '\.(lock|nix)$'
+        priority: 10
+      - id: shellcheck
+        name: shellcheck
+        description: Lint shell scripts.
+        entry: shellcheck
+        language: system
+        types: [shell]
+        priority: 10
+      - id: statix
+        name: Statix - Nix static analysis
+        entry: statix check
+        pass_filenames: false
+        language: system
+        files: '\.nix$'
+        priority: 10
+      - id: ty
+        name: ty type checker
+        entry: ty check --error-on-warning pyramid_openapi3 examples
+        language: system
+        pass_filenames: false
+        types: [python]
+        priority: 10
+      - id: zizmor
+        name: Zizmor - Audit GitHub Actions
+        description: Find security issues in GitHub Actions workflows
+        entry: zizmor
+        language: system
+        files: ^\.github/workflows/.*\.ya?ml$
+        types: [file]
+        priority: 10
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        priority: 0
+      - id: check-case-conflict
+        priority: 0
+      - id: check-json
+        priority: 10
+      - id: check-merge-conflict
+        priority: 0
+      - id: detect-private-key
+        priority: 10
+      - id: end-of-file-fixer
+        priority: 0
+      - id: trailing-whitespace
+        priority: 0

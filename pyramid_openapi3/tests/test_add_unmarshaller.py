@@ -6,7 +6,6 @@ from pyramid.testing import testConfig
 
 def test_add_unmarshaller() -> None:
     """Test registration of a custom unmarshaller."""
-
     with testConfig() as config:
         request = DummyRequest()
 

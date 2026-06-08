@@ -19,11 +19,10 @@ from pyramid_openapi3.exceptions import RequestValidationError
 import os
 import pytest
 import tempfile
-import typing as t
 
 
 class DummyStartResponse:  # noqa: D101
-    def __call__(self, status: str, headerlist: t.List[t.Tuple[str, str]]) -> None:
+    def __call__(self, status: str, headerlist: list[tuple[str, str]]) -> None:
         """WSGI start_response protocol."""
         self.status = status
         self.headerlist = headerlist
@@ -144,11 +143,11 @@ def test_add_spec_view_already_defined() -> None:
                 spec_name, route="/foo", route_name="foo_api_spec"
             )
 
-            with tempfile.NamedTemporaryFile() as document:
+            with tempfile.NamedTemporaryFile() as document:  # pragma: no branch
                 document.write(MINIMAL_DOCUMENT)
                 document.seek(0)
 
-                with pytest.raises(
+                with pytest.raises(  # pragma: no branch
                     ConfigurationError,
                     match=(
                         "Spec has already been configured. You may only call "
@@ -234,7 +233,7 @@ def test_add_spec_view_directory_already_defined() -> None:
                 document.name, route="/foo", route_name="foo_api_spec"
             )
 
-            with tempfile.TemporaryDirectory() as directory:
+            with tempfile.TemporaryDirectory() as directory:  # pragma: no branch
                 spec_name = os.path.join(directory, "openapi.yaml")
                 spec_paths_name = os.path.join(directory, "paths.yaml")
                 with open(spec_name, "wb") as f:
@@ -242,7 +241,7 @@ def test_add_spec_view_directory_already_defined() -> None:
                 with open(spec_paths_name, "wb") as f:
                     f.write(SPLIT_DOCUMENT_PATHS)
 
-                with pytest.raises(
+                with pytest.raises(  # pragma: no branch
                     ConfigurationError,
                     match=(
                         "Spec has already been configured. You may only call "
@@ -267,7 +266,7 @@ def test_add_spec_view_directory_invalid_route() -> None:
             with open(spec_paths_name, "wb") as f:
                 f.write(SPLIT_DOCUMENT_PATHS)
 
-            with pytest.raises(
+            with pytest.raises(  # pragma: no branch
                 ConfigurationError,
                 match=(
                     "Having route be a filename is not allowed when using a "

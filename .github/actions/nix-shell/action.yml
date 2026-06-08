@@ -1,12 +1,8 @@
 name: "Prepare nix-shell"
-description:
-  Download cache, build nix-shell and potentially upload any new
-  derivations to cache
-
+description: Download cache, build nix-shell and potentially upload any new derivations to cache
 inputs:
   cachix_auth_token:
     required: true
-
 runs:
   using: "composite"
   steps:
@@ -17,7 +13,6 @@ runs:
       with:
         name: pyramid-openapi3
         authToken: '${{ inputs.cachix_auth_token }}'
-
     - name: Build nix-shell
       shell: bash
       run: nix-shell --run "echo 'nix-shell successfully entered'"

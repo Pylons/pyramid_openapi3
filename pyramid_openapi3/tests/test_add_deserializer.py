@@ -6,7 +6,6 @@ from pyramid.testing import testConfig
 
 def test_add_deserializer() -> None:
     """Test registration of a custom deserializer."""
-
     with testConfig() as config:
         request = DummyRequest()
 

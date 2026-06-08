@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from pyramid.interfaces import IRouteRequest
 from pyramid.interfaces import IView
 from pyramid.interfaces import IViewClassifier
-from pyramid.request import apply_request_extensions
 from pyramid.request import Request
+from pyramid.request import apply_request_extensions
 from pyramid.response import Response
 from pyramid.router import Router
 from pyramid.testing import DummyRequest
@@ -29,7 +29,7 @@ class DummyRoute:  # noqa: D101
 
 
 class DummyStartResponse:  # noqa: D101
-    def __call__(self, status: str, headerlist: t.List[t.Tuple[str, str]]) -> None:
+    def __call__(self, status: str, headerlist: list[tuple[str, str]]) -> None:
         """WSGI start_response protocol."""
         self.status = status
         self.headerlist = headerlist
@@ -64,7 +64,7 @@ class RequestValidationBase(TestCase):  # noqa: D101
         self.config = None
 
     def _add_view(
-        self, view_func: t.Optional[t.Callable] = None, openapi: bool = True
+        self, view_func: t.Callable | None = None, openapi: bool = True
     ) -> None:
         """Add a simple example view.
 
@@ -86,7 +86,7 @@ class RequestValidationBase(TestCase):  # noqa: D101
         )
         return view
 
-    def _get_request(self, params: t.Optional[t.Dict] = None) -> DummyRequest:
+    def _get_request(self, params: dict | None = None) -> DummyRequest:
         """Create a DummyRequest instance matching example view.
 
         :param params: Query parameter dictionary
@@ -100,7 +100,6 @@ class RequestValidationBase(TestCase):  # noqa: D101
 
 
 class TestRequestValidation(RequestValidationBase):  # noqa: D101
-
     openapi_spec = (
         b"openapi: '3.1.0'\n"
         b"info:\n"
@@ -143,7 +142,7 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         view = self._get_view()
         request = self._get_request(params={"bar": "1"})
         with self.assertRaises(HTTPBadRequest) as cm:
-            view(None, request)
+            view(None, request)  # ty: ignore[invalid-argument-type]
         response = cm.exception
         # not enough of pyramid has been set up so we need to render the
         # exception response ourselves.
@@ -364,7 +363,6 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
 
 
 class TestServerRequestValidation(RequestValidationBase):  # noqa: D101
-
     openapi_spec = (
         b"openapi: '3.1.0'\n"
         b"info:\n"
@@ -468,7 +466,6 @@ class TestServerRequestValidation(RequestValidationBase):  # noqa: D101
 
 
 class TestImproperAPISpecValidation(RequestValidationBase):  # noqa: D101
-
     openapi_spec = (
         b'openapi: "3.1.0"\n'
         b"info:\n"

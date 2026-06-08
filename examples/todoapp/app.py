@@ -13,7 +13,6 @@ from pyramid.view import view_config
 from wsgiref.simple_server import make_server
 
 import os
-import typing as t
 
 
 @dataclass
@@ -22,7 +21,7 @@ class Item:
 
     title: str
 
-    def __json__(self, request: Request) -> t.Dict[str, str]:
+    def __json__(self, request: Request) -> dict[str, str]:
         """JSON-renderer for this object."""
         return {"title": self.title}
 
@@ -38,7 +37,7 @@ ITEMS = [
 
 
 @view_config(route_name="todos", renderer="json", request_method="GET", openapi=True)
-def get(request: Request) -> t.List[Item]:
+def get(request: Request) -> list[Item]:
     """Serve the list of TODO items for GET requests."""
     parameters = request.openapi_validated.parameters
     limit = parameters.query.get("limit")

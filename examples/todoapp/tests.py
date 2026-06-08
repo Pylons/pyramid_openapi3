@@ -31,7 +31,7 @@ class TestHappyPath(unittest.TestCase):
         )
 
     def test_add_todo(self) -> None:
-        """POSTing to root saves a TODO."""  # noqa: D403
+        """POSTing to root saves a TODO."""
         res = self.testapp.post_json("/todos", {"title": "Add marmalade"}, status=200)
         self.assertEqual(res.json, "Item added.")
 
