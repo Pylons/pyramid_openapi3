@@ -213,8 +213,8 @@ We do our best to follow the rules below.
 
 - Support the latest few releases of Python, currently Python 3.11 through 3.14.
 - Support the latest few releases of Pyramid, currently 1.10.7 through 2.1.
-- Support the latest few releases of `openapi-core`, currently just 0.19.0.
-- See `poetry.lock` for a frozen-in-time known-good-set of all dependencies.
+- Support the latest few releases of `openapi-core`, currently just 0.23.x.
+- See `uv.lock` for a frozen-in-time known-good-set of all dependencies.
 
 ## Use in the wild
 

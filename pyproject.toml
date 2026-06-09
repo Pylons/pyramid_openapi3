@@ -16,9 +16,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-  # openapi-core 0.23.0 removed SchemaPath.contents(), which this addon relies
-  # on. The supported line is 0.19.x (see README deprecation policy).
-  "openapi-core>=0.19.1,<0.20",
+  "openapi-core>=0.23.0,<0.24",
   "pyramid>=1.10.7",
 ]
 

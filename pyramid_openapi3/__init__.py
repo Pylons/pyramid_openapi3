@@ -360,7 +360,7 @@ def _create_api_settings(
     )
 
     # switch validator based on spec version
-    spec_version = get_spec_version(spec.contents())
+    spec_version = get_spec_version(spec.read_value())
     request_unmarshallers = {
         "OpenAPIV3.0": V30RequestUnmarshaller,
         "OpenAPIV3.1": V31RequestUnmarshaller,
