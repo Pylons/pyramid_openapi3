@@ -20,6 +20,7 @@ pkgs.mkShell {
 
     # Linters and formatters used by the pre-commit hooks
     actionlint
+    cacert
     codespell
     deadnix
     detect-secrets
