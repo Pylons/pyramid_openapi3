@@ -1,6 +1,6 @@
 [project]
 name = "pyramid_openapi3"
-version = "0.21.0"
+version = "0.22.0"
 description = "Pyramid addon for OpenAPI3 validation of requests and responses."
 readme = "README.md"
 requires-python = ">=3.11,<4"
