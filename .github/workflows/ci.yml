@@ -7,8 +7,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - '*'
 # To SSH into the runner to debug a failure, add the following step before
 # the failing step
 #    - uses: lhotari/action-upterm@v1
@@ -26,7 +24,7 @@ jobs:
     name: "Python 3.14 Tests"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
       - uses: ./.github/actions/nix-shell
@@ -48,7 +46,7 @@ jobs:
           cd examples/splitfile
           nix-shell --run "uv run --no-sync python -m unittest tests"
       - name: Save coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: htmlcov
           path: htmlcov/
@@ -56,7 +54,7 @@ jobs:
     name: "Python 3.11 Tests (oldest supported dependencies)"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
       - uses: ./.github/actions/nix-shell
@@ -79,29 +77,3 @@ jobs:
         run: |
           cd examples/splitfile
           nix-shell --run "uv run --no-sync --python 3.11 python -m unittest tests"
-  release:
-    name: "Release to PyPI"
-    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    needs: [test_314, test_311]
-    runs-on: ubuntu-latest
-    env:
-      UV_PUBLISH_TOKEN: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/nix-shell
-        with:
-          cachix_auth_token: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      - name: verify git tag matches pyproject.toml version
-        run: |
-          PROJECT_VERSION=$(nix-shell --run "uv version --short")
-          echo "tag=$GITHUB_REF_NAME project=$PROJECT_VERSION"
-          [[ "$GITHUB_REF_NAME" == "$PROJECT_VERSION" ]] && exit 0 || exit 1
-      - run: nix-shell --run "uv build && uv publish"
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" --generate-notes --latest

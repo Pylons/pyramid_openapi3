@@ -1,7 +1,0 @@
-# Allow version-tag pins (ref-pin) for GitHub Actions rather than requiring
-# commit SHA hash-pins, matching the pinning style used across this repository.
-rules:
-  unpinned-uses:
-    config:
-      policies:
-        "*": ref-pin
