@@ -40,16 +40,16 @@ make tests
 If you don't use Nix, install the tools yourself:
 
 ```shell
-uv tool install prek            # pre-commit hook runner
-uv tool install ruff            # Python linter and formatter
-uv tool install ty              # Python type checker
-uv tool install codespell       # spell checker
-uv tool install detect-secrets  # secret scanner
-uv tool install tombi           # TOML formatter
-uv tool install zizmor          # GitHub Actions auditor
-brew install actionlint         # GitHub Actions linter
-brew install shellcheck         # shell script linter
-brew install yamlfmt            # YAML formatter
+uv tool install prek                         # pre-commit hook runner
+uv tool install ruff                         # Python linter and formatter
+uv tool install ty                           # Python type checker
+uv tool install codespell                    # spell checker
+uv tool install 'detect-secrets[gibberish]'  # secret scanner
+uv tool install tombi                        # TOML formatter
+uv tool install zizmor                       # GitHub Actions auditor
+brew install actionlint                      # GitHub Actions linter
+brew install shellcheck                      # shell script linter
+brew install yamlfmt                         # YAML formatter
 ```
 
 (`brew` works on both macOS and Linux; your distro's package manager has these too.)
