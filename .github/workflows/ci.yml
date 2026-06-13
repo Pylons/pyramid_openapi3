@@ -24,7 +24,7 @@ jobs:
     name: "Python 3.14 Tests"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: ./.github/actions/nix-shell
@@ -46,7 +46,7 @@ jobs:
           cd examples/splitfile
           nix-shell --run "uv run --no-sync python -m unittest tests"
       - name: Save coverage report
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: htmlcov
           path: htmlcov/
@@ -54,7 +54,7 @@ jobs:
     name: "Python 3.11 Tests (oldest supported dependencies)"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: ./.github/actions/nix-shell
