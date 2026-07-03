@@ -19,15 +19,12 @@ all: tests
 
 # Regenerate both lockfiles: uv.lock (latest deps) and uv-oldest.lock
 # (a lowest-direct resolution used by the oldest-supported-deps CI job).
-# uv's lockfile indentation differs between versions; normalize both with tombi
-# so the result matches the prek `tombi` hook and the locks stay reproducible
-# regardless of which uv version generated them.
+# uv's lockfile indentation differs between versions
 .PHONY: lock
 lock:
 	@uv lock --resolution lowest-direct
 	@cp uv.lock uv-oldest.lock
 	@uv lock
-	@tombi format uv.lock uv-oldest.lock
 
 # Sync the development environment. The ty hook and the test suite run against
 # this .venv, so linting and testing targets depend on it.
