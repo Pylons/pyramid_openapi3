@@ -1,6 +1,6 @@
 # pyramid_openapi3
 
-## Validate [Pyramid](https://trypyramid.com) views against [OpenAPI 3.0/3.1](https://swagger.io/specification/) documents
+## Validate [Pyramid](https://trypyramid.com) views against [OpenAPI 3.0/3.1/3.2](https://swagger.io/specification/) documents
 
 <p align="center">
   <img alt="Pyramid and OpenAPI logos"
