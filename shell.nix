@@ -38,4 +38,10 @@ pkgs.mkShell {
   # Use the Nix-provided interpreters instead of uv-managed downloads, which do
   # not run on NixOS without extra patching.
   UV_PYTHON_DOWNLOADS = "never";
+
+  # Keep this shell's venv separate from a host-created .venv. This matters when
+  # the project directory is bind-mounted into a NixOS VM (e.g. OrbStack): the
+  # host's .venv is still visible there, but built for a different OS/interpreter,
+  # so reusing it breaks `uv sync`/`uv run`.
+  UV_PROJECT_ENVIRONMENT = ".venv-nix";
 }
