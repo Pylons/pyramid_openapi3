@@ -93,6 +93,43 @@ ROOT_SERVER_DOCUMENT = b"""
               description: A bar
 """
 
+# A test for when a `server.url` prefix is a string-prefix, but not a
+# path-segment-prefix, of a route's pattern (see GH #146): neither `/v` nor
+# `/api` should be treated as a prefix of `/version`/`/apidocs` respectively
+# (the two literal cases from the issue). `/foo` and `/` are genuinely under
+# the `/v` prefix (registered as routes `/v/foo` and `/v` respectively) and
+# must still be recognized as such.
+PREFIX_BOUNDARY_DOCUMENT = b"""
+    openapi: "3.1.0"
+    info:
+      version: "1.0.0"
+      title: Foo API
+    servers:
+      - url: /v
+      - url: /api
+    paths:
+      /version:
+        get:
+          responses:
+            200:
+              description: Not under the /v prefix, just shares a string prefix
+      /apidocs:
+        get:
+          responses:
+            200:
+              description: Not under the /api prefix, just shares a string prefix
+      /foo:
+        get:
+          responses:
+            200:
+              description: A foo, genuinely under the /v prefix
+      /:
+        get:
+          responses:
+            200:
+              description: Root, registered at a route matching the prefix exactly
+"""
+
 
 def foo_view(request: Request) -> str:
     """Return a dummy string."""
@@ -139,6 +176,16 @@ def root_server_document() -> t.Generator[t.IO, None, None]:
 
 
 @pytest.fixture
+def prefix_boundary_document() -> t.Generator[t.IO, None, None]:
+    """Load the PREFIX_BOUNDARY_DOCUMENT into a temp file."""
+    with tempfile.NamedTemporaryFile() as document:
+        document.write(PREFIX_BOUNDARY_DOCUMENT)
+        document.seek(0)
+
+        yield document
+
+
+@pytest.fixture
 def simple_config() -> t.Generator[Configurator, None, None]:
     """Config fixture."""
     with testConfig() as config:
@@ -174,6 +221,17 @@ def root_server_app_config(
     """Incremented fixture that loads the ROOT_SERVER_DOCUMENT above into the config."""
     simple_config.pyramid_openapi3_spec(
         root_server_document.name, route="/foo.yaml", route_name="foo_api_spec"
+    )
+    return simple_config
+
+
+@pytest.fixture
+def prefix_boundary_app_config(
+    simple_config: Configurator, prefix_boundary_document: t.IO
+) -> Configurator:
+    """Incremented fixture loading the PREFIX_BOUNDARY_DOCUMENT above into the config."""
+    simple_config.pyramid_openapi3_spec(
+        prefix_boundary_document.name, route="/foo.yaml", route_name="foo_api_spec"
     )
     return simple_config
 
@@ -325,3 +383,32 @@ def test_root_server_routes(root_server_app_config: Configurator) -> None:
     )
 
     root_server_app_config.make_wsgi_app()
+
+
+def test_prefix_boundary_routes(prefix_boundary_app_config: Configurator) -> None:
+    """Test case for GH #146.
+
+    A server prefix that is a string-prefix, but not a path-segment-prefix,
+    of a route pattern must not be stripped from it -- for both literal cases
+    from the issue (`/v`+`/version`, `/api`+`/apidocs`). Also covers routes
+    that are genuinely under a prefix (`/v/foo`), and a route that matches a
+    prefix exactly (`/v`).
+    """
+    prefix_boundary_app_config.add_route(name="version", pattern="/version")
+    prefix_boundary_app_config.add_route(name="apidocs", pattern="/apidocs")
+    prefix_boundary_app_config.add_route(name="foo", pattern="/v/foo")
+    prefix_boundary_app_config.add_route(name="root", pattern="/v")
+    prefix_boundary_app_config.add_view(
+        foo_view, route_name="version", renderer="string", request_method="GET"
+    )
+    prefix_boundary_app_config.add_view(
+        foo_view, route_name="apidocs", renderer="string", request_method="GET"
+    )
+    prefix_boundary_app_config.add_view(
+        foo_view, route_name="foo", renderer="string", request_method="GET"
+    )
+    prefix_boundary_app_config.add_view(
+        foo_view, route_name="root", renderer="string", request_method="GET"
+    )
+
+    prefix_boundary_app_config.make_wsgi_app()
