@@ -257,6 +257,7 @@ def add_spec_view(
     filepath: str,
     route: str = "/openapi.yaml",
     route_name: str = "pyramid_openapi3.spec",
+    route_json: str | None = None,
     permission: str = NO_PERMISSION_REQUIRED,
     apiname: str = "pyramid_openapi3",
 ) -> None:
@@ -265,6 +266,10 @@ def add_spec_view(
     :param filepath: absolute/relative path to the specification file
     :param route: URL path where to serve specification file
     :param route_name: Route name under which specification file will be served
+    :param route_json: URL path where to serve the specification as JSON. If not
+        provided, the JSON representation is not served. The route is registered
+        under ``route_name`` suffixed with ``_json``; not available on
+        `add_spec_view_directory`.
     :param permission: Permission for the spec view
     """
 
@@ -288,6 +293,20 @@ def add_spec_view(
 
         config.add_route(route_name, route)
         config.add_view(route_name=route_name, permission=permission, view=spec_view)
+
+        if route_json is not None:
+            route_name_json = f"{route_name}_json"
+            spec_json = json.dumps(spec_dict)
+
+            def spec_view_json(request: Request) -> Response:
+                return Response(
+                    spec_json, content_type="application/json", charset="UTF-8"
+                )
+
+            config.add_route(route_name_json, route_json)
+            config.add_view(
+                route_name=route_name_json, permission=permission, view=spec_view_json
+            )
 
         config.registry.settings[apiname] = _create_api_settings(
             config, filepath, route_name, spec

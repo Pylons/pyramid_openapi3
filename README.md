@@ -67,6 +67,8 @@ The reason this package exists is to give you peace of mind when providing a RES
     config.pyramid_openapi3_add_explorer(route='/api/v1/')
     ```
 
+    Pass `route_json='/api/v1/openapi.json'` to `pyramid_openapi3_spec` to also serve the spec as JSON (off by default).
+
 3. Use the `openapi` [view predicate](https://docs.pylonsproject.org/projects/pyramid/en/latest/narr/viewconfig.html#view-configuration-parameters) to enable request/response validation:
 
     ```python
