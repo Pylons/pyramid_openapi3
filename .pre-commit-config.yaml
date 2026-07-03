@@ -14,6 +14,7 @@ repos:
         name: Format TOML files
         entry: tombi format
         language: system
+        exclude: ^uv(-.*)?\.lock$ # uv's lockfile is owned by uv, not tombi
         types: [toml]
         priority: 0
       - id: yamlfmt
