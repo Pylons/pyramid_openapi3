@@ -48,6 +48,19 @@ branch = true
 exclude_also = ['if __name__ == "__main__":']
 
 [tool.pytest.ini_options]
+filterwarnings = [
+  # Fail on any warning not explicitly ignored below or in a test's
+  # filterwarnings mark.
+  "error",
+  # pyramid/paste import pkg_resources internally; already tracked by the
+  # setuptools<81 constraint below, nothing we can fix on our end.
+  "ignore:pkg_resources is deprecated as an API.*:UserWarning",
+  "ignore:Deprecated call to `pkg_resources\\.declare_namespace\\('paste'\\)`.*:DeprecationWarning",
+  # Only on the oldest supported deps (Python 3.11): pyramid 1.10.7 imports imp
+  # and webob imports cgi, both deprecated stdlib modules.
+  "ignore:the imp module is deprecated.*:DeprecationWarning",
+  "ignore:'cgi' is deprecated.*:DeprecationWarning",
+]
 # Excludes pyramid.testing.testConfig, a helper (not a test) that pytest's
 # default "test*" prefix would otherwise collect as a phantom test.
 python_functions = ["test_*"]

@@ -11,13 +11,13 @@ from pyramid.router import Router
 from pyramid.testing import DummyRequest
 from pyramid.testing import setUp
 from pyramid.testing import tearDown
+from pyramid_openapi3.exceptions import ImproperAPISpecificationWarning
 from unittest import TestCase
 from zope.interface import Interface
 
 import json
 import tempfile
 import typing as t
-import warnings
 
 View = t.Callable[[t.Any, Request], Response]
 
@@ -446,7 +446,15 @@ class TestServerRequestValidation(RequestValidationBase):  # noqa: D101
         }
         start_response = DummyStartResponse()
         with self.assertLogs(level="ERROR") as cm:
-            response = router(environ, start_response)
+            with self.assertWarns(ImproperAPISpecificationWarning) as cw:
+                response = router(environ, start_response)
+        self.assertEqual(
+            str(cw.warning),
+            "Discarding 400 Bad Request validation error with body "
+            '[{"exception":"ServerNotFound",'
+            '"message":"Server not found for http://example.com/prefix/v2/foo"}] '
+            "as it is not a valid response for GET to /prefix/v2/foo (foo)",
+        )
         self.assertEqual(start_response.status, "500 Internal Server Error")
         self.assertEqual(
             json.loads(response[0]),
@@ -511,13 +519,15 @@ class TestImproperAPISpecValidation(RequestValidationBase):  # noqa: D101
         }
         start_response = DummyStartResponse()
         with self.assertLogs(level="ERROR") as cm:
-            with warnings.catch_warnings(record=True) as cw:
+            with self.assertWarns(ImproperAPISpecificationWarning) as cw:
                 response = router(environ, start_response)
-                self.assertEqual(len(cw), 1)
-                self.assertEqual(
-                    str(cw[0].message),
-                    'Discarding 400 Bad Request validation error with body [{"exception":"MissingRequiredParameter","message":"Missing required query parameter: bar","field":"bar"}] as it is not a valid response for GET to /foo (foo)',
-                )
+        self.assertEqual(
+            str(cw.warning),
+            "Discarding 400 Bad Request validation error with body "
+            '[{"exception":"MissingRequiredParameter",'
+            '"message":"Missing required query parameter: bar","field":"bar"}] '
+            "as it is not a valid response for GET to /foo (foo)",
+        )
         self.assertEqual(
             cm.output, ["ERROR:pyramid_openapi3:Unknown response http status: 400"]
         )

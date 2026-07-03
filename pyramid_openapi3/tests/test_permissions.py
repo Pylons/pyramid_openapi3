@@ -1,12 +1,11 @@
 """Test rendering with permissions."""
 
+from pyramid import security
 from pyramid.authentication import SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.security import NO_PERMISSION_REQUIRED
-from pyramid.security import Allow
-from pyramid.security import Authenticated
 from pyramid.session import SignedCookieSessionFactory
 from webtest.app import TestApp
 
@@ -15,13 +14,30 @@ import pytest
 import tempfile
 import typing as t
 
-DEFAULT_ACL = [
-    (Allow, Authenticated, "view"),
+# The auth policies and pyramid.security.Allow/Authenticated are deprecated in
+# Pyramid 2.0, but this file deliberately exercises them since they're still the
+# canonical API on the oldest supported Pyramid (1.10.7).
+pytestmark = [
+    pytest.mark.filterwarnings(
+        r"ignore:.*pyramid\.security\..*is deprecated in Pyramid 2\.0"
+        ":DeprecationWarning"
+    ),
+    pytest.mark.filterwarnings(
+        "ignore:Authentication and authorization policies have been deprecated"
+        ":DeprecationWarning"
+    ),
+    # Pyramid 1.10.7 only, from the session code its auth policies use.
+    pytest.mark.filterwarnings(
+        "ignore:The default pickle serializer is deprecated:DeprecationWarning"
+    ),
 ]
 
 
 class DummyDefaultContext:  # noqa: D101
-    __acl__ = DEFAULT_ACL
+    @property
+    def __acl__(self) -> list:
+        """Read the deprecated names at request time, under pytestmark's filters."""
+        return [(security.Allow, security.Authenticated, "view")]
 
 
 def get_default_context(request: Request) -> DummyDefaultContext:
