@@ -9,7 +9,7 @@ on:
       - main
 # To SSH into the runner to debug a failure, add the following step before
 # the failing step
-#    - uses: lhotari/action-upterm@v1
+#    - uses: lhotari/action-upterm@b0357f23233f5ea6d58947c0c402e0631bab7334 # v1
 #      with:
 #        limit-access-to-actor: true
 
