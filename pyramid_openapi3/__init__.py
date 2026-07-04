@@ -15,6 +15,7 @@ from openapi_spec_validator import validate
 from openapi_spec_validator.readers import read_from_filename
 from openapi_spec_validator.versions.shortcuts import get_spec_version
 from pathlib import Path
+from pathlib import PurePosixPath
 from pyramid.config import PHASE0_CONFIG
 from pyramid.config import PHASE1_CONFIG
 from pyramid.config import Configurator
@@ -262,6 +263,11 @@ def add_spec_view(
 ) -> None:
     """Serve and register OpenApi 3.0 specification file.
 
+    Also serves the specification as JSON, at ``route`` with its extension
+    replaced by ``.json`` (e.g. ``/openapi.yaml`` -> ``/openapi.json``), under
+    ``route_name`` suffixed with ``_json``. Not available on
+    `add_spec_view_directory`.
+
     :param filepath: absolute/relative path to the specification file
     :param route: URL path where to serve specification file
     :param route_name: Route name under which specification file will be served
@@ -282,12 +288,25 @@ def add_spec_view(
 
         validate(spec_dict)
         spec = SchemaPath.from_dict(spec_dict)
+        spec_json = json.dumps(spec_dict)
 
         def spec_view(request: Request) -> FileResponse:
             return FileResponse(filepath, request=request, content_type="text/yaml")
 
+        def spec_view_json(request: Request) -> Response:
+            return Response(spec_json, content_type="application/json", charset="UTF-8")
+
         config.add_route(route_name, route)
         config.add_view(route_name=route_name, permission=permission, view=spec_view)
+
+        route_name_json = f"{route_name}_json"
+        # PurePosixPath (not Path) so this always uses forward slashes for the
+        # URL path, regardless of the host OS this runs on.
+        route_json = str(PurePosixPath(route).with_suffix(".json"))
+        config.add_route(route_name_json, route_json)
+        config.add_view(
+            route_name=route_name_json, permission=permission, view=spec_view_json
+        )
 
         config.registry.settings[apiname] = _create_api_settings(
             config, filepath, route_name, spec

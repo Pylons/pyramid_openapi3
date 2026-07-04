@@ -16,6 +16,7 @@ from pyramid.testing import DummyRequest
 from pyramid.testing import testConfig
 from pyramid_openapi3.exceptions import RequestValidationError
 
+import json
 import os
 import pytest
 import tempfile
@@ -124,6 +125,38 @@ def test_add_spec_view() -> None:
                 (IViewClassifier, request, Interface), IView, name=""
             )
             assert view(request=None, context=None).body == MINIMAL_DOCUMENT
+
+
+def test_add_spec_view_json() -> None:
+    """Test that the openapi document is also served as JSON, alongside YAML."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+
+        with tempfile.NamedTemporaryFile() as document:
+            document.write(MINIMAL_DOCUMENT)
+            document.seek(0)
+
+            config.pyramid_openapi3_spec(
+                document.name, route="/foo.yaml", route_name="foo_api_spec"
+            )
+
+            # assert route
+            mapper = config.registry.getUtility(IRoutesMapper)
+            routes = mapper.get_routes()
+            assert routes[1].name == "foo_api_spec_json"
+            assert routes[1].path == "/foo.json"
+
+            # assert view
+            request = config.registry.queryUtility(
+                IRouteRequest, name="foo_api_spec_json"
+            )
+            view = config.registry.adapters.registered(
+                (IViewClassifier, request, Interface), IView, name=""
+            )
+            response = view(request=None, context=None)
+            assert response.content_type == "application/json"
+            spec = config.registry.settings["pyramid_openapi3"]["spec"]
+            assert json.loads(response.body) == spec.read_value()
 
 
 def test_add_spec_view_already_defined() -> None:

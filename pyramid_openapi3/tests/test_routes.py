@@ -46,6 +46,7 @@ paths:
     ]
     assert routes == [
         ("pyramid_openapi3.spec", "/openapi.yaml"),
+        ("pyramid_openapi3.spec_json", "/openapi.json"),
         ("foo", "/foo"),
         ("bar", "/bar"),
     ]
@@ -92,6 +93,7 @@ paths:
     ]
     assert routes == [
         ("pyramid_openapi3.spec", "/openapi.yaml", None),
+        ("pyramid_openapi3.spec_json", "/openapi.json", None),
         ("foo", "/foo", None),
         ("bar", "/bar", dummy_factory),
     ]
@@ -128,5 +130,6 @@ paths:
     ]
     assert routes == [
         ("pyramid_openapi3.spec", "/openapi.yaml"),
+        ("pyramid_openapi3.spec_json", "/openapi.json"),
         ("foo", "/api/v1/foo"),
     ]
