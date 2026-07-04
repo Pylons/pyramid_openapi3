@@ -127,8 +127,8 @@ def test_add_spec_view() -> None:
             assert view(request=None, context=None).body == MINIMAL_DOCUMENT
 
 
-def test_add_spec_view_json_not_served_by_default() -> None:
-    """Test that the JSON spec route is not registered unless opted in."""
+def test_add_spec_view_json() -> None:
+    """Test that the openapi document is also served as JSON, alongside YAML."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
 
@@ -138,29 +138,6 @@ def test_add_spec_view_json_not_served_by_default() -> None:
 
             config.pyramid_openapi3_spec(
                 document.name, route="/foo.yaml", route_name="foo_api_spec"
-            )
-
-            # no route registered for the (guessed) json variant
-            route_request = config.registry.queryUtility(
-                IRouteRequest, name="foo_api_spec_json"
-            )
-            assert route_request is None
-
-
-def test_add_spec_view_json() -> None:
-    """Test registration of a view that serves the openapi document as JSON."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
-
-        with tempfile.NamedTemporaryFile() as document:
-            document.write(MINIMAL_DOCUMENT)
-            document.seek(0)
-
-            config.pyramid_openapi3_spec(
-                document.name,
-                route="/foo.yaml",
-                route_name="foo_api_spec",
-                route_json="/foo.json",
             )
 
             # assert route
