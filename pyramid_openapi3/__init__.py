@@ -8,8 +8,10 @@ from .wrappers import PyramidOpenAPIRequest
 from jsonschema_path import SchemaPath
 from openapi_core import V30ResponseValidator
 from openapi_core import V31ResponseValidator
+from openapi_core import V32ResponseValidator
 from openapi_core.unmarshalling.request import V30RequestUnmarshaller
 from openapi_core.unmarshalling.request import V31RequestUnmarshaller
+from openapi_core.unmarshalling.request import V32RequestUnmarshaller
 from openapi_core.validation.request.exceptions import SecurityValidationError
 from openapi_spec_validator import validate
 from openapi_spec_validator.readers import read_from_filename
@@ -383,10 +385,12 @@ def _create_api_settings(
     request_unmarshallers = {
         "OpenAPIV3.0": V30RequestUnmarshaller,
         "OpenAPIV3.1": V31RequestUnmarshaller,
+        "OpenAPIV3.2": V32RequestUnmarshaller,
     }
     response_validators = {
         "OpenAPIV3.0": V30ResponseValidator,
         "OpenAPIV3.1": V31ResponseValidator,
+        "OpenAPIV3.2": V32ResponseValidator,
     }
     request_unmarshaller = request_unmarshallers[str(spec_version)]
     response_validator = response_validators[str(spec_version)]

@@ -532,3 +532,9 @@ class TestImproperAPISpecValidation(RequestValidationBase):  # noqa: D101
                 }
             ],
         )
+
+
+class TestOpenAPI32Validation(TestRequestValidation):
+    """Re-runs every TestRequestValidation scenario against a 3.2.0 spec."""
+
+    openapi_spec = TestRequestValidation.openapi_spec.replace(b"3.1.0", b"3.2.0")
