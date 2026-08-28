@@ -146,6 +146,47 @@ config.add_route("foo_route", pattern="/foo")
 
 The `pyramid_openapi3_register_routes()` method supports setting a factory and route prefix as well. See the source for details.
 
+### Deployment: the `servers` URL is a mount point, not a route prefix
+
+A common point of confusion is how a `servers` entry with a path interacts with
+route registration:
+
+```yaml
+servers:
+  - url: /api
+paths:
+  /v2/users/:
+    x-pyramid-route-name: users
+```
+
+`pyramid_openapi3` treats the `servers` URL path (`/api`) as **where the whole
+application is mounted**, not as a prefix to prepend to your route patterns. Your
+spec paths (`/v2/users/`) are written *relative to that mount point*. This gives
+you two supported deployment styles — pick **one**:
+
+- **Mounted (recommended when a reverse proxy / WSGI compositor mounts the app):**
+  deploy the app under `/api` so the WSGI server sets `SCRIPT_NAME=/api`, and
+  register routes verbatim. Requests to `/api/v2/users/` are routed and validated
+  correctly.
+
+  ```python
+  config.pyramid_openapi3_register_routes()          # routes at /v2/users/
+  ```
+
+- **Prefixed (when the app runs at the URL root):** bake the prefix into the routes
+  with `route_prefix`, and do **not** mount the app.
+
+  ```python
+  config.pyramid_openapi3_register_routes(route_prefix="/api")  # routes at /api/v2/users/
+  ```
+
+Do **not** combine the two: mounting the app at `/api` *and* passing
+`route_prefix="/api"` double-prefixes the routes (they end up expecting
+`/api/api/v2/users/`) and requests will 404. Likewise, using `servers: /api` while
+running at the root *without* either mounting or `route_prefix="/api"` means
+`/api/v2/users/` has no route (404) and the un-prefixed `/v2/users/` fails
+server-matching validation — pick one of the two styles above instead.
+
 ### Specify protocol and port for getting the OpenAPI 3 spec file
 
 Sometimes, it is necessary to specify the protocol and port to access the openapi3 spec file. This can be configured using the `proto_port` optional parameter to the the `pyramid_openapi3_add_explorer` function:
