@@ -1,0 +1,5 @@
+# The `uses: $/...` syntax this audit asks for is not yet understood by the
+# actionlint in our nixpkgs pin. Re-enable once actionlint supports it.
+rules:
+  self-repository:
+    disable: true
