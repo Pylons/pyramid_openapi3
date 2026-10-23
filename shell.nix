@@ -1,8 +1,8 @@
 let
   nixpkgs = builtins.fetchTarball {
-    # https://github.com/NixOS/nixpkgs/tree/nixos-26.05 on 2026-06-08
-    url = "https://github.com/NixOS/nixpkgs/archive/bd0ff2d3eac24699c3664d5966b9ef36f388e2ca.tar.gz";
-    sha256 = "0i4ymrwz6aanx3byjnignx13sdrdp1v1llgg81jn3mjz5q89ik5b";
+    # https://github.com/NixOS/nixpkgs/tree/nixos-26.05 on 2026-10-21
+    url = "https://github.com/NixOS/nixpkgs/archive/da6dc0e7b26060f2f71ce3ef7088fb56ee44fa36.tar.gz";
+    sha256 = "0hlv2n0gcpcxmjka021806iswd7mlmpq1gpnvff2mr2fmmyx2nrj";
   };
 
   pkgs = import nixpkgs { };
