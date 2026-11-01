@@ -385,7 +385,7 @@ def test_add_explorer_oauth_view() -> None:
         assert b"<title>Swagger UI: OAuth2 Redirect</title>" in response.body
 
 
-def test_add_multiple_explorer_views() -> None:
+def test_add_multiple_explorer_views_using_directory() -> None:
     """Test registration of multiple views serving different Swagger UI."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -437,7 +437,7 @@ def test_add_multiple_explorer_views() -> None:
         assert b'"url": "/bar/openapi.yaml"' in response.body
 
 
-def test_add_multiple_explorer_views_using_directory() -> None:
+def test_add_multiple_explorer_views() -> None:
     """Test registration of multiple views serving different Swagger UI."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -616,8 +616,8 @@ def test_multiple_openapi_views() -> None:
         assert response.json == "bar"
 
 
-def test_path_parameters() -> None:
-    """Test parameters in path are validated correctly."""
+def test_path_item_parameters() -> None:
+    """Test parameters declared on the path item are validated correctly."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as document:
