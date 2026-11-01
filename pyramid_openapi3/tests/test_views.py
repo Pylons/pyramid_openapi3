@@ -20,6 +20,7 @@ from pyramid_openapi3.tests.utils import make_request
 
 import json
 import pytest
+import re
 import typing as t
 
 MINIMAL_DOCUMENT = b"""
@@ -151,7 +152,7 @@ def test_add_spec_view_already_defined(write_spec: t.Callable[..., str]) -> None
 
         with pytest.raises(
             ConfigurationError,
-            match=(
+            match=re.escape(
                 "Spec has already been configured. You may only call "
                 "pyramid_openapi3_spec or pyramid_openapi3_spec_directory once"
             ),
@@ -231,7 +232,7 @@ def test_add_spec_view_directory_already_defined(
 
         with pytest.raises(
             ConfigurationError,
-            match=(
+            match=re.escape(
                 "Spec has already been configured. You may only call "
                 "pyramid_openapi3_spec or pyramid_openapi3_spec_directory once"
             ),
@@ -392,7 +393,7 @@ def test_explorer_view_missing_spec() -> None:
         view = get_view(config, "pyramid_openapi3.explorer")
         with pytest.raises(
             ConfigurationError,
-            match=(
+            match=re.escape(
                 "You need to call config.pyramid_openapi3_spec for the "
                 "explorer to work."
             ),
