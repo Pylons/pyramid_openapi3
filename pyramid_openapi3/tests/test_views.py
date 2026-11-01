@@ -465,176 +465,121 @@ def test_multiple_openapi_views(write_spec: t.Callable[..., str]) -> None:
         assert response.json == "bar"
 
 
-def test_path_item_parameters(write_spec: t.Callable[..., str]) -> None:
-    """Test parameters declared on the path item are validated correctly."""
+PATH_ITEM_QUERY_DOCUMENT = b"""
+    openapi: "3.1.0"
+    info:
+      version: "1.0.0"
+      title: Foo API
+    paths:
+      /foo:
+        parameters:
+          - name: foo
+            in: query
+            required: true
+            schema:
+              type: integer
+        get:
+          responses:
+            200:
+              description: A foo
+"""
+
+OPERATION_PARAMETER_DOCUMENT = """
+    openapi: "3.1.0"
+    info:
+      version: "1.0.0"
+      title: Foo API
+    paths:
+      /foo:
+        get:
+          parameters:
+            - name: foo
+              in: {location}
+              required: true
+              schema:
+                type: integer
+          responses:
+            200:
+              description: A foo
+"""
+
+
+@pytest.mark.parametrize(
+    ("document", "location", "value", "content_type"),
+    [
+        pytest.param(
+            PATH_ITEM_QUERY_DOCUMENT,
+            "query",
+            {"params": {"foo": "1"}},
+            "application/json",
+            id="path_item_query",
+        ),
+        pytest.param(
+            OPERATION_PARAMETER_DOCUMENT.format(location="header").encode(),
+            "header",
+            {"headers": {"foo": "1"}},
+            "text/html",
+            id="header",
+        ),
+        pytest.param(
+            OPERATION_PARAMETER_DOCUMENT.format(location="cookie").encode(),
+            "cookie",
+            {"cookies": {"foo": "1"}},
+            "text/html",
+            id="cookie",
+        ),
+    ],
+)
+def test_required_parameter(
+    write_spec: t.Callable[..., str],
+    document: bytes,
+    location: str,
+    value: dict,
+    content_type: str,
+) -> None:
+    """Test a required parameter is enforced, then accepted, where it's declared."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
-        spec_path = write_spec(
-            b'openapi: "3.1.0"\n'
-            b"info:\n"
-            b'  version: "1.0.0"\n'
-            b"  title: Foo API\n"
-            b"paths:\n"
-            b"  /foo:\n"
-            b"    parameters:\n"
-            b"      - name: foo\n"
-            b"        in: query\n"
-            b"        required: true\n"
-            b"        schema:\n"
-            b"          type: integer\n"
-            b"    get:\n"
-            b"      responses:\n"
-            b"        200:\n"
-            b"          description: A foo\n"
-        )
-
         config.pyramid_openapi3_spec(
-            spec_path, route="/foo.yaml", route_name="foo_api_spec"
+            write_spec(document), route="/foo.yaml", route_name="foo_api_spec"
         )
-
         config.add_route("foo", "/foo")
         view_func = lambda *arg: "foo"  # noqa: E731
         config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
-
         view = get_view(config, "foo")
-        # Test validation fails
-        request = make_request(config, "foo", content_type="application/json")
+
+        request = make_request(config, "foo", content_type=content_type)
         with pytest.raises(
-            RequestValidationError, match="Missing required query parameter: foo"
+            RequestValidationError, match=f"Missing required {location} parameter: foo"
         ):
             view(None, request)
 
-        # Test validation succeeds
-        request = make_request(
-            config, "foo", params={"foo": "1"}, content_type="application/json"
-        )
-        response = view(None, request)
-
-        assert response.json == "foo"
+        request = make_request(config, "foo", content_type=content_type, **value)
+        assert view(None, request).json == "foo"
 
 
-def test_header_parameters(write_spec: t.Callable[..., str]) -> None:
-    """Test parameters in header are validated correctly."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
-        spec_path = write_spec(
-            b'openapi: "3.1.0"\n'
-            b"info:\n"
-            b'  version: "1.0.0"\n'
-            b"  title: Foo API\n"
-            b"paths:\n"
-            b"  /foo:\n"
-            b"    get:\n"
-            b"      parameters:\n"
-            b"        - name: foo\n"
-            b"          in: header\n"
-            b"          required: true\n"
-            b"          schema:\n"
-            b"            type: integer\n"
-            b"      responses:\n"
-            b"        200:\n"
-            b"          description: A foo\n"
-        )
-
-        config.pyramid_openapi3_spec(
-            spec_path, route="/foo.yaml", route_name="foo_api_spec"
-        )
-
-        config.add_route("foo", "/foo")
-        view_func = lambda *arg: "foo"  # noqa: E731
-        config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
-
-        view = get_view(config, "foo")
-        # Test validation fails
-        request = make_request(config, "foo", content_type="text/html")
-
-        with pytest.raises(
-            RequestValidationError, match="Missing required header parameter: foo"
-        ):
-            view(None, request)
-
-        # Test validation succeeds
-        request = make_request(
-            config, "foo", headers={"foo": "1"}, content_type="text/html"
-        )
-        response = view(None, request)
-
-        assert response.json == "foo"
-
-
-def test_cookie_parameters(write_spec: t.Callable[..., str]) -> None:
-    """Test parameters in cookie are validated correctly."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
-        spec_path = write_spec(
-            b'openapi: "3.1.0"\n'
-            b"info:\n"
-            b'  version: "1.0.0"\n'
-            b"  title: Foo API\n"
-            b"paths:\n"
-            b"  /foo:\n"
-            b"    get:\n"
-            b"      parameters:\n"
-            b"        - name: foo\n"
-            b"          in: cookie\n"
-            b"          required: true\n"
-            b"          schema:\n"
-            b"            type: integer\n"
-            b"      responses:\n"
-            b"        200:\n"
-            b"          description: A foo\n"
-        )
-
-        config.pyramid_openapi3_spec(
-            spec_path, route="/foo.yaml", route_name="foo_api_spec"
-        )
-
-        config.add_route("foo", "/foo")
-        view_func = lambda *arg: "foo"  # noqa: E731
-        config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
-
-        view = get_view(config, "foo")
-        # Test validation fails
-        request = make_request(config, "foo", content_type="text/html")
-        with pytest.raises(
-            RequestValidationError, match="Missing required cookie parameter: foo"
-        ):
-            view(None, request)
-
-        # Test validation succeeds
-        request = make_request(
-            config, "foo", cookies={"foo": "1"}, content_type="text/html"
-        )
-        response = view(None, request)
-
-        assert response.json == "foo"
-
-
-def test_add_explorer_view_with_csp_nonce(minimal_config: Configurator) -> None:
-    """Test explorer view includes CSP nonce when available on request."""
+@pytest.mark.parametrize(
+    ("request_attrs", "present", "absent"),
+    [
+        pytest.param(
+            {"csp_nonce": "test-nonce-123"},
+            b'<script nonce="test-nonce-123">',
+            b"<script>",
+            id="with_csp_nonce",
+        ),
+        pytest.param({}, b"<script>", b"nonce=", id="without_csp_nonce"),
+    ],
+)
+def test_add_explorer_view_csp_nonce(
+    minimal_config: Configurator, request_attrs: dict, present: bytes, absent: bytes
+) -> None:
+    """Test explorer script tags carry the request's CSP nonce only when it has one."""
     config = minimal_config
     config.pyramid_openapi3_add_explorer()
     view = get_view(config, "pyramid_openapi3.explorer")
 
-    # Test with CSP nonce
-    dummy_request = DummyRequest(config=config)
-    dummy_request.csp_nonce = "test-nonce-123"
-    response = view(request=dummy_request, context=None)
+    response = view(request=DummyRequest(config=config, **request_attrs), context=None)
 
-    assert b'<script nonce="test-nonce-123">' in response.body
-    assert b"<title>Swagger UI</title>" in response.body
-
-
-def test_add_explorer_view_without_csp_nonce(minimal_config: Configurator) -> None:
-    """Test explorer view works normally when no CSP nonce is present."""
-    config = minimal_config
-    config.pyramid_openapi3_add_explorer()
-    view = get_view(config, "pyramid_openapi3.explorer")
-
-    # Test without CSP nonce
-    dummy_request = DummyRequest(config=config)
-    response = view(request=dummy_request, context=None)
-
-    assert b"<script>" in response.body
-    assert b"nonce=" not in response.body
+    assert present in response.body
+    assert absent not in response.body
     assert b"<title>Swagger UI</title>" in response.body
