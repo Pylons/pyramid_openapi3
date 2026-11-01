@@ -41,15 +41,20 @@ class DummyStartResponse:  # noqa: D101
 class RequestValidationBase:  # noqa: D101
     openapi_spec: bytes
 
+    @pytest.fixture
+    def spec(self, request: pytest.FixtureRequest) -> bytes:
+        """Return the class's spec; subclasses can override to parametrize it."""
+        return self.openapi_spec
+
     @pytest.fixture(autouse=True)
-    def setup_config(self) -> Iterator[None]:
+    def setup_config(self, spec: bytes) -> Iterator[None]:
         """Set up a minimal pyramid configuration for each test."""
         with testing.testConfig() as config:
             self.config = config
             self.config.include("pyramid_openapi3")
 
             with tempfile.NamedTemporaryFile() as document:
-                document.write(self.openapi_spec)
+                document.write(spec)
                 document.seek(0)
 
                 self.config.pyramid_openapi3_spec(
@@ -121,6 +126,13 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         b"        400:\n"
         b"          description: Bad Request\n"
     )
+
+    @pytest.fixture(params=["3.1.0", "3.2.0"])
+    def spec(self, request: pytest.FixtureRequest) -> bytes:
+        """Run every scenario against both OpenAPI 3.1 and 3.2."""
+        spec = self.openapi_spec.replace(b"3.1.0", request.param.encode())
+        assert f"openapi: '{request.param}'".encode() in spec
+        return spec
 
     def test_view_raises_valid_http_exception(self) -> None:
         """Test View raises HTTPException.
@@ -545,9 +557,3 @@ class TestImproperAPISpecValidation(RequestValidationBase):  # noqa: D101
                 "message": "Unknown response http status: 400",
             }
         ]
-
-
-class TestOpenAPI32Validation(TestRequestValidation):
-    """Re-runs every TestRequestValidation scenario against a 3.2.0 spec."""
-
-    openapi_spec = TestRequestValidation.openapi_spec.replace(b"3.1.0", b"3.2.0")
