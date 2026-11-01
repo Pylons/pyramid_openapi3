@@ -32,7 +32,7 @@ def app(
 class TestBadRequests:
     """A suite of tests that make sure bad requests are handled."""
 
-    def foo(*args) -> None:  # noqa: D102
+    def foo(*args: t.Any) -> None:  # noqa: D102
         return None  # pragma: no cover
 
     OPENAPI_YAML = """
@@ -267,7 +267,7 @@ class TestBadRequests:
             }
         ]
 
-    def test_missing_POST_parameter(
+    def test_missing_post_parameter(
         self, make_testapp: t.Callable[..., TestApp]
     ) -> None:
         """Render nice ValidationError if POST parameter is missing."""
@@ -302,7 +302,7 @@ class TestBadRequests:
             }
         ]
 
-    def test_missing_type_POST_parameter(
+    def test_missing_type_post_parameter(
         self, make_testapp: t.Callable[..., TestApp]
     ) -> None:
         """Render nice ValidationError if POST parameter is of invalid type."""
@@ -337,7 +337,7 @@ class TestBadRequests:
             }
         ]
 
-    def test_invalid_length_POST_parameter(
+    def test_invalid_length_post_parameter(
         self, make_testapp: t.Callable[..., TestApp]
     ) -> None:
         """Render nice ValidationError if POST parameter is of invalid length."""
@@ -430,7 +430,7 @@ class TestBadRequests:
             },
         ]
 
-    def test_bad_JWT_token(self, make_testapp: t.Callable[..., TestApp]) -> None:
+    def test_bad_jwt_token(self, make_testapp: t.Callable[..., TestApp]) -> None:
         """Render 401 on bad JWT token."""
         endpoints = """
           /foo:

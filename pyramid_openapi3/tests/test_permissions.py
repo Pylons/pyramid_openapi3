@@ -79,13 +79,13 @@ OPENAPI_YAML = """
 
 
 @pytest.mark.parametrize(
-    "route,permission,status",
-    (
+    ("route", "permission", "status"),
+    [
         ("/api/v1/openapi.yaml", None, 403),
         ("/api/v1/openapi.yaml", NO_PERMISSION_REQUIRED, 200),
         ("/api/v1/", None, 403),
         ("/api/v1/", NO_PERMISSION_REQUIRED, 200),
-    ),
+    ],
 )
 def test_permission_for_specs(
     simple_config: Configurator,
@@ -140,15 +140,15 @@ SPLIT_PATHS_YAML = b"""
 
 
 @pytest.mark.parametrize(
-    "route,permission,status",
-    (
+    ("route", "permission", "status"),
+    [
         ("/api/v1/spec/openapi.yaml", "deny", 403),
         ("/api/v1/spec/openapi.yaml", NO_PERMISSION_REQUIRED, 200),
         ("/api/v1/spec/paths.yaml", "deny", 403),
         ("/api/v1/spec/paths.yaml", NO_PERMISSION_REQUIRED, 200),
         ("/api/v1/", "deny", 403),
         ("/api/v1/", NO_PERMISSION_REQUIRED, 200),
-    ),
+    ],
 )
 def test_permission_for_spec_directories(
     simple_config: Configurator,

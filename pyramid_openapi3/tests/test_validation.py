@@ -39,7 +39,7 @@ class RequestValidationBase:  # noqa: D101
             yield
 
     def _add_view(
-        self, view_func: t.Callable | None = None, openapi: bool = True
+        self, view_func: t.Callable | None = None, *, openapi: bool = True
     ) -> None:
         """Add a simple example view.
 
@@ -215,11 +215,11 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         assert start_response.status == "200 OK"
         assert b"foo" in b"".join(response)
 
-    def test_nonapi_view_raises_AttributeError(self) -> None:
+    def test_nonapi_view_raises_attribute_error(self) -> None:
         """Test non-openapi view that accesses request.openapi_validated."""
 
         def should_raise_error(request: Request) -> None:
-            request.openapi_validated
+            _ = request.openapi_validated
 
         self._add_view(openapi=False, view_func=should_raise_error)
         # run request through router

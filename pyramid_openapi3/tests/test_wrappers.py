@@ -1,5 +1,6 @@
 """Tests for the wrappers.py module."""
 
+from http import HTTPStatus
 from openapi_core.validation.request.datatypes import RequestParameters
 from pyramid.request import Request
 from pyramid.testing import DummyRequest
@@ -85,13 +86,13 @@ def test_mapped_values_response() -> None:
     pyramid_request = DummyRequest()
 
     assert pyramid_request.response.body == b""
-    assert pyramid_request.response.status_code == 200
+    assert pyramid_request.response.status_code == HTTPStatus.OK
     assert pyramid_request.response.content_type == "text/html"
 
     openapi_response = PyramidOpenAPIResponse(pyramid_request.response)
 
     assert openapi_response.data == b""
-    assert openapi_response.status_code == 200
+    assert openapi_response.status_code == HTTPStatus.OK
     assert openapi_response.mimetype == "text/html"
     assert openapi_response.content_type == "text/html"
     assert openapi_response.headers == pyramid_request.response.headers
