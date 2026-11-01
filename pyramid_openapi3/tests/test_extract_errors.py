@@ -13,11 +13,17 @@ import pytest
 import typing as t
 
 
-def app(spec: str, view: t.Callable, route: str) -> Router:
-    """Prepare a Pyramid app."""
+def app(
+    spec: str,
+    view: t.Callable,
+    route: str,
+    configure: t.Callable[[Configurator], None] = lambda config: None,
+) -> Router:
+    """Prepare a Pyramid app; `configure` runs right after the spec is loaded."""
     with Configurator() as config:
         config.include("pyramid_openapi3")
         config.pyramid_openapi3_spec(spec)
+        configure(config)
         config.add_route("foo", route)
         config.add_view(openapi=True, renderer="json", view=view, route_name="foo")
         return config.make_wsgi_app()
@@ -44,9 +50,9 @@ class TestBadRequests:
     ) -> t.Callable[..., TestApp]:
         """Return a function that starts an app for the given endpoints."""
 
-        def make(view: t.Callable, endpoints: str, route: str = "/foo") -> TestApp:
+        def make(endpoints: str, route: str = "/foo") -> TestApp:
             spec = self.OPENAPI_YAML.format(endpoints=endpoints).encode()
-            return TestApp(app(write_spec(spec), view, route))
+            return TestApp(app(write_spec(spec), self.foo, route))
 
         return make
 
@@ -70,7 +76,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = make_testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
+        res = make_testapp(endpoints).post("/foo", status=400)
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
@@ -99,9 +105,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = make_testapp(view=self.foo, endpoints=endpoints).post(
-            "/foo?bar=not_a_number", status=400
-        )
+        res = make_testapp(endpoints).post("/foo?bar=not_a_number", status=400)
         assert res.json == [
             {
                 "exception": "ParameterValidationError",
@@ -130,7 +134,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = make_testapp(view=self.foo, endpoints=endpoints, route="/foo/{bar}").post(
+        res = make_testapp(endpoints, route="/foo/{bar}").post(
             "/foo/not_a_number", status=400
         )
         assert res.json == [
@@ -162,7 +166,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = make_testapp(view=self.foo, endpoints=endpoints, route="/foo/{bar}").post(
+        res = make_testapp(endpoints, route="/foo/{bar}").post(
             "/foo/not-a-valid-uuid", status=400
         )
         assert res.json == [
@@ -194,7 +198,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = make_testapp(view=self.foo, endpoints=endpoints, route="/foo/{bar}").post(
+        res = make_testapp(endpoints, route="/foo/{bar}").post(
             "/foo/not-a-valid-uuid", status=400
         )
         assert res.json == [
@@ -225,7 +229,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = make_testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
+        res = make_testapp(endpoints).post("/foo", status=400)
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
@@ -254,7 +258,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = make_testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
+        res = make_testapp(endpoints).post("/foo", status=400)
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
@@ -289,9 +293,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = make_testapp(view=self.foo, endpoints=endpoints).post_json(
-            "/foo", {}, status=400
-        )
+        res = make_testapp(endpoints).post_json("/foo", {}, status=400)
         assert res.json == [
             {
                 "exception": "ValidationError",
@@ -326,9 +328,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = make_testapp(view=self.foo, endpoints=endpoints).post_json(
-            "/foo", {"foo": 1}, status=400
-        )
+        res = make_testapp(endpoints).post_json("/foo", {"foo": 1}, status=400)
         assert res.json == [
             {
                 "exception": "ValidationError",
@@ -362,9 +362,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = make_testapp(view=self.foo, endpoints=endpoints).post_json(
-            "/foo", {"foo": "12"}, status=400
-        )
+        res = make_testapp(endpoints).post_json("/foo", {"foo": "12"}, status=400)
         assert res.json == [
             {
                 "exception": "ValidationError",
@@ -406,7 +404,7 @@ class TestBadRequests:
                 400:
                   description: Bad Request
         """
-        res = make_testapp(view=self.foo, endpoints=endpoints).post_json(
+        res = make_testapp(endpoints).post_json(
             "/foo?bam=abc", {"foo": "1234"}, status=400
         )
         assert res.json == [
@@ -452,7 +450,7 @@ class TestBadRequests:
               name: Authorization
               in: header
         """
-        res = make_testapp(view=self.foo, endpoints=endpoints).get("/foo", status=401)
+        res = make_testapp(endpoints).get("/foo", status=401)
         assert res.json == [
             {
                 "exception": "SecurityValidationError",
@@ -493,7 +491,7 @@ class TestBadRequests:
                 bam:
                   type: number
         """
-        res = make_testapp(view=self.foo, endpoints=endpoints).post_json(
+        res = make_testapp(endpoints).post_json(
             "/foo", {"foo": [{"bam": "not a number"}]}, status=400
         )
 
@@ -641,17 +639,12 @@ class TestCustomFormatters:
     @pytest.fixture
     def testapp(self, write_spec: t.Callable[..., str]) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        with Configurator() as config:
-            config.include("pyramid_openapi3")
-            config.pyramid_openapi3_spec(write_spec(self.OPENAPI_YAML.encode()))
-            config.pyramid_openapi3_add_formatter("unique-name", self.unique_name)
-            config.add_route("hello", "/hello")
-            config.add_view(
-                openapi=True, renderer="json", view=self.hello, route_name="hello"
-            )
-            app = config.make_wsgi_app()
 
-        return TestApp(app)
+        def configure(config: Configurator) -> None:
+            config.pyramid_openapi3_add_formatter("unique-name", self.unique_name)
+
+        spec = write_spec(self.OPENAPI_YAML.encode())
+        return TestApp(app(spec, self.hello, "/hello", configure))
 
     def test_say_hello(self, testapp: TestApp) -> None:
         """Test happy path."""
@@ -737,19 +730,14 @@ class TestCustomDeserializer:
     @pytest.fixture
     def testapp(self, write_spec: t.Callable[..., str]) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        with Configurator() as config:
-            config.include("pyramid_openapi3")
-            config.pyramid_openapi3_spec(write_spec(self.OPENAPI_YAML.encode()))
+
+        def configure(config: Configurator) -> None:
             config.pyramid_openapi3_add_deserializer(
                 "application/backwards+json", lambda x: json.loads(self.reverse(x))
             )
-            config.add_route("hello", "/hello")
-            config.add_view(
-                openapi=True, renderer="json", view=self.hello, route_name="hello"
-            )
-            app = config.make_wsgi_app()
 
-        return TestApp(app)
+        spec = write_spec(self.OPENAPI_YAML.encode())
+        return TestApp(app(spec, self.hello, "/hello", configure))
 
     def test_say_hello(self, testapp: TestApp) -> None:
         """Test happy path."""
@@ -800,17 +788,12 @@ class TestCustomUnmarshallers:
     @pytest.fixture
     def testapp(self, write_spec: t.Callable[..., str]) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        with Configurator() as config:
-            config.include("pyramid_openapi3")
-            config.pyramid_openapi3_spec(write_spec(self.OPENAPI_YAML.encode()))
-            config.pyramid_openapi3_add_unmarshaller("parse-id", self.parse_id)
-            config.add_route("hello", "/hello")
-            config.add_view(
-                openapi=True, renderer="json", view=self.hello, route_name="hello"
-            )
-            app = config.make_wsgi_app()
 
-        return TestApp(app)
+        def configure(config: Configurator) -> None:
+            config.pyramid_openapi3_add_unmarshaller("parse-id", self.parse_id)
+
+        spec = write_spec(self.OPENAPI_YAML.encode())
+        return TestApp(app(spec, self.hello, "/hello", configure))
 
     def test_say_hello(self, testapp: TestApp) -> None:
         """Test happy path."""

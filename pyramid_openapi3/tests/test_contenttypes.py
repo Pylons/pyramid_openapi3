@@ -10,8 +10,11 @@ import pytest
 import typing as t
 
 
-def app(spec: str) -> Router:
-    """Prepare a Pyramid app."""
+def app(spec: str, read_binary: t.Callable[[t.Any], str]) -> Router:
+    """Prepare a Pyramid app.
+
+    `read_binary` turns the validated binary field `key3` into a str.
+    """
 
     def foo_view(request: Request) -> dict[str, str]:
         """Return reversed string."""
@@ -23,7 +26,7 @@ def app(spec: str) -> Router:
         return {
             "key1": body["key1"][::-1],
             "key2": [x[::-1] for x in body["key2"]],
-            "key3": body["key3"].decode("utf-8")[::-1],
+            "key3": read_binary(body["key3"])[::-1],
         }
 
     with Configurator() as config:
@@ -97,44 +100,6 @@ OPENAPI_YAML = """
 """
 
 
-# This is almost the same as app(), but for the OpenAPI 3.1.0 spec.
-# `multipart_view()` no longer needs to decode the bytes to a string.
-def app310(spec: str) -> Router:
-    """Prepare a Pyramid app."""
-
-    def foo_view(request: Request) -> dict[str, str]:
-        """Return reversed string."""
-        return {"bar": request.openapi_validated.body["bar"][::-1]}
-
-    def multipart_view(request: Request) -> dict[str, str | list[str]]:
-        """Return reversed string."""
-        body = request.openapi_validated.body
-        return {
-            "key1": body["key1"][::-1],
-            "key2": [x[::-1] for x in body["key2"]],
-            "key3": body["key3"][::-1],
-        }
-
-    with Configurator() as config:
-        config.include("pyramid_openapi3")
-        config.pyramid_openapi3_spec(spec)
-        config.add_route("foo", "/foo")
-        config.add_view(
-            openapi=True,
-            renderer="json",
-            view=foo_view,
-            route_name="foo",
-        )
-        config.add_route("multipart", "/multipart")
-        config.add_view(
-            openapi=True,
-            renderer="json",
-            view=multipart_view,
-            route_name="multipart",
-        )
-        return config.make_wsgi_app()
-
-
 OPENAPI_YAML310 = """
     openapi: "3.1.0"
     info:
@@ -186,15 +151,17 @@ OPENAPI_YAML310 = """
 """
 
 
+# OpenAPI 3.0's `format: binary` unmarshals to bytes and 3.1's
+# `contentMediaType` leaves a str, so each version gets the matching reader.
 @pytest.fixture(
-    params=[(OPENAPI_YAML, app), (OPENAPI_YAML310, app310)], ids=["3.0", "3.1"]
+    params=[(OPENAPI_YAML, bytes.decode), (OPENAPI_YAML310, str)], ids=["3.0", "3.1"]
 )
 def testapp(
     request: pytest.FixtureRequest, write_spec: t.Callable[..., str]
 ) -> TestApp:
     """Start up the app for one OpenAPI version so tests can send requests to it."""
-    spec, make_app = request.param
-    return TestApp(make_app(write_spec(spec.encode())))
+    spec, read_binary = request.param
+    return TestApp(app(write_spec(spec.encode()), read_binary))
 
 
 class TestContentTypes:

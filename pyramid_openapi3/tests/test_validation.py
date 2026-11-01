@@ -1,40 +1,20 @@
 """Test validation exceptions."""
 
 from collections.abc import Iterator
-from dataclasses import dataclass
 from pyramid import testing
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPPreconditionFailed
-from pyramid.interfaces import IRouteRequest
-from pyramid.interfaces import IView
-from pyramid.interfaces import IViewClassifier
 from pyramid.request import Request
-from pyramid.request import apply_request_extensions
-from pyramid.response import Response
 from pyramid.router import Router
-from pyramid.testing import DummyRequest
 from pyramid_openapi3.exceptions import ImproperAPISpecificationWarning
-from zope.interface import Interface
+from pyramid_openapi3.tests.utils import DummyStartResponse
+from pyramid_openapi3.tests.utils import get_view
+from pyramid_openapi3.tests.utils import make_request
 
 import json
 import logging
 import pytest
 import typing as t
-
-View = t.Callable[[t.Any, Request], Response]
-
-
-@dataclass
-class DummyRoute:  # noqa: D101
-    name: str
-    pattern: str
-
-
-class DummyStartResponse:  # noqa: D101
-    def __call__(self, status: str, headerlist: list[tuple[str, str]]) -> None:
-        """WSGI start_response protocol."""
-        self.status = status
-        self.headerlist = headerlist
 
 
 class RequestValidationBase:  # noqa: D101
@@ -72,26 +52,6 @@ class RequestValidationBase:  # noqa: D101
         self.config.add_view(
             openapi=openapi, renderer="json", view=view_func, route_name="foo"
         )
-
-    def _get_view(self) -> View:
-        """Return wrapped view method registered in _add_view."""
-        request_interface = self.config.registry.queryUtility(IRouteRequest, name="foo")
-        view = self.config.registry.adapters.registered(
-            (IViewClassifier, request_interface, Interface), IView, name=""
-        )
-        return view
-
-    def _get_request(self, params: dict | None = None) -> DummyRequest:
-        """Create a DummyRequest instance matching example view.
-
-        :param params: Query parameter dictionary
-        """
-        request = DummyRequest(
-            config=self.config, params=params, content_type="text/html"
-        )
-        apply_request_extensions(request)
-        request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        return request
 
 
 class TestRequestValidation(RequestValidationBase):  # noqa: D101
@@ -140,10 +100,12 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
             raise HTTPBadRequest("bad foo request")
 
         self._add_view(view_func)
-        view = self._get_view()
-        request = self._get_request(params={"bar": "1"})
+        view = get_view(self.config, "foo")
+        request = make_request(
+            self.config, "foo", params={"bar": "1"}, content_type="text/html"
+        )
         with pytest.raises(HTTPBadRequest) as exc_info:
-            view(None, request)  # ty: ignore[invalid-argument-type]
+            view(None, request)
         response = exc_info.value
         # not enough of pyramid has been set up so we need to render the
         # exception response ourselves.
