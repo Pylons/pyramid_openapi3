@@ -61,6 +61,25 @@ without Nix installed just skip them:
 SKIP=nixfmt-rfc-style,deadnix,statix make tests
 ```
 
+## Writing tests
+
+Tests in `pyramid_openapi3/tests/` use plain pytest: `assert`, fixtures, and
+`pytest.mark.parametrize`, with no `unittest.TestCase`. Group related tests in a plain
+`class TestX:` when that helps.
+
+- To put a spec file on disk, use the `write_spec` fixture from `conftest.py`. It
+  writes bytes under the test's `tmp_path` and returns the path. Give a split spec its
+  own subdirectory, e.g. `write_spec(paths, "split/paths.yaml")`.
+- `utils.py` has helpers for looking up a registered view (`get_view`) and building a
+  request that matched a route (`make_request`).
+- The suite runs in random order (`pytest-randomly`), and coverage must stay at 100%,
+  branches included, for the test files as well as the library.
+- Any warning fails the suite. Fix its cause, or if it comes from a dependency, add
+  the narrowest filter that matches it: a `filterwarnings` mark on the test, or an
+  entry in `pyproject.toml` with a comment saying why.
+
+The demo apps in `examples/` keep their own `unittest` tests.
+
 ## Testing oldest supported versions
 
 In CI, we want to test the oldest supported versions of `openapi-core` and `pyramid` on the oldest supported Python version. We do it like so:
