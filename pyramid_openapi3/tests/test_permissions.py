@@ -9,9 +9,7 @@ from pyramid.security import NO_PERMISSION_REQUIRED
 from pyramid.session import SignedCookieSessionFactory
 from webtest.app import TestApp
 
-import os
 import pytest
-import tempfile
 import typing as t
 
 # The auth policies and pyramid.security.Allow/Authenticated are deprecated in
@@ -90,29 +88,31 @@ OPENAPI_YAML = """
     ),
 )
 def test_permission_for_specs(
-    simple_config: Configurator, route: str, permission: str, status: int
+    simple_config: Configurator,
+    write_spec: t.Callable[..., str],
+    route: str,
+    permission: str,
+    status: int,
 ) -> None:
     """Allow (200) or deny (403) access to the spec/explorer view."""
-    with tempfile.NamedTemporaryFile() as document:
-        document.write(OPENAPI_YAML.encode())
-        document.seek(0)
+    spec_path = write_spec(OPENAPI_YAML.encode())
 
-        simple_config.pyramid_openapi3_spec(
-            document.name,
-            route="/api/v1/openapi.yaml",
-            route_name="api_spec",
-            permission=permission,
-        )
-        simple_config.pyramid_openapi3_add_explorer(
-            route="/api/v1/",
-            route_name="api_explorer",
-            permission=permission,
-        )
-        simple_config.add_route("foo", "/foo")
+    simple_config.pyramid_openapi3_spec(
+        spec_path,
+        route="/api/v1/openapi.yaml",
+        route_name="api_spec",
+        permission=permission,
+    )
+    simple_config.pyramid_openapi3_add_explorer(
+        route="/api/v1/",
+        route_name="api_explorer",
+        permission=permission,
+    )
+    simple_config.add_route("foo", "/foo")
 
-        testapp = TestApp(simple_config.make_wsgi_app())
+    testapp = TestApp(simple_config.make_wsgi_app())
 
-        testapp.get(route, status=status)
+    testapp.get(route, status=status)
 
 
 SPLIT_OPENAPI_YAML = b"""
@@ -151,30 +151,29 @@ SPLIT_PATHS_YAML = b"""
     ),
 )
 def test_permission_for_spec_directories(
-    simple_config: Configurator, route: str, permission: str, status: int
+    simple_config: Configurator,
+    write_spec: t.Callable[..., str],
+    route: str,
+    permission: str,
+    status: int,
 ) -> None:
     """Allow (200) or deny (403) access to the spec/explorer view."""
-    with tempfile.TemporaryDirectory() as directory:
-        spec_name = os.path.join(directory, "openapi.yaml")
-        spec_paths_name = os.path.join(directory, "paths.yaml")
-        with open(spec_name, "wb") as f:
-            f.write(SPLIT_OPENAPI_YAML)
-        with open(spec_paths_name, "wb") as f:
-            f.write(SPLIT_PATHS_YAML)
+    write_spec(SPLIT_PATHS_YAML, "split/paths.yaml")
+    spec_path = write_spec(SPLIT_OPENAPI_YAML, "split/openapi.yaml")
 
-        simple_config.pyramid_openapi3_spec_directory(
-            spec_name,
-            route="/api/v1/spec",
-            route_name="api_spec",
-            permission=permission,
-        )
-        simple_config.pyramid_openapi3_add_explorer(
-            route="/api/v1/",
-            route_name="api_explorer",
-            permission=permission,
-        )
-        simple_config.add_route("foo", "/foo")
+    simple_config.pyramid_openapi3_spec_directory(
+        spec_path,
+        route="/api/v1/spec",
+        route_name="api_spec",
+        permission=permission,
+    )
+    simple_config.pyramid_openapi3_add_explorer(
+        route="/api/v1/",
+        route_name="api_explorer",
+        permission=permission,
+    )
+    simple_config.add_route("foo", "/foo")
 
-        testapp = TestApp(simple_config.make_wsgi_app())
+    testapp = TestApp(simple_config.make_wsgi_app())
 
-        testapp.get(route, status=status)
+    testapp.get(route, status=status)

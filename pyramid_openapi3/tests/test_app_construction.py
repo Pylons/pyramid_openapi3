@@ -8,9 +8,7 @@ from pyramid.testing import testConfig
 from pyramid_openapi3 import MissingEndpointsError
 
 import logging
-import os
 import pytest
-import tempfile
 import typing as t
 
 DOCUMENT = b"""
@@ -142,47 +140,28 @@ def bar_view(request: Request) -> str:
 
 
 @pytest.fixture
-def document() -> t.Generator[t.IO, None, None]:
-    """Load the DOCUMENT into a temp file."""
-    with tempfile.NamedTemporaryFile() as document:
-        document.write(DOCUMENT)
-        document.seek(0)
-
-        yield document
+def document(write_spec: t.Callable[..., str]) -> str:
+    """Write the DOCUMENT to a spec file and return its path."""
+    return write_spec(DOCUMENT)
 
 
 @pytest.fixture
-def directory_document() -> t.Generator[str, None, None]:
-    """Load the DOCUMENT into a temp file."""
-    with tempfile.TemporaryDirectory() as directory:
-        spec_name = os.path.join(directory, "openapi.yaml")
-        spec_paths_name = os.path.join(directory, "paths.yaml")
-        with open(spec_name, "wb") as f:
-            f.write(SPLIT_DOCUMENT)
-        with open(spec_paths_name, "wb") as f:
-            f.write(SPLIT_DOCUMENT_PATHS)
-
-        yield spec_name
+def directory_document(write_spec: t.Callable[..., str]) -> str:
+    """Write the SPLIT_DOCUMENT files and return the main spec's path."""
+    write_spec(SPLIT_DOCUMENT_PATHS, "split/paths.yaml")
+    return write_spec(SPLIT_DOCUMENT, "split/openapi.yaml")
 
 
 @pytest.fixture
-def root_server_document() -> t.Generator[t.IO, None, None]:
-    """Load the ROOT_SERVER_DOCUMENT into a temp file."""
-    with tempfile.NamedTemporaryFile() as document:
-        document.write(ROOT_SERVER_DOCUMENT)
-        document.seek(0)
-
-        yield document
+def root_server_document(write_spec: t.Callable[..., str]) -> str:
+    """Write the ROOT_SERVER_DOCUMENT to a spec file and return its path."""
+    return write_spec(ROOT_SERVER_DOCUMENT)
 
 
 @pytest.fixture
-def prefix_boundary_document() -> t.Generator[t.IO, None, None]:
-    """Load the PREFIX_BOUNDARY_DOCUMENT into a temp file."""
-    with tempfile.NamedTemporaryFile() as document:
-        document.write(PREFIX_BOUNDARY_DOCUMENT)
-        document.seek(0)
-
-        yield document
+def prefix_boundary_document(write_spec: t.Callable[..., str]) -> str:
+    """Write the PREFIX_BOUNDARY_DOCUMENT to a spec file and return its path."""
+    return write_spec(PREFIX_BOUNDARY_DOCUMENT)
 
 
 @pytest.fixture
@@ -195,10 +174,10 @@ def simple_config() -> t.Generator[Configurator, None, None]:
 
 
 @pytest.fixture
-def simple_app_config(simple_config: Configurator, document: t.IO) -> Configurator:
+def simple_app_config(simple_config: Configurator, document: str) -> Configurator:
     """Incremented fixture that loads the DOCUMENT above into the config."""
     simple_config.pyramid_openapi3_spec(
-        document.name, route="/foo.yaml", route_name="foo_api_spec"
+        document, route="/foo.yaml", route_name="foo_api_spec"
     )
     return simple_config
 
@@ -216,22 +195,22 @@ def split_file_app_config(
 
 @pytest.fixture
 def root_server_app_config(
-    simple_config: Configurator, root_server_document: t.IO
+    simple_config: Configurator, root_server_document: str
 ) -> Configurator:
     """Incremented fixture that loads the ROOT_SERVER_DOCUMENT above into the config."""
     simple_config.pyramid_openapi3_spec(
-        root_server_document.name, route="/foo.yaml", route_name="foo_api_spec"
+        root_server_document, route="/foo.yaml", route_name="foo_api_spec"
     )
     return simple_config
 
 
 @pytest.fixture
 def prefix_boundary_app_config(
-    simple_config: Configurator, prefix_boundary_document: t.IO
+    simple_config: Configurator, prefix_boundary_document: str
 ) -> Configurator:
     """Incremented fixture loading the PREFIX_BOUNDARY_DOCUMENT above into the config."""
     simple_config.pyramid_openapi3_spec(
-        prefix_boundary_document.name, route="/foo.yaml", route_name="foo_api_spec"
+        prefix_boundary_document, route="/foo.yaml", route_name="foo_api_spec"
     )
     return simple_config
 

@@ -9,7 +9,7 @@ from pyramid_openapi3.exceptions import RequestValidationError
 from webtest.app import TestApp
 
 import json
-import tempfile
+import pytest
 import typing as t
 
 
@@ -38,17 +38,21 @@ class TestBadRequests:
           {endpoints}
     """
 
-    def _testapp(
-        self, view: t.Callable, endpoints: str, route: str = "/foo"
-    ) -> TestApp:
-        """Start up the app so that tests can send requests to it."""
-        with tempfile.NamedTemporaryFile() as document:
-            document.write(self.OPENAPI_YAML.format(endpoints=endpoints).encode())
-            document.seek(0)
+    @pytest.fixture
+    def make_testapp(
+        self, write_spec: t.Callable[..., str]
+    ) -> t.Callable[..., TestApp]:
+        """Return a function that starts an app for the given endpoints."""
 
-            return TestApp(app(document.name, view, route))
+        def make(view: t.Callable, endpoints: str, route: str = "/foo") -> TestApp:
+            spec = self.OPENAPI_YAML.format(endpoints=endpoints).encode()
+            return TestApp(app(write_spec(spec), view, route))
 
-    def test_missing_query_parameter(self) -> None:
+        return make
+
+    def test_missing_query_parameter(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Render nice ValidationError if query parameter is missing."""
         endpoints = """
           /foo:
@@ -66,7 +70,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
+        res = make_testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
@@ -75,7 +79,9 @@ class TestBadRequests:
             }
         ]
 
-    def test_invalid_query_parameter(self) -> None:
+    def test_invalid_query_parameter(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Render nice ValidationError if query parameter is invalid."""
         endpoints = """
           "/foo":
@@ -93,7 +99,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, endpoints=endpoints).post(
+        res = make_testapp(view=self.foo, endpoints=endpoints).post(
             "/foo?bar=not_a_number", status=400
         )
         assert res.json == [
@@ -104,7 +110,9 @@ class TestBadRequests:
             }
         ]
 
-    def test_invalid_path_parameter(self) -> None:
+    def test_invalid_path_parameter(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Render nice ValidationError if path parameter is invalid."""
         endpoints = """
           "/foo/{bar}":
@@ -122,9 +130,9 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = self._testapp(
-            view=self.foo, endpoints=endpoints, route="/foo/{bar}"
-        ).post("/foo/not_a_number", status=400)
+        res = make_testapp(view=self.foo, endpoints=endpoints, route="/foo/{bar}").post(
+            "/foo/not_a_number", status=400
+        )
         assert res.json == [
             {
                 "exception": "ParameterValidationError",
@@ -133,7 +141,9 @@ class TestBadRequests:
             }
         ]
 
-    def test_invalid_path_parameter_regex(self) -> None:
+    def test_invalid_path_parameter_regex(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Render nice ValidationError if path parameter does not match regex."""
         endpoints = """
           "/foo/{bar}":
@@ -152,9 +162,9 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = self._testapp(
-            view=self.foo, endpoints=endpoints, route="/foo/{bar}"
-        ).post("/foo/not-a-valid-uuid", status=400)
+        res = make_testapp(view=self.foo, endpoints=endpoints, route="/foo/{bar}").post(
+            "/foo/not-a-valid-uuid", status=400
+        )
         assert res.json == [
             {
                 "exception": "ValidationError",
@@ -163,7 +173,9 @@ class TestBadRequests:
             }
         ]
 
-    def test_invalid_path_parameter_uuid(self) -> None:
+    def test_invalid_path_parameter_uuid(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Render nice ValidationError if path parameter is not UUID."""
         endpoints = """
           "/foo/{bar}":
@@ -182,9 +194,9 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = self._testapp(
-            view=self.foo, endpoints=endpoints, route="/foo/{bar}"
-        ).post("/foo/not-a-valid-uuid", status=400)
+        res = make_testapp(view=self.foo, endpoints=endpoints, route="/foo/{bar}").post(
+            "/foo/not-a-valid-uuid", status=400
+        )
         assert res.json == [
             {
                 "exception": "ValidationError",
@@ -193,7 +205,9 @@ class TestBadRequests:
             }
         ]
 
-    def test_missing_header_parameter(self) -> None:
+    def test_missing_header_parameter(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Render nice ValidationError if header parameter is missing."""
         endpoints = """
           "/foo":
@@ -211,7 +225,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
+        res = make_testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
@@ -220,7 +234,9 @@ class TestBadRequests:
             }
         ]
 
-    def test_missing_cookie_parameter(self) -> None:
+    def test_missing_cookie_parameter(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Render nice ValidationError if cookie parameter is missing."""
         endpoints = """
           "/foo":
@@ -238,7 +254,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
+        res = make_testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
         assert res.json == [
             {
                 "exception": "MissingRequiredParameter",
@@ -247,7 +263,9 @@ class TestBadRequests:
             }
         ]
 
-    def test_missing_POST_parameter(self) -> None:
+    def test_missing_POST_parameter(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Render nice ValidationError if POST parameter is missing."""
         endpoints = """
           "/foo":
@@ -271,7 +289,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, endpoints=endpoints).post_json(
+        res = make_testapp(view=self.foo, endpoints=endpoints).post_json(
             "/foo", {}, status=400
         )
         assert res.json == [
@@ -282,7 +300,9 @@ class TestBadRequests:
             }
         ]
 
-    def test_missing_type_POST_parameter(self) -> None:
+    def test_missing_type_POST_parameter(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Render nice ValidationError if POST parameter is of invalid type."""
         endpoints = """
           "/foo":
@@ -306,7 +326,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, endpoints=endpoints).post_json(
+        res = make_testapp(view=self.foo, endpoints=endpoints).post_json(
             "/foo", {"foo": 1}, status=400
         )
         assert res.json == [
@@ -317,7 +337,9 @@ class TestBadRequests:
             }
         ]
 
-    def test_invalid_length_POST_parameter(self) -> None:
+    def test_invalid_length_POST_parameter(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Render nice ValidationError if POST parameter is of invalid length."""
         endpoints = """
           "/foo":
@@ -340,7 +362,7 @@ class TestBadRequests:
                   description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, endpoints=endpoints).post_json(
+        res = make_testapp(view=self.foo, endpoints=endpoints).post_json(
             "/foo", {"foo": "12"}, status=400
         )
         assert res.json == [
@@ -351,7 +373,7 @@ class TestBadRequests:
             }
         ]
 
-    def test_multiple_errors(self) -> None:
+    def test_multiple_errors(self, make_testapp: t.Callable[..., TestApp]) -> None:
         """Render a list of errors if there are more than one."""
         endpoints = """
           /foo:
@@ -384,7 +406,7 @@ class TestBadRequests:
                 400:
                   description: Bad Request
         """
-        res = self._testapp(view=self.foo, endpoints=endpoints).post_json(
+        res = make_testapp(view=self.foo, endpoints=endpoints).post_json(
             "/foo?bam=abc", {"foo": "1234"}, status=400
         )
         assert res.json == [
@@ -410,7 +432,7 @@ class TestBadRequests:
             },
         ]
 
-    def test_bad_JWT_token(self) -> None:
+    def test_bad_JWT_token(self, make_testapp: t.Callable[..., TestApp]) -> None:
         """Render 401 on bad JWT token."""
         endpoints = """
           /foo:
@@ -430,7 +452,7 @@ class TestBadRequests:
               name: Authorization
               in: header
         """
-        res = self._testapp(view=self.foo, endpoints=endpoints).get("/foo", status=401)
+        res = make_testapp(view=self.foo, endpoints=endpoints).get("/foo", status=401)
         assert res.json == [
             {
                 "exception": "SecurityValidationError",
@@ -438,7 +460,7 @@ class TestBadRequests:
             }
         ]
 
-    def test_lists(self) -> None:
+    def test_lists(self, make_testapp: t.Callable[..., TestApp]) -> None:
         """Error extracting works for lists too."""
         endpoints = """
           /foo:
@@ -471,7 +493,7 @@ class TestBadRequests:
                 bam:
                   type: number
         """
-        res = self._testapp(view=self.foo, endpoints=endpoints).post_json(
+        res = make_testapp(view=self.foo, endpoints=endpoints).post_json(
             "/foo", {"foo": [{"bam": "not a number"}]}, status=400
         )
 
@@ -506,31 +528,36 @@ class TestBadResponses:
                         type: string
     """
 
-    def _testapp(self, view: t.Callable) -> TestApp:
-        """Start up the app so that tests can send requests to it."""
-        with tempfile.NamedTemporaryFile() as document:
-            document.write(self.OPENAPI_YAML)
-            document.seek(0)
+    @pytest.fixture
+    def make_testapp(
+        self, write_spec: t.Callable[..., str]
+    ) -> t.Callable[..., TestApp]:
+        """Return a function that starts an app serving the given view."""
 
-            return TestApp(app(document.name, view, route="/foo"))
+        def make(view: t.Callable) -> TestApp:
+            return TestApp(app(write_spec(self.OPENAPI_YAML), view, route="/foo"))
 
-    def test_foo(self) -> None:
+        return make
+
+    def test_foo(self, make_testapp: t.Callable[..., TestApp]) -> None:
         """Say foo."""
 
         def foo(*args: t.Any) -> dict[str, str]:
             """Say foobar."""
             return {"foo": "bar"}
 
-        res = self._testapp(view=foo).get("/foo", status=200)
+        res = make_testapp(view=foo).get("/foo", status=200)
         assert '{"foo": "bar"}' in res.text
 
-    def test_invalid_response_code(self) -> None:
+    def test_invalid_response_code(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Prevent responding with undefined response code."""
 
         def foo(*args: t.Any) -> Exception:
             raise exception_response(409, json_body={})
 
-        res = self._testapp(view=foo).get("/foo", status=500)
+        res = make_testapp(view=foo).get("/foo", status=500)
         assert res.json == [
             {
                 "exception": "ResponseNotFound",
@@ -538,13 +565,15 @@ class TestBadResponses:
             }
         ]
 
-    def test_invalid_response_schema(self) -> None:
+    def test_invalid_response_schema(
+        self, make_testapp: t.Callable[..., TestApp]
+    ) -> None:
         """Prevent responding with unmatching response schema."""
 
         def foo(*args: t.Any) -> Exception:
             raise exception_response(400, json_body={"foo": "bar"})
 
-        res = self._testapp(view=foo).get("/foo", status=500)
+        res = make_testapp(view=foo).get("/foo", status=500)
         assert res.json == [
             {
                 "exception": "ValidationError",
@@ -609,32 +638,29 @@ class TestCustomFormatters:
                   description: Bad Request
     """
 
-    def _testapp(self) -> TestApp:
+    @pytest.fixture
+    def testapp(self, write_spec: t.Callable[..., str]) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        with tempfile.NamedTemporaryFile() as document:
-            document.write(self.OPENAPI_YAML.encode())
-            document.seek(0)
+        with Configurator() as config:
+            config.include("pyramid_openapi3")
+            config.pyramid_openapi3_spec(write_spec(self.OPENAPI_YAML.encode()))
+            config.pyramid_openapi3_add_formatter("unique-name", self.unique_name)
+            config.add_route("hello", "/hello")
+            config.add_view(
+                openapi=True, renderer="json", view=self.hello, route_name="hello"
+            )
+            app = config.make_wsgi_app()
 
-            with Configurator() as config:
-                config.include("pyramid_openapi3")
-                config.pyramid_openapi3_spec(document.name)
-                config.pyramid_openapi3_add_formatter("unique-name", self.unique_name)
-                config.add_route("hello", "/hello")
-                config.add_view(
-                    openapi=True, renderer="json", view=self.hello, route_name="hello"
-                )
-                app = config.make_wsgi_app()
+        return TestApp(app)
 
-            return TestApp(app)
-
-    def test_say_hello(self) -> None:
+    def test_say_hello(self, testapp: TestApp) -> None:
         """Test happy path."""
-        res = self._testapp().post_json("/hello", {"name": "zupo"}, status=200)
+        res = testapp.post_json("/hello", {"name": "zupo"}, status=200)
         assert res.json == "Hello zupo"
 
-    def test_name_taken(self) -> None:
+    def test_name_taken(self, testapp: TestApp) -> None:
         """Test passing a name that is taken."""
-        res = self._testapp().post_json("/hello", {"name": "Alice"}, status=400)
+        res = testapp.post_json("/hello", {"name": "Alice"}, status=400)
         assert res.json == [
             {
                 "exception": "InvalidCustomFormatterValue",
@@ -643,9 +669,9 @@ class TestCustomFormatters:
             }
         ]
 
-    def test_invalid_name(self) -> None:
+    def test_invalid_name(self, testapp: TestApp) -> None:
         """Test that built-in type formatters do their job."""
-        res = self._testapp().post_json("/hello", {"name": 12}, status=400)
+        res = testapp.post_json("/hello", {"name": 12}, status=400)
         assert res.json == [
             {
                 "exception": "ValidationError",
@@ -654,7 +680,7 @@ class TestCustomFormatters:
             }
         ]
 
-        res = self._testapp().post_json("/hello", {"name": "yo"}, status=400)
+        res = testapp.post_json("/hello", {"name": "yo"}, status=400)
         assert res.json == [
             {
                 "exception": "ValidationError",
@@ -708,31 +734,28 @@ class TestCustomDeserializer:
                   description: Bad Request
     """
 
-    def _testapp(self) -> TestApp:
+    @pytest.fixture
+    def testapp(self, write_spec: t.Callable[..., str]) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        with tempfile.NamedTemporaryFile() as document:
-            document.write(self.OPENAPI_YAML.encode())
-            document.seek(0)
+        with Configurator() as config:
+            config.include("pyramid_openapi3")
+            config.pyramid_openapi3_spec(write_spec(self.OPENAPI_YAML.encode()))
+            config.pyramid_openapi3_add_deserializer(
+                "application/backwards+json", lambda x: json.loads(self.reverse(x))
+            )
+            config.add_route("hello", "/hello")
+            config.add_view(
+                openapi=True, renderer="json", view=self.hello, route_name="hello"
+            )
+            app = config.make_wsgi_app()
 
-            with Configurator() as config:
-                config.include("pyramid_openapi3")
-                config.pyramid_openapi3_spec(document.name)
-                config.pyramid_openapi3_add_deserializer(
-                    "application/backwards+json", lambda x: json.loads(self.reverse(x))
-                )
-                config.add_route("hello", "/hello")
-                config.add_view(
-                    openapi=True, renderer="json", view=self.hello, route_name="hello"
-                )
-                app = config.make_wsgi_app()
+        return TestApp(app)
 
-            return TestApp(app)
-
-    def test_say_hello(self) -> None:
+    def test_say_hello(self, testapp: TestApp) -> None:
         """Test happy path."""
         headers = {"Content-Type": "application/backwards+json"}
         body = self.reverse(json.dumps({"name": "zupo"}))
-        res = self._testapp().post("/hello", body, headers, status=200)
+        res = testapp.post("/hello", body, headers, status=200)
         assert res.json == self.reverse("Hello zupo")
 
 
@@ -774,25 +797,22 @@ class TestCustomUnmarshallers:
                   description: Bad Request
     """
 
-    def _testapp(self) -> TestApp:
+    @pytest.fixture
+    def testapp(self, write_spec: t.Callable[..., str]) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        with tempfile.NamedTemporaryFile() as document:
-            document.write(self.OPENAPI_YAML.encode())
-            document.seek(0)
+        with Configurator() as config:
+            config.include("pyramid_openapi3")
+            config.pyramid_openapi3_spec(write_spec(self.OPENAPI_YAML.encode()))
+            config.pyramid_openapi3_add_unmarshaller("parse-id", self.parse_id)
+            config.add_route("hello", "/hello")
+            config.add_view(
+                openapi=True, renderer="json", view=self.hello, route_name="hello"
+            )
+            app = config.make_wsgi_app()
 
-            with Configurator() as config:
-                config.include("pyramid_openapi3")
-                config.pyramid_openapi3_spec(document.name)
-                config.pyramid_openapi3_add_unmarshaller("parse-id", self.parse_id)
-                config.add_route("hello", "/hello")
-                config.add_view(
-                    openapi=True, renderer="json", view=self.hello, route_name="hello"
-                )
-                app = config.make_wsgi_app()
+        return TestApp(app)
 
-            return TestApp(app)
-
-    def test_say_hello(self) -> None:
+    def test_say_hello(self, testapp: TestApp) -> None:
         """Test happy path."""
-        res = self._testapp().post_json("/hello", {"id": "[1,2,3]"}, status=200)
+        res = testapp.post_json("/hello", {"id": "[1,2,3]"}, status=200)
         assert res.json == "Hello 1 and 2 and 3"

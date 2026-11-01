@@ -7,7 +7,7 @@ from webob.multidict import MultiDict
 from webtest.app import TestApp
 
 import pytest
-import tempfile
+import typing as t
 
 
 def app(spec: str) -> Router:
@@ -189,14 +189,12 @@ OPENAPI_YAML310 = """
 @pytest.fixture(
     params=[(OPENAPI_YAML, app), (OPENAPI_YAML310, app310)], ids=["3.0", "3.1"]
 )
-def testapp(request: pytest.FixtureRequest) -> TestApp:
+def testapp(
+    request: pytest.FixtureRequest, write_spec: t.Callable[..., str]
+) -> TestApp:
     """Start up the app for one OpenAPI version so tests can send requests to it."""
     spec, make_app = request.param
-    with tempfile.NamedTemporaryFile() as document:
-        document.write(spec.encode())
-        document.seek(0)
-
-        return TestApp(make_app(document.name))
+    return TestApp(make_app(write_spec(spec.encode())))
 
 
 class TestContentTypes:

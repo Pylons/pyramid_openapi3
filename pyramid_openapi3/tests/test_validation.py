@@ -19,7 +19,6 @@ from zope.interface import Interface
 import json
 import logging
 import pytest
-import tempfile
 import typing as t
 
 View = t.Callable[[t.Any, Request], Response]
@@ -47,19 +46,16 @@ class RequestValidationBase:  # noqa: D101
         return self.openapi_spec
 
     @pytest.fixture(autouse=True)
-    def setup_config(self, spec: bytes) -> Iterator[None]:
+    def setup_config(
+        self, spec: bytes, write_spec: t.Callable[..., str]
+    ) -> Iterator[None]:
         """Set up a minimal pyramid configuration for each test."""
         with testing.testConfig() as config:
             self.config = config
             self.config.include("pyramid_openapi3")
-
-            with tempfile.NamedTemporaryFile() as document:
-                document.write(spec)
-                document.seek(0)
-
-                self.config.pyramid_openapi3_spec(
-                    document.name, route="/foo.yaml", route_name="foo_api_spec"
-                )
+            self.config.pyramid_openapi3_spec(
+                write_spec(spec), route="/foo.yaml", route_name="foo_api_spec"
+            )
             yield
 
     def _add_view(

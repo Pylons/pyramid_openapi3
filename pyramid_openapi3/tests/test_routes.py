@@ -6,7 +6,7 @@ from pyramid.testing import testConfig
 from webtest.app import TestApp
 
 import pytest
-import tempfile
+import typing as t
 
 
 def dummy_factory(request: Request) -> str:
@@ -14,12 +14,11 @@ def dummy_factory(request: Request) -> str:
     return "_DUMMY_"  # pragma: no cover
 
 
-def test_register_routes_simple() -> None:
+def test_register_routes_simple(write_spec: t.Callable[..., str]) -> None:
     """Test registration routes without root_factory."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
-        with tempfile.NamedTemporaryFile() as tempdoc:
-            tempdoc.write(b"""\
+        spec_path = write_spec(b"""\
 openapi: "3.1.0"
 info:
   version: "1.0.0"
@@ -37,11 +36,10 @@ paths:
         200:
           description: A bar
 """)
-            tempdoc.seek(0)
-            config.pyramid_openapi3_spec(tempdoc.name)
-            config.pyramid_openapi3_register_routes()
-            config.add_route("bar", "/bar")
-            app = config.make_wsgi_app()
+        config.pyramid_openapi3_spec(spec_path)
+        config.pyramid_openapi3_register_routes()
+        config.add_route("bar", "/bar")
+        app = config.make_wsgi_app()
 
     routes = [
         (i["introspectable"]["name"], i["introspectable"]["pattern"])
@@ -55,12 +53,11 @@ paths:
     ]
 
 
-def test_register_routes_with_factory() -> None:
+def test_register_routes_with_factory(write_spec: t.Callable[..., str]) -> None:
     """Test registration routes with root_factory."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
-        with tempfile.NamedTemporaryFile() as tempdoc:
-            tempdoc.write(b"""\
+        spec_path = write_spec(b"""\
 openapi: "3.1.0"
 info:
   version: "1.0.0"
@@ -81,10 +78,9 @@ paths:
           description: A bar
 
 """)
-            tempdoc.seek(0)
-            config.pyramid_openapi3_spec(tempdoc.name)
-            config.pyramid_openapi3_register_routes()
-            app = config.make_wsgi_app()
+        config.pyramid_openapi3_spec(spec_path)
+        config.pyramid_openapi3_register_routes()
+        app = config.make_wsgi_app()
 
     routes = [
         (
@@ -102,12 +98,11 @@ paths:
     ]
 
 
-def test_register_routes_with_prefix() -> None:
+def test_register_routes_with_prefix(write_spec: t.Callable[..., str]) -> None:
     """Test registration routes with route_prefix."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
-        with tempfile.NamedTemporaryFile() as tempdoc:
-            tempdoc.write(b"""\
+        spec_path = write_spec(b"""\
 openapi: "3.1.0"
 info:
   version: "1.0.0"
@@ -122,10 +117,9 @@ paths:
         200:
           description: A foo
 """)
-            tempdoc.seek(0)
-            config.pyramid_openapi3_spec(tempdoc.name)
-            config.pyramid_openapi3_register_routes(route_prefix="/api/v1")
-            app = config.make_wsgi_app()
+        config.pyramid_openapi3_spec(spec_path)
+        config.pyramid_openapi3_register_routes(route_prefix="/api/v1")
+        app = config.make_wsgi_app()
 
     routes = [
         (i["introspectable"]["name"], i["introspectable"]["pattern"])
@@ -183,7 +177,11 @@ def _users_view(*args: object) -> list:
     ],
 )
 def test_servers_url_is_mount_point_not_route_prefix(
-    route_prefix: str | None, script_name: str, path_info: str, expected_status: int
+    write_spec: t.Callable[..., str],
+    route_prefix: str | None,
+    script_name: str,
+    path_info: str,
+    expected_status: int,
 ) -> None:
     """GH #194: `servers` is a mount point, so verbatim registration is correct.
 
@@ -196,20 +194,16 @@ def test_servers_url_is_mount_point_not_route_prefix(
         # Render an unmatched route as a 404 response (like a real app) instead of
         # letting the raw HTTPNotFound propagate, so the style-C miss is observable.
         config.add_notfound_view(lambda request: HTTPNotFound())
-        with tempfile.NamedTemporaryFile() as tempdoc:
-            tempdoc.write(GH194_SPEC)
-            tempdoc.seek(0)
-            config.pyramid_openapi3_spec(tempdoc.name)
-            # route_prefix=None is the directive's default (verbatim registration).
-            config.pyramid_openapi3_register_routes(route_prefix=route_prefix)
-            config.add_view(
-                _users_view, route_name="users", renderer="json", openapi=True
-            )
-            test_app = TestApp(config.make_wsgi_app())
-            response = test_app.get(
-                path_info,
-                extra_environ={"SCRIPT_NAME": script_name},
-                expect_errors=True,
-            )
+        spec_path = write_spec(GH194_SPEC)
+        config.pyramid_openapi3_spec(spec_path)
+        # route_prefix=None is the directive's default (verbatim registration).
+        config.pyramid_openapi3_register_routes(route_prefix=route_prefix)
+        config.add_view(_users_view, route_name="users", renderer="json", openapi=True)
+        test_app = TestApp(config.make_wsgi_app())
+        response = test_app.get(
+            path_info,
+            extra_environ={"SCRIPT_NAME": script_name},
+            expect_errors=True,
+        )
 
     assert response.status_int == expected_status
