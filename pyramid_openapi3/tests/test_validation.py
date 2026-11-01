@@ -73,7 +73,7 @@ class RequestValidationBase(TestCase):  # noqa: D101
         """
         self.config.add_route("foo", "/foo")
         if not view_func:
-            view_func = lambda *arg: "foo"  # noqa: E731  # pragma: no branch
+            view_func = lambda *arg: "foo"  # noqa: E731
         self.config.add_view(
             openapi=openapi, renderer="json", view=view_func, route_name="foo"
         )

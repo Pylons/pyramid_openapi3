@@ -646,7 +646,7 @@ def test_path_item_parameters() -> None:
             )
 
         config.add_route("foo", "/foo")
-        view_func = lambda *arg: "foo"  # noqa: E731  # pragma: no branch
+        view_func = lambda *arg: "foo"  # noqa: E731
         config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
         request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
@@ -705,7 +705,7 @@ def test_header_parameters() -> None:
             )
 
         config.add_route("foo", "/foo")
-        view_func = lambda *arg: "foo"  # noqa: E731  # pragma: no branch
+        view_func = lambda *arg: "foo"  # noqa: E731
         config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
         request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
@@ -765,7 +765,7 @@ def test_cookie_parameters() -> None:
             )
 
         config.add_route("foo", "/foo")
-        view_func = lambda *arg: "foo"  # noqa: E731  # pragma: no branch
+        view_func = lambda *arg: "foo"  # noqa: E731
         config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
         request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
