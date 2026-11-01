@@ -48,6 +48,9 @@ branch = true
 exclude_also = ['if __name__ == "__main__":']
 
 [tool.pytest.ini_options]
+# Excludes pyramid.testing.testConfig, a helper (not a test) that pytest's
+# default "test*" prefix would otherwise collect as a phantom test.
+python_functions = ["test_*"]
 testpaths = ["pyramid_openapi3"]
 
 [tool.ruff]
