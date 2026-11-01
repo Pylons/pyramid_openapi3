@@ -1,17 +1,11 @@
 """Tests for the wrappers.py module."""
 
-from dataclasses import dataclass
 from openapi_core.validation.request.datatypes import RequestParameters
 from pyramid.request import Request
 from pyramid.testing import DummyRequest
+from pyramid_openapi3.tests.utils import DummyRoute
 from pyramid_openapi3.wrappers import PyramidOpenAPIRequest
 from pyramid_openapi3.wrappers import PyramidOpenAPIResponse
-
-
-@dataclass
-class DummyRoute:  # noqa: D101
-    name: str
-    pattern: str
 
 
 def test_mapped_values_request() -> None:

@@ -1,33 +1,26 @@
 """Tests views."""
 
+from collections.abc import Iterator
 from contextlib import closing
-from dataclasses import dataclass
 from openapi_core.templating.paths.finders import APICallPathFinder
 from openapi_core.validation.request.protocols import RequestValidator
 from openapi_core.validation.response.protocols import ResponseValidator
+from pathlib import Path
+from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
-from pyramid.interfaces import Interface
 from pyramid.interfaces import IRouteRequest
 from pyramid.interfaces import IRoutesMapper
-from pyramid.interfaces import IView
-from pyramid.interfaces import IViewClassifier
-from pyramid.request import apply_request_extensions
 from pyramid.router import Router
 from pyramid.testing import DummyRequest
 from pyramid.testing import testConfig
 from pyramid_openapi3.exceptions import RequestValidationError
+from pyramid_openapi3.tests.utils import DummyStartResponse
+from pyramid_openapi3.tests.utils import get_view
+from pyramid_openapi3.tests.utils import make_request
 
 import json
 import pytest
 import typing as t
-
-
-class DummyStartResponse:  # noqa: D101
-    def __call__(self, status: str, headerlist: list[tuple[str, str]]) -> None:
-        """WSGI start_response protocol."""
-        self.status = status
-        self.headerlist = headerlist
-
 
 MINIMAL_DOCUMENT = b"""
     openapi: "3.1.0"
@@ -92,65 +85,54 @@ ALTERNATE_SPLIT_DOCUMENT_PATHS = b"""
 """
 
 
-def test_add_spec_view(write_spec: t.Callable[..., str]) -> None:
+@pytest.fixture
+def minimal_config(write_spec: t.Callable[..., str]) -> Iterator[Configurator]:
+    """Yield a config with MINIMAL_DOCUMENT registered and served at /foo.yaml."""
+    with testConfig() as config:
+        config.include("pyramid_openapi3")
+        config.pyramid_openapi3_spec(
+            write_spec(MINIMAL_DOCUMENT), route="/foo.yaml", route_name="foo_api_spec"
+        )
+        yield config
+
+
+def test_add_spec_view(tmp_path: Path, minimal_config: Configurator) -> None:
     """Test registration of a view that serves the openapi document."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
+    config = minimal_config
+    # assert settings
+    openapi_settings = config.registry.settings["pyramid_openapi3"]
+    assert openapi_settings["filepath"] == str(tmp_path / "openapi.yaml")
+    assert openapi_settings["spec_route_name"] == "foo_api_spec"
+    assert openapi_settings["spec"]["info"]["title"] == "Foo API"
+    assert isinstance(openapi_settings["request_validator"], RequestValidator)
+    assert isinstance(openapi_settings["response_validator"], ResponseValidator)
 
-        spec_path = write_spec(MINIMAL_DOCUMENT)
+    # assert route
+    mapper = config.registry.getUtility(IRoutesMapper)
+    routes = mapper.get_routes()
+    assert routes[0].name == "foo_api_spec"
+    assert routes[0].path == "/foo.yaml"
 
-        config.pyramid_openapi3_spec(
-            spec_path, route="/foo.yaml", route_name="foo_api_spec"
-        )
-
-        # assert settings
-        openapi_settings = config.registry.settings["pyramid_openapi3"]
-        assert openapi_settings["filepath"] == spec_path
-        assert openapi_settings["spec_route_name"] == "foo_api_spec"
-        assert openapi_settings["spec"]["info"]["title"] == "Foo API"
-        assert isinstance(openapi_settings["request_validator"], RequestValidator)
-        assert isinstance(openapi_settings["response_validator"], ResponseValidator)
-
-        # assert route
-        mapper = config.registry.getUtility(IRoutesMapper)
-        routes = mapper.get_routes()
-        assert routes[0].name == "foo_api_spec"
-        assert routes[0].path == "/foo.yaml"
-
-        # assert view
-        request = config.registry.queryUtility(IRouteRequest, name="foo_api_spec")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
-        assert view(request=None, context=None).body == MINIMAL_DOCUMENT
+    # assert view
+    view = get_view(config, "foo_api_spec")
+    assert view(request=None, context=None).body == MINIMAL_DOCUMENT
 
 
-def test_add_spec_view_json(write_spec: t.Callable[..., str]) -> None:
+def test_add_spec_view_json(minimal_config: Configurator) -> None:
     """Test that the openapi document is also served as JSON, alongside YAML."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
+    config = minimal_config
+    # assert route
+    mapper = config.registry.getUtility(IRoutesMapper)
+    routes = mapper.get_routes()
+    assert routes[1].name == "foo_api_spec_json"
+    assert routes[1].path == "/foo.json"
 
-        spec_path = write_spec(MINIMAL_DOCUMENT)
-
-        config.pyramid_openapi3_spec(
-            spec_path, route="/foo.yaml", route_name="foo_api_spec"
-        )
-
-        # assert route
-        mapper = config.registry.getUtility(IRoutesMapper)
-        routes = mapper.get_routes()
-        assert routes[1].name == "foo_api_spec_json"
-        assert routes[1].path == "/foo.json"
-
-        # assert view
-        request = config.registry.queryUtility(IRouteRequest, name="foo_api_spec_json")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
-        response = view(request=None, context=None)
-        assert response.content_type == "application/json"
-        spec = config.registry.settings["pyramid_openapi3"]["spec"]
-        assert json.loads(response.body) == spec.read_value()
+    # assert view
+    view = get_view(config, "foo_api_spec_json")
+    response = view(request=None, context=None)
+    assert response.content_type == "application/json"
+    spec = config.registry.settings["pyramid_openapi3"]["spec"]
+    assert json.loads(response.body) == spec.read_value()
 
 
 def test_add_spec_view_already_defined(write_spec: t.Callable[..., str]) -> None:
@@ -218,9 +200,7 @@ def test_add_spec_view_directory(write_spec: t.Callable[..., str]) -> None:
         # assert view
         route_request = config.registry.queryUtility(IRouteRequest, name="foo_api_spec")
         static_request = config.registry.queryUtility(IRouteRequest, name="__/foo/")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, static_request, Interface), IView, name=""
-        )
+        view = get_view(config, "__/foo/")
         assert route_request is not None
         assert static_request is not None
         assert view is not None
@@ -282,74 +262,43 @@ def test_add_spec_view_directory_invalid_route(
             )
 
 
-def test_add_explorer_view(write_spec: t.Callable[..., str]) -> None:
+def test_add_explorer_view(minimal_config: Configurator) -> None:
     """Test registration of a view serving the Swagger UI."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
-
-        spec_path = write_spec(MINIMAL_DOCUMENT)
-
-        config.pyramid_openapi3_spec(
-            spec_path, route="/foo.yaml", route_name="foo_api_spec"
-        )
-
-        config.pyramid_openapi3_add_explorer(ui_config={"deepLinking": False})
-        request = config.registry.queryUtility(
-            IRouteRequest, name="pyramid_openapi3.explorer"
-        )
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
-        response = view(request=DummyRequest(config=config), context=None)
-        assert b"<title>Swagger UI</title>" in response.body
-        assert b"const oauthConfig = null;" in response.body
-        assert b'"deepLinking": false' in response.body
-        assert (
-            b'"oauth2RedirectUrl": "http://example.com/docs/oauth2-redirect"'
-            in response.body
-        )
+    config = minimal_config
+    config.pyramid_openapi3_add_explorer(ui_config={"deepLinking": False})
+    view = get_view(config, "pyramid_openapi3.explorer")
+    response = view(request=DummyRequest(config=config), context=None)
+    assert b"<title>Swagger UI</title>" in response.body
+    assert b"const oauthConfig = null;" in response.body
+    assert b'"deepLinking": false' in response.body
+    assert (
+        b'"oauth2RedirectUrl": "http://example.com/docs/oauth2-redirect"'
+        in response.body
+    )
 
 
-def test_add_explorer_oauth_view(write_spec: t.Callable[..., str]) -> None:
+def test_add_explorer_oauth_view(minimal_config: Configurator) -> None:
     """Test registration of a view serving the Swagger UI with OAuth support."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
+    config = minimal_config
+    config.pyramid_openapi3_add_explorer(
+        oauth_redirect_route="/dummy/oauth2-redirect",
+        oauth_config={
+            "usePkceWithAuthorizationCodeGrant": True,
+        },
+    )
+    view = get_view(config, "pyramid_openapi3.explorer")
+    response = view(request=DummyRequest(config=config), context=None)
+    assert b"<title>Swagger UI</title>" in response.body
+    assert b"ui.initOAuth(" in response.body
+    assert b"usePkceWithAuthorizationCodeGrant" in response.body
+    assert (
+        b'"oauth2RedirectUrl": "http://example.com/dummy/oauth2-redirect"'
+        in response.body
+    )
 
-        spec_path = write_spec(MINIMAL_DOCUMENT)
-
-        config.pyramid_openapi3_spec(
-            spec_path, route="/foo.yaml", route_name="foo_api_spec"
-        )
-
-        config.pyramid_openapi3_add_explorer(
-            oauth_redirect_route="/dummy/oauth2-redirect",
-            oauth_config={
-                "usePkceWithAuthorizationCodeGrant": True,
-            },
-        )
-        request = config.registry.queryUtility(
-            IRouteRequest, name="pyramid_openapi3.explorer"
-        )
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
-        response = view(request=DummyRequest(config=config), context=None)
-        assert b"<title>Swagger UI</title>" in response.body
-        assert b"ui.initOAuth(" in response.body
-        assert b"usePkceWithAuthorizationCodeGrant" in response.body
-        assert (
-            b'"oauth2RedirectUrl": "http://example.com/dummy/oauth2-redirect"'
-            in response.body
-        )
-
-        request = config.registry.queryUtility(
-            IRouteRequest, name="pyramid_openapi3.explorer.oauth2-redirect"
-        )
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
-        response = view(request=DummyRequest(config=config), context=None)
-        assert b"<title>Swagger UI: OAuth2 Redirect</title>" in response.body
+    view = get_view(config, "pyramid_openapi3.explorer.oauth2-redirect")
+    response = view(request=DummyRequest(config=config), context=None)
+    assert b"<title>Swagger UI: OAuth2 Redirect</title>" in response.body
 
 
 def test_add_multiple_explorer_views_using_directory(
@@ -379,18 +328,12 @@ def test_add_multiple_explorer_views_using_directory(
             route="/bar_api/v1/", route_name="bar_api_explorer", apiname="bar_api"
         )
 
-        request = config.registry.queryUtility(IRouteRequest, name="foo_api_explorer")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
+        view = get_view(config, "foo_api_explorer")
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
         assert b'"url": "/foo/openapi.yaml"' in response.body
 
-        request = config.registry.queryUtility(IRouteRequest, name="bar_api_explorer")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
+        view = get_view(config, "bar_api_explorer")
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
         assert b'"url": "/bar/openapi.yaml"' in response.body
@@ -429,18 +372,12 @@ def test_add_multiple_explorer_views(write_spec: t.Callable[..., str]) -> None:
             apiname="bar_api",
         )
 
-        request = config.registry.queryUtility(IRouteRequest, name="foo_api_explorer")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
+        view = get_view(config, "foo_api_explorer")
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
         assert b'"url": "/foo.yaml"' in response.body
 
-        request = config.registry.queryUtility(IRouteRequest, name="bar_api_explorer")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
+        view = get_view(config, "bar_api_explorer")
         response = view(request=DummyRequest(config=config), context=None)
         assert b"<title>Swagger UI</title>" in response.body
         assert b'"url": "/bar.yaml"' in response.body
@@ -452,12 +389,7 @@ def test_explorer_view_missing_spec() -> None:
         config.include("pyramid_openapi3")
         config.pyramid_openapi3_add_explorer()
 
-        request = config.registry.queryUtility(
-            IRouteRequest, name="pyramid_openapi3.explorer"
-        )
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
+        view = get_view(config, "pyramid_openapi3.explorer")
         with pytest.raises(
             ConfigurationError,
             match=(
@@ -468,38 +400,18 @@ def test_explorer_view_missing_spec() -> None:
             view(request=DummyRequest(config=config), context=None)
 
 
-@dataclass
-class DummyRoute:  # noqa: D101
-    name: str
-    pattern: str
-
-
-def test_openapi_view(write_spec: t.Callable[..., str]) -> None:
+def test_openapi_view(minimal_config: Configurator) -> None:
     """Test registration a an openapi view."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
+    config = minimal_config
+    config.add_route("foo", "/foo")
+    view_func = lambda *arg: "bar"  # noqa: E731
+    config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
-        spec_path = write_spec(MINIMAL_DOCUMENT)
+    view = get_view(config, "foo")
+    request = make_request(config, "foo", content_type="text/html")
+    response = view(None, request)
 
-        config.pyramid_openapi3_spec(
-            spec_path, route="/foo.yaml", route_name="foo_api_spec"
-        )
-
-        config.add_route("foo", "/foo")
-        view_func = lambda *arg: "bar"  # noqa: E731
-        config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
-
-        request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request_interface, Interface), IView, name=""
-        )
-        request = DummyRequest(config=config, content_type="text/html")
-        apply_request_extensions(request)
-        request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        context = None
-        response = view(context, request)
-
-        assert response.json == "bar"
+    assert response.json == "bar"
 
 
 def test_multiple_openapi_views(write_spec: t.Callable[..., str]) -> None:
@@ -540,27 +452,15 @@ def test_multiple_openapi_views(write_spec: t.Callable[..., str]) -> None:
         settings["pyramid_openapi3"]["routes"]["foo"] = "foo"
         settings["pyramid_openapi3"]["routes"]["bar"] = "bar"
 
-        request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request_interface, Interface), IView, name=""
-        )
-        request = DummyRequest(config=config, content_type="text/html")
-        apply_request_extensions(request)
-        request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        context = None
-        response = view(context, request)
+        view = get_view(config, "foo")
+        request = make_request(config, "foo", content_type="text/html")
+        response = view(None, request)
 
         assert response.json == "foo"
 
-        request_interface = config.registry.queryUtility(IRouteRequest, name="bar")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request_interface, Interface), IView, name=""
-        )
-        request = DummyRequest(config=config, content_type="text/html")
-        apply_request_extensions(request)
-        request.matched_route = DummyRoute(name="bar", pattern="/bar")
-        context = None
-        response = view(context, request)
+        view = get_view(config, "bar")
+        request = make_request(config, "bar", content_type="text/html")
+        response = view(None, request)
 
         assert response.json == "bar"
 
@@ -596,28 +496,19 @@ def test_path_item_parameters(write_spec: t.Callable[..., str]) -> None:
         view_func = lambda *arg: "foo"  # noqa: E731
         config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
-        request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request_interface, Interface), IView, name=""
-        )
+        view = get_view(config, "foo")
         # Test validation fails
-        request = DummyRequest(config=config, content_type="application/json")
-        apply_request_extensions(request)
-        request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        context = None
+        request = make_request(config, "foo", content_type="application/json")
         with pytest.raises(
             RequestValidationError, match="Missing required query parameter: foo"
         ):
-            response = view(context, request)
+            view(None, request)
 
         # Test validation succeeds
-        request = DummyRequest(
-            config=config, params={"foo": "1"}, content_type="application/json"
+        request = make_request(
+            config, "foo", params={"foo": "1"}, content_type="application/json"
         )
-        apply_request_extensions(request)
-        request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        context = None
-        response = view(context, request)
+        response = view(None, request)
 
         assert response.json == "foo"
 
@@ -653,29 +544,20 @@ def test_header_parameters(write_spec: t.Callable[..., str]) -> None:
         view_func = lambda *arg: "foo"  # noqa: E731
         config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
-        request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request_interface, Interface), IView, name=""
-        )
+        view = get_view(config, "foo")
         # Test validation fails
-        request = DummyRequest(config=config, content_type="text/html")
-        apply_request_extensions(request)
-        request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        context = None
+        request = make_request(config, "foo", content_type="text/html")
 
         with pytest.raises(
             RequestValidationError, match="Missing required header parameter: foo"
         ):
-            response = view(context, request)
+            view(None, request)
 
         # Test validation succeeds
-        request = DummyRequest(
-            config=config, headers={"foo": "1"}, content_type="text/html"
+        request = make_request(
+            config, "foo", headers={"foo": "1"}, content_type="text/html"
         )
-        apply_request_extensions(request)
-        request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        context = None
-        response = view(context, request)
+        response = view(None, request)
 
         assert response.json == "foo"
 
@@ -711,83 +593,48 @@ def test_cookie_parameters(write_spec: t.Callable[..., str]) -> None:
         view_func = lambda *arg: "foo"  # noqa: E731
         config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
-        request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request_interface, Interface), IView, name=""
-        )
+        view = get_view(config, "foo")
         # Test validation fails
-        request = DummyRequest(config=config, content_type="text/html")
-        apply_request_extensions(request)
-        request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        context = None
+        request = make_request(config, "foo", content_type="text/html")
         with pytest.raises(
             RequestValidationError, match="Missing required cookie parameter: foo"
         ):
-            response = view(context, request)
+            view(None, request)
 
         # Test validation succeeds
-        request = DummyRequest(
-            config=config, cookies={"foo": "1"}, content_type="text/html"
+        request = make_request(
+            config, "foo", cookies={"foo": "1"}, content_type="text/html"
         )
-        apply_request_extensions(request)
-        request.matched_route = DummyRoute(name="foo", pattern="/foo")
-        context = None
-        response = view(context, request)
+        response = view(None, request)
 
         assert response.json == "foo"
 
 
-def test_add_explorer_view_with_csp_nonce(write_spec: t.Callable[..., str]) -> None:
+def test_add_explorer_view_with_csp_nonce(minimal_config: Configurator) -> None:
     """Test explorer view includes CSP nonce when available on request."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
+    config = minimal_config
+    config.pyramid_openapi3_add_explorer()
+    view = get_view(config, "pyramid_openapi3.explorer")
 
-        spec_path = write_spec(MINIMAL_DOCUMENT)
+    # Test with CSP nonce
+    dummy_request = DummyRequest(config=config)
+    dummy_request.csp_nonce = "test-nonce-123"
+    response = view(request=dummy_request, context=None)
 
-        config.pyramid_openapi3_spec(
-            spec_path, route="/foo.yaml", route_name="foo_api_spec"
-        )
-
-        config.pyramid_openapi3_add_explorer()
-        request = config.registry.queryUtility(
-            IRouteRequest, name="pyramid_openapi3.explorer"
-        )
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
-
-        # Test with CSP nonce
-        dummy_request = DummyRequest(config=config)
-        dummy_request.csp_nonce = "test-nonce-123"
-        response = view(request=dummy_request, context=None)
-
-        assert b'<script nonce="test-nonce-123">' in response.body
-        assert b"<title>Swagger UI</title>" in response.body
+    assert b'<script nonce="test-nonce-123">' in response.body
+    assert b"<title>Swagger UI</title>" in response.body
 
 
-def test_add_explorer_view_without_csp_nonce(write_spec: t.Callable[..., str]) -> None:
+def test_add_explorer_view_without_csp_nonce(minimal_config: Configurator) -> None:
     """Test explorer view works normally when no CSP nonce is present."""
-    with testConfig() as config:
-        config.include("pyramid_openapi3")
+    config = minimal_config
+    config.pyramid_openapi3_add_explorer()
+    view = get_view(config, "pyramid_openapi3.explorer")
 
-        spec_path = write_spec(MINIMAL_DOCUMENT)
+    # Test without CSP nonce
+    dummy_request = DummyRequest(config=config)
+    response = view(request=dummy_request, context=None)
 
-        config.pyramid_openapi3_spec(
-            spec_path, route="/foo.yaml", route_name="foo_api_spec"
-        )
-
-        config.pyramid_openapi3_add_explorer()
-        request = config.registry.queryUtility(
-            IRouteRequest, name="pyramid_openapi3.explorer"
-        )
-        view = config.registry.adapters.registered(
-            (IViewClassifier, request, Interface), IView, name=""
-        )
-
-        # Test without CSP nonce
-        dummy_request = DummyRequest(config=config)
-        response = view(request=dummy_request, context=None)
-
-        assert b"<script>" in response.body
-        assert b"nonce=" not in response.body
-        assert b"<title>Swagger UI</title>" in response.body
+    assert b"<script>" in response.body
+    assert b"nonce=" not in response.body
+    assert b"<title>Swagger UI</title>" in response.body
