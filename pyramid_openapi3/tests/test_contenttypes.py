@@ -7,7 +7,6 @@ from webob.multidict import MultiDict
 from webtest.app import TestApp
 
 import tempfile
-import unittest
 
 
 def app(spec: str) -> Router:
@@ -97,13 +96,11 @@ OPENAPI_YAML = """
 """
 
 
-class TestContentTypes(unittest.TestCase):
+class TestContentTypes:
     """A suite of tests that make sure different body content types are supported."""
 
     def _testapp(self) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        from webtest import TestApp
-
         with tempfile.NamedTemporaryFile() as document:
             document.write(OPENAPI_YAML.encode())
             document.seek(0)
@@ -113,12 +110,12 @@ class TestContentTypes(unittest.TestCase):
     def test_post_json(self) -> None:
         """Post with `application/json`."""
         res = self._testapp().post_json("/foo", {"bar": "baz"}, status=200)
-        self.assertEqual(res.json, {"bar": "zab"})
+        assert res.json == {"bar": "zab"}
 
     def test_post_form(self) -> None:
         """Post with `application/x-www-form-urlencoded`."""
         res = self._testapp().post("/foo", params={"bar": "baz"}, status=200)
-        self.assertEqual(res.json, {"bar": "zab"})
+        assert res.json == {"bar": "zab"}
 
     def test_post_multipart(self) -> None:
         """Post with `multipart/form-data`."""
@@ -134,14 +131,11 @@ class TestContentTypes(unittest.TestCase):
             content_type="multipart/form-data",
             status=200,
         )
-        self.assertEqual(
-            res.json,
-            {
-                "key1": "1eulav",
-                "key2": ["1.2eulav", "2.2eulav"],
-                "key3": "3eulav",
-            },
-        )
+        assert res.json == {
+            "key1": "1eulav",
+            "key2": ["1.2eulav", "2.2eulav"],
+            "key3": "3eulav",
+        }
 
 
 # This is almost the same as the previous test, but with OpenAPI 3.1.0.
@@ -233,13 +227,11 @@ OPENAPI_YAML310 = """
 """
 
 
-class TestContentTypes310(unittest.TestCase):
+class TestContentTypes310:
     """A suite of tests that make sure different body content types are supported."""
 
     def _testapp(self) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        from webtest import TestApp
-
         with tempfile.NamedTemporaryFile() as document:
             document.write(OPENAPI_YAML310.encode())
             document.seek(0)
@@ -249,12 +241,12 @@ class TestContentTypes310(unittest.TestCase):
     def test_post_json(self) -> None:
         """Post with `application/json`."""
         res = self._testapp().post_json("/foo", {"bar": "baz"}, status=200)
-        self.assertEqual(res.json, {"bar": "zab"})
+        assert res.json == {"bar": "zab"}
 
     def test_post_form(self) -> None:
         """Post with `application/x-www-form-urlencoded`."""
         res = self._testapp().post("/foo", params={"bar": "baz"}, status=200)
-        self.assertEqual(res.json, {"bar": "zab"})
+        assert res.json == {"bar": "zab"}
 
     def test_post_multipart(self) -> None:
         """Post with `multipart/form-data`."""
@@ -270,11 +262,8 @@ class TestContentTypes310(unittest.TestCase):
             content_type="multipart/form-data",
             status=200,
         )
-        self.assertEqual(
-            res.json,
-            {
-                "key1": "1eulav",
-                "key2": ["1.2eulav", "2.2eulav"],
-                "key3": "3eulav",
-            },
-        )
+        assert res.json == {
+            "key1": "1eulav",
+            "key2": ["1.2eulav", "2.2eulav"],
+            "key3": "3eulav",
+        }
