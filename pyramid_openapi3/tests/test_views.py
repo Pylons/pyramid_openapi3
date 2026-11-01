@@ -1,5 +1,6 @@
 """Tests views."""
 
+from contextlib import closing
 from dataclasses import dataclass
 from openapi_core.templating.paths.finders import APICallPathFinder
 from openapi_core.validation.request.protocols import RequestValidator
@@ -247,10 +248,12 @@ def test_add_spec_view_directory() -> None:
 
             # assert router
             router = Router(config.registry)
-            response = router({"PATH_INFO": "/foo/openapi.yaml"}, DummyStartResponse())
-            assert next(response) == SPLIT_DOCUMENT
-            response = router({"PATH_INFO": "/foo/paths.yaml"}, DummyStartResponse())
-            assert next(response) == SPLIT_DOCUMENT_PATHS
+            for path, document in [
+                ("/foo/openapi.yaml", SPLIT_DOCUMENT),
+                ("/foo/paths.yaml", SPLIT_DOCUMENT_PATHS),
+            ]:
+                with closing(router({"PATH_INFO": path}, DummyStartResponse())) as body:
+                    assert next(body) == document
 
 
 def test_add_spec_view_directory_already_defined() -> None:
