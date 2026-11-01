@@ -11,7 +11,6 @@ from webtest.app import TestApp
 import json
 import tempfile
 import typing as t
-import unittest
 
 
 def app(spec: str, view: t.Callable, route: str) -> Router:
@@ -24,7 +23,7 @@ def app(spec: str, view: t.Callable, route: str) -> Router:
         return config.make_wsgi_app()
 
 
-class BadRequestsTests(unittest.TestCase):
+class TestBadRequests:
     """A suite of tests that make sure bad requests are handled."""
 
     def foo(*args) -> None:  # noqa: D102
@@ -43,8 +42,6 @@ class BadRequestsTests(unittest.TestCase):
         self, view: t.Callable, endpoints: str, route: str = "/foo"
     ) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        from webtest import TestApp
-
         with tempfile.NamedTemporaryFile() as document:
             document.write(self.OPENAPI_YAML.format(endpoints=endpoints).encode())
             document.seek(0)
@@ -487,7 +484,7 @@ class BadRequestsTests(unittest.TestCase):
         ]
 
 
-class BadResponsesTests(unittest.TestCase):
+class TestBadResponses:
     """A suite of tests that make sure bad responses are prevented."""
 
     OPENAPI_YAML = b"""
@@ -511,8 +508,6 @@ class BadResponsesTests(unittest.TestCase):
 
     def _testapp(self, view: t.Callable) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        from webtest import TestApp
-
         with tempfile.NamedTemporaryFile() as document:
             document.write(self.OPENAPI_YAML)
             document.seek(0)
@@ -527,7 +522,7 @@ class BadResponsesTests(unittest.TestCase):
             return {"foo": "bar"}
 
         res = self._testapp(view=foo).get("/foo", status=200)
-        self.assertIn('{"foo": "bar"}', res.text)
+        assert '{"foo": "bar"}' in res.text
 
     def test_invalid_response_code(self) -> None:
         """Prevent responding with undefined response code."""
@@ -545,7 +540,6 @@ class BadResponsesTests(unittest.TestCase):
 
     def test_invalid_response_schema(self) -> None:
         """Prevent responding with unmatching response schema."""
-        from pyramid.httpexceptions import exception_response
 
         def foo(*args: t.Any) -> Exception:
             raise exception_response(400, json_body={"foo": "bar"})
@@ -559,7 +553,7 @@ class BadResponsesTests(unittest.TestCase):
         ]
 
 
-class CustomFormattersTests(unittest.TestCase):
+class TestCustomFormatters:
     """A suite of tests that showcase how custom formatters can be used."""
 
     def hello(self, context: t.Any, request: Request) -> str:
@@ -617,8 +611,6 @@ class CustomFormattersTests(unittest.TestCase):
 
     def _testapp(self) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        from webtest import TestApp
-
         with tempfile.NamedTemporaryFile() as document:
             document.write(self.OPENAPI_YAML.encode())
             document.seek(0)
@@ -672,7 +664,7 @@ class CustomFormattersTests(unittest.TestCase):
         ]
 
 
-class CustomDeserializerTests(unittest.TestCase):
+class TestCustomDeserializer:
     """A suite of tests that showcase how custom deserializers can be used."""
 
     def hello(self, context: t.Any, request: Request) -> str:
@@ -718,8 +710,6 @@ class CustomDeserializerTests(unittest.TestCase):
 
     def _testapp(self) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        from webtest import TestApp
-
         with tempfile.NamedTemporaryFile() as document:
             document.write(self.OPENAPI_YAML.encode())
             document.seek(0)
@@ -746,7 +736,7 @@ class CustomDeserializerTests(unittest.TestCase):
         assert res.json == self.reverse("Hello zupo")
 
 
-class CustomUnmarshallersTests(unittest.TestCase):
+class TestCustomUnmarshallers:
     """A suite of tests that showcase how custom unmarshallers can be used."""
 
     def hello(self, context: t.Any, request: Request) -> str:
@@ -786,8 +776,6 @@ class CustomUnmarshallersTests(unittest.TestCase):
 
     def _testapp(self) -> TestApp:
         """Start up the app so that tests can send requests to it."""
-        from webtest import TestApp
-
         with tempfile.NamedTemporaryFile() as document:
             document.write(self.OPENAPI_YAML.encode())
             document.seek(0)

@@ -1,6 +1,10 @@
 """Test validation exceptions."""
 
+from collections.abc import Iterator
 from dataclasses import dataclass
+from pyramid import testing
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPPreconditionFailed
 from pyramid.interfaces import IRouteRequest
 from pyramid.interfaces import IView
 from pyramid.interfaces import IViewClassifier
@@ -9,13 +13,12 @@ from pyramid.request import apply_request_extensions
 from pyramid.response import Response
 from pyramid.router import Router
 from pyramid.testing import DummyRequest
-from pyramid.testing import setUp
-from pyramid.testing import tearDown
 from pyramid_openapi3.exceptions import ImproperAPISpecificationWarning
-from unittest import TestCase
 from zope.interface import Interface
 
 import json
+import logging
+import pytest
 import tempfile
 import typing as t
 
@@ -35,33 +38,24 @@ class DummyStartResponse:  # noqa: D101
         self.headerlist = headerlist
 
 
-class RequestValidationBase(TestCase):  # noqa: D101
+class RequestValidationBase:  # noqa: D101
     openapi_spec: bytes
 
-    def setUp(self) -> None:
-        """unittest.TestCase setUp for each test method.
+    @pytest.fixture(autouse=True)
+    def setup_config(self) -> Iterator[None]:
+        """Set up a minimal pyramid configuration for each test."""
+        with testing.testConfig() as config:
+            self.config = config
+            self.config.include("pyramid_openapi3")
 
-        Setup a minimal pyramid configuration.
-        """
-        self.config = setUp()
+            with tempfile.NamedTemporaryFile() as document:
+                document.write(self.openapi_spec)
+                document.seek(0)
 
-        self.config.include("pyramid_openapi3")
-
-        with tempfile.NamedTemporaryFile() as document:
-            document.write(self.openapi_spec)
-            document.seek(0)
-
-            self.config.pyramid_openapi3_spec(
-                document.name, route="/foo.yaml", route_name="foo_api_spec"
-            )
-
-    def tearDown(self) -> None:
-        """unittest.TestCase tearDown for each test method.
-
-        Tear down everything set up in setUp.
-        """
-        tearDown()
-        self.config = None
+                self.config.pyramid_openapi3_spec(
+                    document.name, route="/foo.yaml", route_name="foo_api_spec"
+                )
+            yield
 
     def _add_view(
         self, view_func: t.Callable | None = None, openapi: bool = True
@@ -133,7 +127,6 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
 
         Example view raises a defined response code.
         """
-        from pyramid.httpexceptions import HTTPBadRequest
 
         def view_func(*args: t.Any) -> Exception:
             raise HTTPBadRequest("bad foo request")
@@ -141,13 +134,13 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         self._add_view(view_func)
         view = self._get_view()
         request = self._get_request(params={"bar": "1"})
-        with self.assertRaises(HTTPBadRequest) as cm:
+        with pytest.raises(HTTPBadRequest) as exc_info:
             view(None, request)  # ty: ignore[invalid-argument-type]
-        response = cm.exception
+        response = exc_info.value
         # not enough of pyramid has been set up so we need to render the
         # exception response ourselves.
         response.prepare({"HTTP_ACCEPT": "application/json"})
-        self.assertIn("bad foo request", response.json["message"])
+        assert "bad foo request" in response.json["message"]
 
     def test_view_valid_request_response(self) -> None:
         """Test openapi validated view which has correct request and response."""
@@ -165,10 +158,10 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         }
         start_response = DummyStartResponse()
         response = router(environ, start_response)
-        self.assertEqual(start_response.status, "200 OK")
-        self.assertEqual(json.loads(response[0]), {"test": "correct"})
+        assert start_response.status == "200 OK"
+        assert json.loads(response[0]) == {"test": "correct"}
 
-    def test_request_validation_error(self) -> None:
+    def test_request_validation_error(self, caplog: pytest.LogCaptureFixture) -> None:
         """Request validation errors are rendered as 400 JSON responses."""
         self._add_view()
         # run request through router
@@ -182,34 +175,32 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
             "HTTP_ACCEPT": "application/json",
         }
         start_response = DummyStartResponse()
-        with self.assertLogs(level="WARNING") as cm:
+        with caplog.at_level(logging.WARNING):
             response = router(environ, start_response)
 
-        self.assertEqual(start_response.status, "400 Bad Request")
-        self.assertEqual(
-            json.loads(response[0]),
-            [
-                {
-                    "exception": "MissingRequiredParameter",
-                    "message": "Missing required query parameter: bar",
-                    "field": "bar",
-                }
-            ],
-        )
-        self.assertEqual(
-            cm.output,
-            ["WARNING:pyramid_openapi3:Missing required query parameter: bar"],
-        )
+        assert start_response.status == "400 Bad Request"
+        assert json.loads(response[0]) == [
+            {
+                "exception": "MissingRequiredParameter",
+                "message": "Missing required query parameter: bar",
+                "field": "bar",
+            }
+        ]
+        assert caplog.record_tuples == [
+            (
+                "pyramid_openapi3",
+                logging.WARNING,
+                "Missing required query parameter: bar",
+            )
+        ]
 
-    def test_response_validation_error(self) -> None:
+    def test_response_validation_error(self, caplog: pytest.LogCaptureFixture) -> None:
         """Test View raises ResponseValidationError.
 
         Example view raises an undefined response code.
         The response validation tween should catch this as response validation error,
         and return an error 500.
         """
-        from pyramid.httpexceptions import HTTPPreconditionFailed
-
         self._add_view(lambda *arg: HTTPPreconditionFailed())
 
         # run request through router
@@ -224,21 +215,18 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
             "QUERY_STRING": "bar=1",
         }
         start_response = DummyStartResponse()
-        with self.assertLogs(level="ERROR") as cm:
+        with caplog.at_level(logging.ERROR):
             response = router(environ, start_response)
-        self.assertEqual(start_response.status, "500 Internal Server Error")
-        self.assertEqual(
-            json.loads(response[0]),
-            [
-                {
-                    "exception": "ResponseNotFound",
-                    "message": "Unknown response http status: 412",
-                }
-            ],
-        )
-        self.assertEqual(
-            cm.output, ["ERROR:pyramid_openapi3:Unknown response http status: 412"]
-        )
+        assert start_response.status == "500 Internal Server Error"
+        assert json.loads(response[0]) == [
+            {
+                "exception": "ResponseNotFound",
+                "message": "Unknown response http status: 412",
+            }
+        ]
+        assert caplog.record_tuples == [
+            ("pyramid_openapi3", logging.ERROR, "Unknown response http status: 412")
+        ]
 
     def test_nonapi_view(self) -> None:
         """Test View without openapi validation."""
@@ -254,8 +242,8 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         }
         start_response = DummyStartResponse()
         response = router(environ, start_response)
-        self.assertEqual(start_response.status, "200 OK")
-        self.assertIn(b"foo", b"".join(response))
+        assert start_response.status == "200 OK"
+        assert b"foo" in b"".join(response)
 
     def test_nonapi_view_raises_AttributeError(self) -> None:
         """Test non-openapi view that accesses request.openapi_validated."""
@@ -274,12 +262,12 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
             "PATH_INFO": "/foo",
         }
         start_response = DummyStartResponse()
-        with self.assertRaises(AttributeError) as cm:
+        with pytest.raises(AttributeError) as exc_info:
             router(environ, start_response)
 
-        self.assertEqual(
-            str(cm.exception),
-            "Cannot do openapi request validation on a view marked with openapi=False",
+        assert (
+            str(exc_info.value)
+            == "Cannot do openapi request validation on a view marked with openapi=False"
         )
 
     def test_request_validation_disabled(self) -> None:
@@ -299,7 +287,7 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         }
         start_response = DummyStartResponse()
         response = router(environ, start_response)
-        self.assertEqual(start_response.status, "400 Bad Request")
+        assert start_response.status == "400 Bad Request"
 
         # now let's disable it
         self.config.registry.settings["pyramid_openapi3.enable_request_validation"] = (
@@ -307,8 +295,8 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         )
         start_response = DummyStartResponse()
         response = router(environ, start_response)
-        self.assertEqual(start_response.status, "200 OK")
-        self.assertEqual(json.loads(response[0]), {"test": "correct"})
+        assert start_response.status == "200 OK"
+        assert json.loads(response[0]) == {"test": "correct"}
 
     def test_response_validation_disabled(self) -> None:
         """Test View with response validation disabled."""
@@ -327,7 +315,7 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         }
         start_response = DummyStartResponse()
         response = router(environ, start_response)
-        self.assertEqual(start_response.status, "500 Internal Server Error")
+        assert start_response.status == "500 Internal Server Error"
 
         # now let's disable it
         self.config.registry.settings["pyramid_openapi3.enable_response_validation"] = (
@@ -335,8 +323,8 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         )
         start_response = DummyStartResponse()
         response = router(environ, start_response)
-        self.assertEqual(start_response.status, "200 OK")
-        self.assertEqual(json.loads(response[0]), "not-valid")
+        assert start_response.status == "200 OK"
+        assert json.loads(response[0]) == "not-valid"
 
     def test_request_validation_disabled_response_validation_enabled(self) -> None:
         """Test response validation still works if request validation is disabled."""
@@ -359,7 +347,7 @@ class TestRequestValidation(RequestValidationBase):  # noqa: D101
         }
         start_response = DummyStartResponse()
         router(environ, start_response)
-        self.assertEqual(start_response.status, "500 Internal Server Error")
+        assert start_response.status == "500 Internal Server Error"
 
 
 class TestServerRequestValidation(RequestValidationBase):  # noqa: D101
@@ -405,8 +393,8 @@ class TestServerRequestValidation(RequestValidationBase):  # noqa: D101
         start_response = DummyStartResponse()
         response = router(environ, start_response)
 
-        self.assertEqual(start_response.status, "200 OK")
-        self.assertEqual(json.loads(response[0]), {"test": "correct"})
+        assert start_response.status == "200 OK"
+        assert json.loads(response[0]) == {"test": "correct"}
 
     def test_server_validation_works_with_script_name_and_hostname(self) -> None:
         """Expect to find a match for http://example.com/prefix/foo."""
@@ -426,10 +414,12 @@ class TestServerRequestValidation(RequestValidationBase):  # noqa: D101
         start_response = DummyStartResponse()
         response = router(environ, start_response)
 
-        self.assertEqual(start_response.status, "200 OK")
-        self.assertEqual(json.loads(response[0]), {"test": "correct"})
+        assert start_response.status == "200 OK"
+        assert json.loads(response[0]) == {"test": "correct"}
 
-    def test_server_validation_fails_with_bad_hostname(self) -> None:
+    def test_server_validation_fails_with_bad_hostname(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Expect to fail for /prefix/v2/foo."""
         self._add_view()
         # run request through router
@@ -445,32 +435,38 @@ class TestServerRequestValidation(RequestValidationBase):  # noqa: D101
             "HTTP_ACCEPT": "application/json",
         }
         start_response = DummyStartResponse()
-        with self.assertLogs(level="ERROR") as cm:
-            with self.assertWarns(ImproperAPISpecificationWarning) as cw:
-                response = router(environ, start_response)
-        self.assertEqual(
-            str(cw.warning),
-            "Discarding 400 Bad Request validation error with body "
-            '[{"exception":"ServerNotFound",'
-            '"message":"Server not found for http://example.com/prefix/v2/foo"}] '
-            "as it is not a valid response for GET to /prefix/v2/foo (foo)",
-        )
-        self.assertEqual(start_response.status, "500 Internal Server Error")
-        self.assertEqual(
-            json.loads(response[0]),
-            [
-                {
-                    "exception": "ServerNotFound",
-                    "message": "Server not found for http://example.com/prefix/v2/foo",
-                }
-            ],
-        )
-        self.assertEqual(
-            cm.output,
-            [
-                "ERROR:pyramid_openapi3:Server not found for http://example.com/prefix/v2/foo"
-            ],
-        )
+        with (
+            caplog.at_level(logging.ERROR),
+            pytest.warns(ImproperAPISpecificationWarning) as record,
+        ):
+            response = router(environ, start_response)
+        # pytest.warns records every warning in its block, ignored ones included.
+        assert [
+            str(w.message)
+            for w in record
+            if issubclass(w.category, ImproperAPISpecificationWarning)
+        ] == [
+            (
+                "Discarding 400 Bad Request validation error with body "
+                '[{"exception":"ServerNotFound",'
+                '"message":"Server not found for http://example.com/prefix/v2/foo"}] '
+                "as it is not a valid response for GET to /prefix/v2/foo (foo)"
+            )
+        ]
+        assert start_response.status == "500 Internal Server Error"
+        assert json.loads(response[0]) == [
+            {
+                "exception": "ServerNotFound",
+                "message": "Server not found for http://example.com/prefix/v2/foo",
+            }
+        ]
+        assert caplog.record_tuples == [
+            (
+                "pyramid_openapi3",
+                logging.ERROR,
+                "Server not found for http://example.com/prefix/v2/foo",
+            )
+        ]
 
 
 class TestImproperAPISpecValidation(RequestValidationBase):  # noqa: D101
@@ -493,7 +489,9 @@ class TestImproperAPISpecValidation(RequestValidationBase):  # noqa: D101
         b"          description: A foo\n"
     )
 
-    def test_request_validation_error_causes_response_validation_error(self) -> None:
+    def test_request_validation_error_causes_response_validation_error(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Tests fallback for when request validation is disallowed by the spec.
 
         When a request fails validation an exception is raised which causes
@@ -518,30 +516,35 @@ class TestImproperAPISpecValidation(RequestValidationBase):  # noqa: D101
             "QUERY_STRING": "unknown=1",
         }
         start_response = DummyStartResponse()
-        with self.assertLogs(level="ERROR") as cm:
-            with self.assertWarns(ImproperAPISpecificationWarning) as cw:
-                response = router(environ, start_response)
-        self.assertEqual(
-            str(cw.warning),
-            "Discarding 400 Bad Request validation error with body "
-            '[{"exception":"MissingRequiredParameter",'
-            '"message":"Missing required query parameter: bar","field":"bar"}] '
-            "as it is not a valid response for GET to /foo (foo)",
-        )
-        self.assertEqual(
-            cm.output, ["ERROR:pyramid_openapi3:Unknown response http status: 400"]
-        )
+        with (
+            caplog.at_level(logging.ERROR),
+            pytest.warns(ImproperAPISpecificationWarning) as record,
+        ):
+            response = router(environ, start_response)
+        # pytest.warns records every warning in its block, ignored ones included.
+        assert [
+            str(w.message)
+            for w in record
+            if issubclass(w.category, ImproperAPISpecificationWarning)
+        ] == [
+            (
+                "Discarding 400 Bad Request validation error with body "
+                '[{"exception":"MissingRequiredParameter",'
+                '"message":"Missing required query parameter: bar","field":"bar"}] '
+                "as it is not a valid response for GET to /foo (foo)"
+            )
+        ]
+        assert caplog.record_tuples == [
+            ("pyramid_openapi3", logging.ERROR, "Unknown response http status: 400")
+        ]
 
-        self.assertEqual(start_response.status, "500 Internal Server Error")
-        self.assertEqual(
-            json.loads(response[0]),
-            [
-                {
-                    "exception": "ResponseNotFound",
-                    "message": "Unknown response http status: 400",
-                }
-            ],
-        )
+        assert start_response.status == "500 Internal Server Error"
+        assert json.loads(response[0]) == [
+            {
+                "exception": "ResponseNotFound",
+                "message": "Unknown response http status: 400",
+            }
+        ]
 
 
 class TestOpenAPI32Validation(TestRequestValidation):
