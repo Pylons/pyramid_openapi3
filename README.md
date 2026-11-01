@@ -146,6 +146,46 @@ config.add_route("foo_route", pattern="/foo")
 
 The `pyramid_openapi3_register_routes()` method supports setting a factory and route prefix as well. See the source for details.
 
+#### Several operations on one path
+
+`x-pyramid-route-name` belongs to the PathItem, so a path with several operations
+gets one route. Pyramid matches routes by URL pattern and selects views by HTTP
+method, so register one view per operation on that route, using `request_method`:
+
+```yaml
+paths:
+  /users/{user_id}:
+    x-pyramid-route-name: user
+    get:
+      ...
+    put:
+      ...
+    delete:
+      ...
+```
+
+```python
+@view_config(route_name="user", request_method="GET", renderer="json", openapi=True)
+def get_user(request):
+    ...
+
+@view_config(route_name="user", request_method="PUT", renderer="json", openapi=True)
+def edit_user(request):
+    ...
+
+@view_config(route_name="user", request_method="DELETE", openapi=True)
+def delete_user(request):
+    ...
+```
+
+Each view is validated against its own operation, because `openapi-core` finds
+the operation from the request's method and path, not from the route name. A
+method with no matching view returns 404.
+
+Don't register a separate route per method on the same pattern. Pyramid uses the
+first route whose pattern matches, so the other routes never match and their
+views return 404.
+
 ### Deployment: the `servers` URL is a mount point, not a route prefix
 
 A common point of confusion is how a `servers` entry with a path interacts with
@@ -180,12 +220,13 @@ you two supported deployment styles — pick **one**:
   config.pyramid_openapi3_register_routes(route_prefix="/api")  # routes at /api/v2/users/
   ```
 
-Do **not** combine the two: mounting the app at `/api` *and* passing
-`route_prefix="/api"` double-prefixes the routes (they end up expecting
-`/api/api/v2/users/`) and requests will 404. Likewise, using `servers: /api` while
-running at the root *without* either mounting or `route_prefix="/api"` means
-`/api/v2/users/` has no route (404) and the un-prefixed `/v2/users/` fails
-server-matching validation — pick one of the two styles above instead.
+Do **not** combine the two. If the app is mounted at `/api` *and* registered with
+`route_prefix="/api"`, its routes only match `/api/api/v2/users/`.
+`/api/v2/users/` returns 404, and `/api/api/v2/users/` reaches the view but fails
+validation with a 500 `ServerNotFound`, because that URL doesn't match the
+`servers` entry. Using neither fails the same way: with `servers: /api` and the
+app at the root without `route_prefix`, `/api/v2/users/` has no route (404), and
+`/v2/users/` returns a 500 `ServerNotFound`. Pick one of the two styles above.
 
 ### Specify protocol and port for getting the OpenAPI 3 spec file
 
