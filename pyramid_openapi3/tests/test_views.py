@@ -1,5 +1,6 @@
 """Tests views."""
 
+from contextlib import closing
 from dataclasses import dataclass
 from openapi_core.templating.paths.finders import APICallPathFinder
 from openapi_core.validation.request.protocols import RequestValidator
@@ -247,10 +248,12 @@ def test_add_spec_view_directory() -> None:
 
             # assert router
             router = Router(config.registry)
-            response = router({"PATH_INFO": "/foo/openapi.yaml"}, DummyStartResponse())
-            assert next(response) == SPLIT_DOCUMENT
-            response = router({"PATH_INFO": "/foo/paths.yaml"}, DummyStartResponse())
-            assert next(response) == SPLIT_DOCUMENT_PATHS
+            for path, document in [
+                ("/foo/openapi.yaml", SPLIT_DOCUMENT),
+                ("/foo/paths.yaml", SPLIT_DOCUMENT_PATHS),
+            ]:
+                with closing(router({"PATH_INFO": path}, DummyStartResponse())) as body:
+                    assert next(body) == document
 
 
 def test_add_spec_view_directory_already_defined() -> None:
@@ -385,7 +388,7 @@ def test_add_explorer_oauth_view() -> None:
         assert b"<title>Swagger UI: OAuth2 Redirect</title>" in response.body
 
 
-def test_add_multiple_explorer_views() -> None:
+def test_add_multiple_explorer_views_using_directory() -> None:
     """Test registration of multiple views serving different Swagger UI."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -437,7 +440,7 @@ def test_add_multiple_explorer_views() -> None:
         assert b'"url": "/bar/openapi.yaml"' in response.body
 
 
-def test_add_multiple_explorer_views_using_directory() -> None:
+def test_add_multiple_explorer_views() -> None:
     """Test registration of multiple views serving different Swagger UI."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
@@ -616,8 +619,8 @@ def test_multiple_openapi_views() -> None:
         assert response.json == "bar"
 
 
-def test_path_parameters() -> None:
-    """Test parameters in path are validated correctly."""
+def test_path_item_parameters() -> None:
+    """Test parameters declared on the path item are validated correctly."""
     with testConfig() as config:
         config.include("pyramid_openapi3")
         with tempfile.NamedTemporaryFile() as document:
@@ -646,7 +649,7 @@ def test_path_parameters() -> None:
             )
 
         config.add_route("foo", "/foo")
-        view_func = lambda *arg: "foo"  # noqa: E731  # pragma: no branch
+        view_func = lambda *arg: "foo"  # noqa: E731
         config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
         request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
@@ -705,7 +708,7 @@ def test_header_parameters() -> None:
             )
 
         config.add_route("foo", "/foo")
-        view_func = lambda *arg: "foo"  # noqa: E731  # pragma: no branch
+        view_func = lambda *arg: "foo"  # noqa: E731
         config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
         request_interface = config.registry.queryUtility(IRouteRequest, name="foo")
@@ -765,7 +768,7 @@ def test_cookie_parameters() -> None:
             )
 
         config.add_route("foo", "/foo")
-        view_func = lambda *arg: "foo"  # noqa: E731  # pragma: no branch
+        view_func = lambda *arg: "foo"  # noqa: E731
         config.add_view(openapi=True, renderer="json", view=view_func, route_name="foo")
 
         request_interface = config.registry.queryUtility(IRouteRequest, name="foo")

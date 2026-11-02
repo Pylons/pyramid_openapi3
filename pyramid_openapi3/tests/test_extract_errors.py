@@ -96,11 +96,13 @@ class BadRequestsTests(unittest.TestCase):
                   description: Bad Request
         """
 
-        res = self._testapp(view=self.foo, endpoints=endpoints).post("/foo", status=400)
+        res = self._testapp(view=self.foo, endpoints=endpoints).post(
+            "/foo?bar=not_a_number", status=400
+        )
         assert res.json == [
             {
-                "exception": "MissingRequiredParameter",
-                "message": "Missing required query parameter: bar",
+                "exception": "ParameterValidationError",
+                "message": "Failed to cast value to integer type: not_a_number",
                 "field": "bar",
             }
         ]

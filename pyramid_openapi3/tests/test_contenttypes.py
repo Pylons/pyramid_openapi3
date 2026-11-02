@@ -115,7 +115,7 @@ class TestContentTypes(unittest.TestCase):
         res = self._testapp().post_json("/foo", {"bar": "baz"}, status=200)
         self.assertEqual(res.json, {"bar": "zab"})
 
-    def test_post_form(self) -> None:  # pragma: no cover
+    def test_post_form(self) -> None:
         """Post with `application/x-www-form-urlencoded`."""
         res = self._testapp().post("/foo", params={"bar": "baz"}, status=200)
         self.assertEqual(res.json, {"bar": "zab"})
@@ -251,7 +251,7 @@ class TestContentTypes310(unittest.TestCase):
         res = self._testapp().post_json("/foo", {"bar": "baz"}, status=200)
         self.assertEqual(res.json, {"bar": "zab"})
 
-    def test_post_form(self) -> None:  # pragma: no cover
+    def test_post_form(self) -> None:
         """Post with `application/x-www-form-urlencoded`."""
         res = self._testapp().post("/foo", params={"bar": "baz"}, status=200)
         self.assertEqual(res.json, {"bar": "zab"})

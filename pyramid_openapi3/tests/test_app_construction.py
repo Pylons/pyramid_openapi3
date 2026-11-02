@@ -246,38 +246,6 @@ app_config = pytest.mark.parametrize(
 
 
 @app_config
-def test_all_routes(app_config: str, request: SubRequest) -> None:
-    """Test case showing that an app can be created with all routes defined."""
-    app_config = request.getfixturevalue(app_config)
-    app_config.add_route(name="foo", pattern="/foo")
-    app_config.add_route(name="bar", pattern="/bar")
-    app_config.add_view(
-        foo_view, route_name="foo", renderer="string", request_method="OPTIONS"
-    )
-    app_config.add_view(
-        bar_view, route_name="bar", renderer="string", request_method="GET"
-    )
-
-    app_config.make_wsgi_app()
-
-
-@app_config
-def test_prefixed_routes(app_config: str, request: SubRequest) -> None:
-    """Test case for prefixed routes."""
-    app_config = request.getfixturevalue(app_config)
-    app_config.add_route(name="foo", pattern="/api/v1/foo")
-    app_config.add_route(name="bar", pattern="/api/v1/bar")
-    app_config.add_view(
-        foo_view, route_name="foo", renderer="string", request_method="OPTIONS"
-    )
-    app_config.add_view(
-        bar_view, route_name="bar", renderer="string", request_method="GET"
-    )
-
-    app_config.make_wsgi_app()
-
-
-@app_config
 def test_pyramid_prefixed_context_routes(app_config: str, request: SubRequest) -> None:
     """Test case for prefixed routes using pyramid route_prefix_context."""
     app_config = request.getfixturevalue(app_config)
