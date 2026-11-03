@@ -81,6 +81,7 @@ ignore = [
   "ARG001",  # Unused function argument
   "ARG002",  # Unused method argument
   "COM812",  # Missing trailing comma (conflicts with formatter)
+  "CPY001",  # Missing copyright notice at top of every file
   "D107",  # Missing docstring in __init__ (matches the pre-uv .flake8 config)
   "E501",  # line too long
   "EM101",  # Exception must not use string literal
@@ -89,6 +90,11 @@ ignore = [
   "FBT001",  # Boolean-typed argument
   "N818",  # Exception name should end in Error (public API name, can't rename)
   "PLR0913",  # Too many arguments (public config directives need them)
+  # Same reason as PLR0913. Ignored here rather than with inline noqa because
+  # the Nix-pinned ruff (0.15.x) treats PLR0917 as preview and strips the noqa
+  # as unused (RUF100). Swap back to inline noqa once nixpkgs ships a ruff where
+  # PLR0917 is stable (0.17.3 enforces it).
+  "PLR0917",  # Too many positional arguments
   "TD002",  # TODO comments must have an author
   "TD003",  # TODO comments must have a ticket reference
   "TRY003",  # Avoid specifying long messages outside the exception class

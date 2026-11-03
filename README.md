@@ -63,8 +63,8 @@ The reason this package exists is to give you peace of mind when providing a RES
 
     ```python
     config.include("pyramid_openapi3")
-    config.pyramid_openapi3_spec('openapi.yaml', route='/api/v1/openapi.yaml')
-    config.pyramid_openapi3_add_explorer(route='/api/v1/')
+    config.pyramid_openapi3_spec("openapi.yaml", route="/api/v1/openapi.yaml")
+    config.pyramid_openapi3_add_explorer(route="/api/v1/")
     ```
 
     The spec is also served as JSON, alongside YAML, at `route` with its extension replaced by `.json` (e.g. `/api/v1/openapi.json`).
@@ -72,7 +72,7 @@ The reason this package exists is to give you peace of mind when providing a RES
 3. Use the `openapi` [view predicate](https://docs.pylonsproject.org/projects/pyramid/en/latest/narr/viewconfig.html#view-configuration-parameters) to enable request/response validation:
 
     ```python
-    @view_config(route_name="foobar", openapi=True, renderer='json')
+    @view_config(route_name="foobar", openapi=True, renderer="json")
     def myview(request):
         return request.openapi_validated.parameters
     ```
@@ -89,7 +89,7 @@ A feature introduced in OpenAPI3 is the ability to use `$ref` links to external 
 To use this, you must ensure that you have all of your spec files in a given directory (ensure that you do not have any code in this directory as all the files in it are exposed as static files), then **replace** the `pyramid_openapi3_spec` call that you did in [Getting Started](#getting-started) with the following:
 
 ```python
-config.pyramid_openapi3_spec_directory('path/to/openapi.yaml', route='/api/v1/spec')
+config.pyramid_openapi3_spec_directory("path/to/openapi.yaml", route="/api/v1/spec")
 ```
 
 Some notes:
@@ -166,16 +166,15 @@ paths:
 
 ```python
 @view_config(route_name="user", request_method="GET", renderer="json", openapi=True)
-def get_user(request):
-    ...
+def get_user(request): ...
+
 
 @view_config(route_name="user", request_method="PUT", renderer="json", openapi=True)
-def edit_user(request):
-    ...
+def edit_user(request): ...
+
 
 @view_config(route_name="user", request_method="DELETE", openapi=True)
-def delete_user(request):
-    ...
+def delete_user(request): ...
 ```
 
 Each view is validated against its own operation, because `openapi-core` finds
@@ -210,7 +209,7 @@ you two supported deployment styles — pick **one**:
   correctly.
 
   ```python
-  config.pyramid_openapi3_register_routes()          # routes at /v2/users/
+  config.pyramid_openapi3_register_routes()  # routes at /v2/users/
   ```
 
 - **Prefixed (when the app runs at the URL root):** bake the prefix into the routes
@@ -233,7 +232,7 @@ app at the root without `route_prefix`, `/api/v2/users/` has no route (404), and
 Sometimes, it is necessary to specify the protocol and port to access the openapi3 spec file. This can be configured using the `proto_port` optional parameter to the the `pyramid_openapi3_add_explorer` function:
 
 ```python
-config.pyramid_openapi3_add_explorer(proto_port=('https', 443))
+config.pyramid_openapi3_add_explorer(proto_port=("https", 443))
 ```
 
 ### CSP nonce
