@@ -143,7 +143,7 @@ def openapi_view(view: View, info: ViewDeriverInfo) -> View:
 openapi_view.options = ("openapi",)
 
 
-def add_explorer_view(
+def add_explorer_view(  # noqa: PLR0917
     config: Configurator,
     route: str = "/docs/",
     route_name: str = "pyramid_openapi3.explorer",
@@ -255,7 +255,7 @@ def add_unmarshaller(config: Configurator, name: str, func: t.Callable) -> None:
     reg[name] = func
 
 
-def add_spec_view(
+def add_spec_view(  # noqa: PLR0917
     config: Configurator,
     filepath: str,
     route: str = "/openapi.yaml",
@@ -320,7 +320,7 @@ def add_spec_view(
     config.action((f"{apiname}_spec",), register, order=PHASE0_CONFIG)
 
 
-def add_spec_view_directory(
+def add_spec_view_directory(  # noqa: PLR0917
     config: Configurator,
     filepath: str,
     route: str = "/spec",
