@@ -45,7 +45,7 @@ lint: install
 # Run prek checks on all files in the repository.
 .PHONY: lint-all
 lint-all: install
-	@prek run --all-files
+	@prek run --all-files --show-diff-on-failure
 
 .PHONY: type
 type: types
