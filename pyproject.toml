@@ -81,6 +81,7 @@ ignore = [
   "ARG001",  # Unused function argument
   "ARG002",  # Unused method argument
   "COM812",  # Missing trailing comma (conflicts with formatter)
+  "CPY001",  # Missing copyright notice at top of every file
   "D107",  # Missing docstring in __init__ (matches the pre-uv .flake8 config)
   "E501",  # line too long
   "EM101",  # Exception must not use string literal
