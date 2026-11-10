@@ -23,11 +23,15 @@ dependencies = [
 [project.urls]
 Repository = "https://github.com/Pylons/pyramid_openapi3"
 
+[project.optional-dependencies]
+fast = ["jsonschema-rs>=0.43"]
+
 [dependency-groups]
 # Lower bounds keep the lowest-direct resolution (run by `make lock` to generate
 # uv-oldest.lock) on working tool versions while it pins openapi-core/pyramid to
 # floors.
 dev = [
+  "jsonschema-rs>=0.43",
   "pytest>=8",
   "pytest-cov>=5",
   "pytest-instafail>=0.5",

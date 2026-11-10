@@ -393,7 +393,17 @@ def _create_api_settings(
         "OpenAPIV3.2": V32ResponseValidator,
     }
     request_unmarshaller = request_unmarshallers[str(spec_version)]
-    response_validator = response_validators[str(spec_version)]
+    settings = config.registry.settings
+    if asbool(settings.get("pyramid_openapi3.fast_response_validation", False)):
+        response_validator = _fast_response_validator(
+            spec, str(spec_version), custom_formatters, custom_deserializers
+        )
+    else:
+        response_validator = response_validators[str(spec_version)](
+            spec,
+            extra_format_validators=custom_formatters,
+            extra_media_type_deserializers=custom_deserializers,
+        )
 
     return {
         "filepath": filepath,
@@ -405,12 +415,32 @@ def _create_api_settings(
             extra_media_type_deserializers=custom_deserializers,
             extra_format_unmarshallers=custom_unmarshallers,
         ),
-        "response_validator": response_validator(
-            spec,
-            extra_format_validators=custom_formatters,
-            extra_media_type_deserializers=custom_deserializers,
-        ),
+        "response_validator": response_validator,
     }
+
+
+def _fast_response_validator(
+    spec: SchemaPath,
+    spec_version: str,
+    formats: dict[str, t.Callable] | None,
+    deserializers: dict[str, t.Callable] | None,
+) -> t.Any:
+    if spec_version == "OpenAPIV3.0":
+        raise ConfigurationError(
+            "pyramid_openapi3.fast_response_validation needs an OpenAPI 3.1 or "
+            "newer spec: 3.0 schemas are not JSON Schema and jsonschema-rs "
+            "would read `nullable` and friends as nothing."
+        )
+    try:
+        from .fast import FastResponseValidator  # noqa: PLC0415
+    except ImportError as error:
+        if error.name != "jsonschema_rs":
+            raise
+        raise ConfigurationError(
+            "pyramid_openapi3.fast_response_validation needs jsonschema-rs: "
+            "install pyramid_openapi3[fast]."
+        ) from error
+    return FastResponseValidator(spec, formats=formats, deserializers=deserializers)
 
 
 def register_routes(

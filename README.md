@@ -117,6 +117,30 @@ config.registry.settings["pyramid_openapi3.enable_response_validation"] = False
 > [!WARNING]
 > Disabling request validation will result in `request.openapi_validated` no longer being available to use.
 
+### Fast response validation
+
+Response validation runs every response body through `python-jsonschema`, which walks the schema in Python. On a large response this validation is most of the request time: 400 of 500 ms for a 200 KB list on an M3 MacBook. With the `fast` extra installed, the same validation is 10X+ faster in Rust through [jsonschema-rs](https://github.com/Stranger6667/jsonschema):
+
+```shell
+pip install "pyramid_openapi3[fast]"
+```
+
+```python
+config.registry.settings["pyramid_openapi3.fast_response_validation"] = True
+```
+
+The operation, status and media type are found the way openapi-core finds them, and the body, read by your registered deserializer for that media type or as JSON, is then checked against a validator compiled at startup for each response schema, with your registered formatters as custom formats. It needs an OpenAPI 3.1 or newer spec, since 3.0 schemas are not JSON Schema, and it does nothing while `enable_response_validation` is off. Request validation is unchanged.
+
+What differs from the default validator:
+
+- Only bodies are checked, not response headers, and only bodies that are JSON or have a registered deserializer. The deserializer must return JSON data, so a date or an integer key from a YAML parser is reported as a validation error.
+- Errors are `FastValidationError` and carry jsonschema-rs's messages, which quote values differently.
+- Standard formats such as `uri`, `hostname` and `duration` are always checked, where python-jsonschema checks them only with the matching optional packages installed. Registered formatters only see strings.
+- A `pattern` must be a regular expression Rust's regex crate accepts, so Python-only syntax such as `\Z` fails at startup.
+- `discriminator` is ignored, so `oneOf` alternatives must be told apart by their schemas.
+- `$dynamicRef` is refused at startup, since each response schema is copied into one document, where a dynamic scope cannot be kept.
+- A `NaN` in a body reads as `null`.
+
 ### Register Pyramid's Routes
 
 You can register routes in your pyramid application.
